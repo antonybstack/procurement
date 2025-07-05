@@ -1,5 +1,5 @@
--- Supply Chain RFQ Database Initialization Script
--- This script creates a comprehensive supply chain database with RFQ functionality
+-- Procurement RFQ Database Initialization Script
+-- This script creates a comprehensive procurement database with RFQ functionality
 
 -- Create extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

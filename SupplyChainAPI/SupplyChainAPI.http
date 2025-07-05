@@ -1,6 +1,0 @@
-@SupplyChainAPI_HostAddress = http://localhost:5096
-
-GET {{SupplyChainAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

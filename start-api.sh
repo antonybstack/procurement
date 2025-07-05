@@ -1,9 +1,9 @@
 #!/bin/bash
 
-echo "🚀 Starting Supply Chain API with PostgreSQL..."
+echo "🚀 Starting Procurement API with PostgreSQL..."
 echo "📊 Services to be started:"
 echo "   - PostgreSQL (port 5432)"
-echo "   - SupplyChainAPI (port 5001)"
+echo "   - ProcurementAPI (port 5001)"
 echo "   - pgAdmin (port 8080)"
 echo ""å
 
@@ -25,7 +25,7 @@ echo "PostgreSQL:"
 docker-compose exec -T postgres pg_isready -U postgres -d myapp
 
 echo ""
-echo "SupplyChainAPI:"
+echo "ProcurementAPI:"
 curl -f http://localhost:5001/health/ready 2>/dev/null || echo "API not ready yet"
 
 echo ""

@@ -104,7 +104,7 @@ docker-compose up -d
 
 ### Stop Services (Restart the PostgreSQL container to apply the new schema and data)
 ```bash
-docker-compose down
+docker-compose down --remove-orphans
 ```
 
 ### Restart Services

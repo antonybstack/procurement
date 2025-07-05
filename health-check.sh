@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔍 Comprehensive Health Check for Supply Chain API"
+echo "🔍 Comprehensive Health Check for Procurement API"
 echo "=================================================="
 echo ""
 
@@ -129,7 +129,7 @@ echo ""
 
 # Show recent logs if there are any errors
 echo -e "${BLUE}📝 Recent API Logs (last 10 lines):${NC}"
-docker-compose logs --tail=10 supplychain-api
+docker-compose logs --tail=10 procurement-api
 
 echo ""
 echo "✅ Health check completed!" 

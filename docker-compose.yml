@@ -33,12 +33,12 @@ services:
           memory: 512M
           cpus: '0.5'
 
-  # SupplyChainAPI service
-  supplychain-api:
+  # ProcurementAPI service
+  procurement-api:
     build:
-      context: ./SupplyChainAPI
+      context: ./ProcurementAPI
       dockerfile: Dockerfile
-    container_name: supplychain_api
+    container_name: procurement_api
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
