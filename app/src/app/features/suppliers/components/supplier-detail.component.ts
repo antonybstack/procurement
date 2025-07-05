@@ -52,6 +52,13 @@ export class SupplierDetailComponent implements OnInit {
         this.router.navigate(['/suppliers']);
     }
 
+    editSupplier() {
+        const supplierId = this.supplier()?.supplierId;
+        if (supplierId) {
+            this.router.navigate(['/suppliers', supplierId, 'edit']);
+        }
+    }
+
     getStatusClass(isActive: boolean): string {
         return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
     }

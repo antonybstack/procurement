@@ -5,9 +5,14 @@ export interface SupplierDto {
     contactName?: string;
     email?: string;
     phone?: string;
+    address?: string;
     city?: string;
     state?: string;
     country?: string;
+    postalCode?: string;
+    taxId?: string;
+    paymentTerms?: string;
+    creditLimit?: number;
     rating?: number;
     isActive: boolean;
     createdAt: string;

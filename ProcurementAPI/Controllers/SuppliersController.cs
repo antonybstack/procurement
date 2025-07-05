@@ -75,9 +75,14 @@ public class SuppliersController : ControllerBase
                     ContactName = s.ContactName,
                     Email = s.Email,
                     Phone = s.Phone,
+                    Address = s.Address,
                     City = s.City,
                     State = s.State,
                     Country = s.Country,
+                    PostalCode = s.PostalCode,
+                    TaxId = s.TaxId,
+                    PaymentTerms = s.PaymentTerms,
+                    CreditLimit = s.CreditLimit,
                     Rating = s.Rating,
                     IsActive = s.IsActive,
                     CreatedAt = s.CreatedAt
@@ -120,9 +125,14 @@ public class SuppliersController : ControllerBase
                     ContactName = s.ContactName,
                     Email = s.Email,
                     Phone = s.Phone,
+                    Address = s.Address,
                     City = s.City,
                     State = s.State,
                     Country = s.Country,
+                    PostalCode = s.PostalCode,
+                    TaxId = s.TaxId,
+                    PaymentTerms = s.PaymentTerms,
+                    CreditLimit = s.CreditLimit,
                     Rating = s.Rating,
                     IsActive = s.IsActive,
                     CreatedAt = s.CreatedAt
@@ -140,6 +150,80 @@ public class SuppliersController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving supplier with ID {SupplierId}", id);
             return StatusCode(500, "An error occurred while retrieving the supplier");
+        }
+    }
+
+    /// <summary>
+    /// Update a supplier - expects full DTO from client, EF Core change tracker handles updates
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<ActionResult<SupplierDto>> UpdateSupplier(int id, [FromBody] SupplierUpdateDto updateDto)
+    {
+        try
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null)
+            {
+                return NotFound($"Supplier with ID {id} not found");
+            }
+
+            // Update all fields from the DTO
+            supplier.SupplierCode = updateDto.SupplierCode;
+            supplier.CompanyName = updateDto.CompanyName;
+            supplier.ContactName = updateDto.ContactName;
+            supplier.Email = updateDto.Email;
+            supplier.Phone = updateDto.Phone;
+            supplier.Address = updateDto.Address;
+            supplier.City = updateDto.City;
+            supplier.State = updateDto.State;
+            supplier.Country = updateDto.Country;
+            supplier.PostalCode = updateDto.PostalCode;
+            supplier.TaxId = updateDto.TaxId;
+            supplier.PaymentTerms = updateDto.PaymentTerms;
+            supplier.CreditLimit = updateDto.CreditLimit;
+            supplier.Rating = updateDto.Rating;
+            supplier.IsActive = updateDto.IsActive;
+
+            // Update the timestamp
+            supplier.UpdatedAt = DateTime.UtcNow;
+
+            // EF Core change tracker will automatically detect which fields changed
+            await _context.SaveChangesAsync();
+
+            // Return the updated supplier
+            var updatedSupplier = new SupplierDto
+            {
+                SupplierId = supplier.SupplierId,
+                SupplierCode = supplier.SupplierCode,
+                CompanyName = supplier.CompanyName,
+                ContactName = supplier.ContactName,
+                Email = supplier.Email,
+                Phone = supplier.Phone,
+                Address = supplier.Address,
+                City = supplier.City,
+                State = supplier.State,
+                Country = supplier.Country,
+                PostalCode = supplier.PostalCode,
+                TaxId = supplier.TaxId,
+                PaymentTerms = supplier.PaymentTerms,
+                CreditLimit = supplier.CreditLimit,
+                Rating = supplier.Rating,
+                IsActive = supplier.IsActive,
+                CreatedAt = supplier.CreatedAt
+            };
+
+            _logger.LogInformation("Supplier {SupplierId} updated successfully", id);
+            return Ok(updatedSupplier);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogError(ex, "Concurrency error updating supplier {SupplierId}", id);
+            return Conflict("The supplier was modified by another user. Please refresh and try again.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating supplier {SupplierId}", id);
+            return StatusCode(500, "An error occurred while updating the supplier");
         }
     }
 
@@ -166,13 +250,4 @@ public class SuppliersController : ControllerBase
             return StatusCode(500, "An error occurred while retrieving countries");
         }
     }
-}
-
-public class PaginatedResult<T>
-{
-    public List<T> Data { get; set; } = new();
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public int TotalCount { get; set; }
-    public int TotalPages { get; set; }
 }

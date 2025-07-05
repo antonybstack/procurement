@@ -92,24 +92,6 @@ docker run -p 5001:8080 \
 - `GET /api/rfqs/statuses` - Get available RFQ statuses
 - `GET /api/rfqs/summary` - Get RFQ summary statistics
 
-### Items
-
-- `GET /api/items` - Get all items with pagination and filtering
-- `GET /api/items/{id}` - Get item by ID
-- `GET /api/items/categories` - Get available item categories
-
-### Quotes
-
-- `GET /api/quotes` - Get all quotes with pagination and filtering
-- `GET /api/quotes/{id}` - Get quote by ID
-- `GET /api/quotes/by-rfq/{rfqId}` - Get quotes for specific RFQ
-
-### Purchase Orders
-
-- `GET /api/purchaseorders` - Get all purchase orders with pagination
-- `GET /api/purchaseorders/{id}` - Get purchase order by ID
-- `GET /api/purchaseorders/by-supplier/{supplierId}` - Get POs by supplier
-
 ## Testing the API
 
 ### Using NSwag UI (Recommended)

@@ -30,7 +30,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        // policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -60,3 +61,5 @@ app.MapHealthChecks("/health/ready");
 app.MapHealthChecks("/health/live");
 
 app.Run();
+
+public partial class Program { }

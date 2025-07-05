@@ -1,0 +1,272 @@
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <button (click)="onCancel()" class="text-gray-600 hover:text-gray-800 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl font-bold text-gray-900">Edit Supplier</h1>
+        </div>
+    </div>
+
+    @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-2 text-gray-600">Loading supplier details...</span>
+    </div>
+    }
+
+    @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-md p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-red-800">{{ error() }}</p>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (supplier() && !loading() && !error()) {
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">Basic Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Supplier Code -->
+                <div>
+                    <label for="supplierCode" class="block text-sm font-medium text-gray-700">Supplier Code *</label>
+                    <input type="text" id="supplierCode" formControlName="supplierCode"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('supplierCode')"
+                        [class.focus:border-red-500]="isFieldInvalid('supplierCode')"
+                        [class.focus:ring-red-500]="isFieldInvalid('supplierCode')" />
+                    @if (isFieldInvalid('supplierCode')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('supplierCode') }}</p>
+                    }
+                </div>
+
+                <!-- Company Name -->
+                <div>
+                    <label for="companyName" class="block text-sm font-medium text-gray-700">Company Name *</label>
+                    <input type="text" id="companyName" formControlName="companyName"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('companyName')"
+                        [class.focus:border-red-500]="isFieldInvalid('companyName')"
+                        [class.focus:ring-red-500]="isFieldInvalid('companyName')" />
+                    @if (isFieldInvalid('companyName')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('companyName') }}</p>
+                    }
+                </div>
+
+                <!-- Contact Name -->
+                <div>
+                    <label for="contactName" class="block text-sm font-medium text-gray-700">Contact Name</label>
+                    <input type="text" id="contactName" formControlName="contactName"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('contactName')"
+                        [class.focus:border-red-500]="isFieldInvalid('contactName')"
+                        [class.focus:ring-red-500]="isFieldInvalid('contactName')" />
+                    @if (isFieldInvalid('contactName')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('contactName') }}</p>
+                    }
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" formControlName="email"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('email')"
+                        [class.focus:border-red-500]="isFieldInvalid('email')"
+                        [class.focus:ring-red-500]="isFieldInvalid('email')" />
+                    @if (isFieldInvalid('email')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('email') }}</p>
+                    }
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                    <input type="tel" id="phone" formControlName="phone"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('phone')"
+                        [class.focus:border-red-500]="isFieldInvalid('phone')"
+                        [class.focus:ring-red-500]="isFieldInvalid('phone')" />
+                    @if (isFieldInvalid('phone')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('phone') }}</p>
+                    }
+                </div>
+
+                <!-- Rating -->
+                <div>
+                    <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
+                    <select id="rating" formControlName="rating"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('rating')"
+                        [class.focus:border-red-500]="isFieldInvalid('rating')"
+                        [class.focus:ring-red-500]="isFieldInvalid('rating')">
+                        <option value="">Select rating</option>
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                    </select>
+                    @if (isFieldInvalid('rating')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('rating') }}</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">Address Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Address -->
+                <div class="md:col-span-2 lg:col-span-3">
+                    <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                    <textarea id="address" formControlName="address" rows="3"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('address')"
+                        [class.focus:border-red-500]="isFieldInvalid('address')"
+                        [class.focus:ring-red-500]="isFieldInvalid('address')"></textarea>
+                    @if (isFieldInvalid('address')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('address') }}</p>
+                    }
+                </div>
+
+                <!-- City -->
+                <div>
+                    <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                    <input type="text" id="city" formControlName="city"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('city')"
+                        [class.focus:border-red-500]="isFieldInvalid('city')"
+                        [class.focus:ring-red-500]="isFieldInvalid('city')" />
+                    @if (isFieldInvalid('city')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('city') }}</p>
+                    }
+                </div>
+
+                <!-- State -->
+                <div>
+                    <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                    <input type="text" id="state" formControlName="state"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('state')"
+                        [class.focus:border-red-500]="isFieldInvalid('state')"
+                        [class.focus:ring-red-500]="isFieldInvalid('state')" />
+                    @if (isFieldInvalid('state')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('state') }}</p>
+                    }
+                </div>
+
+                <!-- Country -->
+                <div>
+                    <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                    <input type="text" id="country" formControlName="country"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('country')"
+                        [class.focus:border-red-500]="isFieldInvalid('country')"
+                        [class.focus:ring-red-500]="isFieldInvalid('country')" />
+                    @if (isFieldInvalid('country')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('country') }}</p>
+                    }
+                </div>
+
+                <!-- Postal Code -->
+                <div>
+                    <label for="postalCode" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                    <input type="text" id="postalCode" formControlName="postalCode"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('postalCode')"
+                        [class.focus:border-red-500]="isFieldInvalid('postalCode')"
+                        [class.focus:ring-red-500]="isFieldInvalid('postalCode')" />
+                    @if (isFieldInvalid('postalCode')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('postalCode') }}</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">Business Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Tax ID -->
+                <div>
+                    <label for="taxId" class="block text-sm font-medium text-gray-700">Tax ID</label>
+                    <input type="text" id="taxId" formControlName="taxId"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('taxId')"
+                        [class.focus:border-red-500]="isFieldInvalid('taxId')"
+                        [class.focus:ring-red-500]="isFieldInvalid('taxId')" />
+                    @if (isFieldInvalid('taxId')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('taxId') }}</p>
+                    }
+                </div>
+
+                <!-- Payment Terms -->
+                <div>
+                    <label for="paymentTerms" class="block text-sm font-medium text-gray-700">Payment Terms</label>
+                    <input type="text" id="paymentTerms" formControlName="paymentTerms"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('paymentTerms')"
+                        [class.focus:border-red-500]="isFieldInvalid('paymentTerms')"
+                        [class.focus:ring-red-500]="isFieldInvalid('paymentTerms')" />
+                    @if (isFieldInvalid('paymentTerms')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('paymentTerms') }}</p>
+                    }
+                </div>
+
+                <!-- Credit Limit -->
+                <div>
+                    <label for="creditLimit" class="block text-sm font-medium text-gray-700">Credit Limit</label>
+                    <input type="number" id="creditLimit" formControlName="creditLimit" step="0.01" min="0"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        [class.border-red-300]="isFieldInvalid('creditLimit')"
+                        [class.focus:border-red-500]="isFieldInvalid('creditLimit')"
+                        [class.focus:ring-red-500]="isFieldInvalid('creditLimit')" />
+                    @if (isFieldInvalid('creditLimit')) {
+                    <p class="mt-1 text-sm text-red-600">{{ getFieldError('creditLimit') }}</p>
+                    }
+                </div>
+
+                <!-- Is Active -->
+                <div class="flex items-center">
+                    <input type="checkbox" id="isActive" formControlName="isActive"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                    <label for="isActive" class="ml-2 block text-sm text-gray-900">
+                        Active Supplier
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3">
+            <button type="button" (click)="onCancel()"
+                class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                Cancel
+            </button>
+            <button type="submit" [disabled]="saving() || editForm.invalid"
+                class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                @if (saving()) {
+                <div class="flex items-center">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                </div>
+                } @else {
+                Save Changes
+                }
+            </button>
+        </div>
+    </form>
+    }
+</div>

@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
-import { SupplierService, SupplierFilters } from '../services/supplier.service';
+import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent } from 'ag-grid-community';
+import { SupplierService, SupplierFilters, SupplierUpdateDto } from '../services/supplier.service';
 import { SupplierDto } from '../../../shared/models/supplier.model';
 import { PaginatedResult } from '../../../shared/models/rfq.model';
 
@@ -51,56 +51,75 @@ export class SupplierListComponent implements OnInit {
             headerName: 'Supplier Code',
             sortable: true,
             filter: true,
-            width: 150
+            width: 150,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'companyName',
             headerName: 'Company Name',
             sortable: true,
             filter: true,
-            flex: 1
+            flex: 1,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'contactName',
             headerName: 'Contact Name',
             sortable: true,
             filter: true,
-            width: 150
+            width: 150,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'email',
             headerName: 'Email',
             sortable: true,
             filter: true,
-            width: 200
+            width: 200,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'phone',
             headerName: 'Phone',
             sortable: true,
             filter: true,
-            width: 130
+            width: 130,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'city',
             headerName: 'City',
             sortable: true,
             filter: true,
-            width: 120
+            width: 120,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'state',
             headerName: 'State',
             sortable: true,
             filter: true,
-            width: 100
+            width: 100,
+            editable: true,
+            cellEditor: 'agTextCellEditor'
         },
         {
             field: 'country',
             headerName: 'Country',
             sortable: true,
             filter: true,
-            width: 120
+            width: 120,
+            editable: true,
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: this.countries
+            }
         },
         {
             field: 'rating',
@@ -108,6 +127,8 @@ export class SupplierListComponent implements OnInit {
             sortable: true,
             filter: true,
             width: 100,
+            editable: true,
+            cellEditor: 'agNumberCellEditor',
             cellRenderer: (params: any) => {
                 if (params.value) {
                     return `<div class="flex items-center">
@@ -124,6 +145,11 @@ export class SupplierListComponent implements OnInit {
             sortable: true,
             filter: true,
             width: 100,
+            editable: true,
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: [true, false]
+            },
             cellRenderer: (params: any) => {
                 const isActive = params.value;
                 const statusClass = isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
@@ -137,6 +163,7 @@ export class SupplierListComponent implements OnInit {
             sortable: true,
             filter: true,
             width: 130,
+            editable: false,
             valueFormatter: (params: any) => new Date(params.value).toLocaleDateString()
         }
     ];
@@ -159,6 +186,75 @@ export class SupplierListComponent implements OnInit {
     onRowClicked(event: any) {
         const supplierId = event.data.supplierId;
         this.router.navigate(['/suppliers', supplierId]);
+    }
+
+    onCellValueChanged(event: CellValueChangedEvent) {
+        const supplierId = event.data.supplierId;
+        const field = event.colDef.field;
+        const newValue = event.newValue;
+        const oldValue = event.oldValue;
+
+        // Don't save if value hasn't changed
+        if (newValue === oldValue) {
+            return;
+        }
+
+        // Get the current supplier data to ensure we have all required fields
+        const currentSupplier = this.suppliers().find(s => s.supplierId === supplierId);
+        if (!currentSupplier) {
+            console.error('Supplier not found for update');
+            return;
+        }
+
+        // Create update object with current data and the changed field
+        const updateData: SupplierUpdateDto = {
+            supplierCode: currentSupplier.supplierCode,
+            companyName: currentSupplier.companyName,
+            isActive: currentSupplier.isActive,
+            contactName: currentSupplier.contactName,
+            email: currentSupplier.email,
+            phone: currentSupplier.phone,
+            address: currentSupplier.address,
+            city: currentSupplier.city,
+            state: currentSupplier.state,
+            country: currentSupplier.country,
+            postalCode: currentSupplier.postalCode,
+            taxId: currentSupplier.taxId,
+            paymentTerms: currentSupplier.paymentTerms,
+            creditLimit: currentSupplier.creditLimit,
+            rating: currentSupplier.rating
+        };
+
+        // Update only the changed field
+        if (field) {
+            (updateData as any)[field] = newValue;
+        }
+
+        // Save immediately
+        this.supplierService.updateSupplier(supplierId, updateData).subscribe({
+            next: (updatedSupplier) => {
+                // Update the local data
+                this.suppliers.update(suppliers =>
+                    suppliers.map(s =>
+                        s.supplierId === supplierId ? updatedSupplier : s
+                    )
+                );
+
+                // Show success feedback (optional)
+                console.log(`Supplier ${supplierId} updated successfully`);
+            },
+            error: (error) => {
+                // Revert the change in the grid
+                event.node.setDataValue(event.column.getColId(), oldValue);
+
+                // Show error message
+                this.error.set(`Failed to update supplier. Please try again.`);
+                console.error('Error updating supplier:', error);
+
+                // Clear error after 3 seconds
+                setTimeout(() => this.error.set(null), 3000);
+            }
+        });
     }
 
     loadSuppliers() {
@@ -184,6 +280,11 @@ export class SupplierListComponent implements OnInit {
         this.supplierService.getCountries().subscribe({
             next: (countries: string[]) => {
                 this.countries.set(countries);
+                // Update the country column editor params
+                const countryCol = this.columnDefs.find(col => col.field === 'country');
+                if (countryCol) {
+                    countryCol.cellEditorParams = { values: countries };
+                }
             },
             error: (err) => {
                 console.error('Error loading countries:', err);
@@ -202,12 +303,14 @@ export class SupplierListComponent implements OnInit {
     }
 
     onRatingInputChange(value: string) {
-        this.filters.update(f => ({ ...f, minRating: value ? +value : undefined, page: 1 }));
+        const rating = value ? parseInt(value) : undefined;
+        this.filters.update(f => ({ ...f, minRating: rating, page: 1 }));
         this.loadSuppliers();
     }
 
     onStatusInputChange(value: string) {
-        this.filters.update(f => ({ ...f, isActive: value === '' ? undefined : value === 'true', page: 1 }));
+        const isActive = value === 'active' ? true : value === 'inactive' ? false : undefined;
+        this.filters.update(f => ({ ...f, isActive, page: 1 }));
         this.loadSuppliers();
     }
 
@@ -229,26 +332,18 @@ export class SupplierListComponent implements OnInit {
     }
 
     getPageNumbers(): number[] {
-        const pages: number[] = [];
         const totalPages = this.totalPages();
         const currentPage = this.currentPage();
+        const pageNumbers: number[] = [];
 
-        let start = Math.max(1, currentPage - 2);
-        let end = Math.min(totalPages, currentPage + 2);
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
 
-        if (end - start < 4) {
-            if (start === 1) {
-                end = Math.min(totalPages, start + 4);
-            } else {
-                start = Math.max(1, end - 4);
-            }
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
         }
 
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-
-        return pages;
+        return pageNumbers;
     }
 
     protected readonly Math = Math;

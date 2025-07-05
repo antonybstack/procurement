@@ -13,6 +13,24 @@ export interface SupplierFilters {
     isActive?: boolean;
 }
 
+export interface SupplierUpdateDto {
+    supplierCode: string;
+    companyName: string;
+    contactName?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+    taxId?: string;
+    paymentTerms?: string;
+    creditLimit?: number;
+    rating?: number;
+    isActive: boolean;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -25,6 +43,10 @@ export class SupplierService {
 
     getSupplierById(id: number): Observable<SupplierDto> {
         return this.apiService.getById<SupplierDto>('suppliers', id);
+    }
+
+    updateSupplier(id: number, updateData: SupplierUpdateDto): Observable<SupplierDto> {
+        return this.apiService.put<SupplierDto>('suppliers', id, updateData);
     }
 
     getCountries(): Observable<string[]> {
