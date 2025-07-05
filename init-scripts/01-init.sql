@@ -296,7 +296,7 @@ FROM (
     FROM generate_series(1, 1000) r(id)
     CROSS JOIN generate_series(1, 1000) sup(id)
     WHERE (r.id + sup.id) % 7 = 0  -- Random selection
-    LIMIT 5000
+    LIMIT 5001
 ) s;
 
 -- Insert 10000 quotes
