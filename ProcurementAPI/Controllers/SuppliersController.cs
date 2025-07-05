@@ -144,51 +144,6 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Get supplier performance summary
-    /// </summary>
-    [HttpGet("performance")]
-    public async Task<ActionResult<List<SupplierSummaryDto>>> GetSupplierPerformance(
-        [FromQuery] int? top = null)
-    {
-        try
-        {
-            var suppliers = await _context.Suppliers
-                .Where(s => s.IsActive)
-                .Include(s => s.Quotes)
-                .Include(s => s.PurchaseOrders)
-                .ToListAsync();
-
-            var result = suppliers
-                .Select(s => new SupplierSummaryDto
-                {
-                    SupplierId = s.SupplierId,
-                    CompanyName = s.CompanyName,
-                    Rating = s.Rating,
-                    TotalQuotes = s.Quotes.Count,
-                    AwardedQuotes = s.Quotes.Count(q => q.Status == QuoteStatus.Awarded),
-                    AvgQuotePrice = s.Quotes.Any() ? s.Quotes.Average(q => q.UnitPrice) : null,
-                    TotalPurchaseOrders = s.PurchaseOrders.Count,
-                    TotalPoValue = s.PurchaseOrders.Any() ? s.PurchaseOrders.Sum(po => po.TotalAmount) : null
-                })
-                .OrderByDescending(s => s.AwardedQuotes)
-                .ThenByDescending(s => s.TotalPoValue)
-                .ToList();
-
-            if (top.HasValue)
-            {
-                result = result.Take(top.Value).ToList();
-            }
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving supplier performance");
-            return StatusCode(500, "An error occurred while retrieving supplier performance");
-        }
-    }
-
-    /// <summary>
     /// Get countries for filtering
     /// </summary>
     [HttpGet("countries")]

@@ -1,0 +1,17 @@
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+    {
+        path: '',
+        redirectTo: '/rfqs',
+        pathMatch: 'full'
+    },
+    {
+        path: 'rfqs',
+        loadChildren: () => import('./features/rfqs/rfqs.routes').then(m => m.rfqsRoutes)
+    },
+    {
+        path: 'suppliers',
+        loadChildren: () => import('./features/suppliers/suppliers.routes').then(m => m.suppliersRoutes)
+    }
+];
