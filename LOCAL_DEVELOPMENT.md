@@ -116,6 +116,14 @@ The local API runs with these environment variables:
 - **URL**: http://localhost:5001
 - **Swagger UI**: http://localhost:5001/swagger
 
+### Grafana Observability Stack (Optional)
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Loki**: http://localhost:3100
+- **Tempo**: http://localhost:3200
+- **Promtail**: http://localhost:9080
+- **OTEL Collector**: http://localhost:8888
+
 ## Benefits of Local Development
 
 ### ✅ **Full Debugging Support**
@@ -242,6 +250,26 @@ cd ProcurementAPI && dotnet run
 - ✅ Easy deployment
 - ✅ No local dependencies
 
+## Starting Grafana Observability Stack
+
+To start the Grafana observability stack (optional):
+
+```bash
+# Start Grafana stack
+./start-grafana.sh
+
+# Or start all services including Grafana
+./start.sh
+```
+
+The Grafana stack includes:
+- **Grafana**: Dashboard and visualization platform
+- **Prometheus**: Metrics collection and storage
+- **Loki**: Log aggregation
+- **Tempo**: Distributed tracing
+- **Promtail**: Log shipping
+- **OTEL Collector**: OpenTelemetry data collection
+
 ## Next Steps
 
 1. **Start the development environment**: `docker-compose -f docker-compose.dev-local.yml up -d`
@@ -249,5 +277,6 @@ cd ProcurementAPI && dotnet run
 3. **Set breakpoints** in VS Code
 4. **Test the API** at http://localhost:5001/swagger
 5. **Debug your code** with full VS Code support
+6. **Optional**: Start Grafana stack for monitoring and observability
 
 Happy coding! 🚀 

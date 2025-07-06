@@ -115,6 +115,37 @@ else
     print_status "WARNING" "pgAdmin is not accessible"
 fi
 
+# Check Grafana Observability Stack
+echo -e "${BLUE}📊 Grafana Observability Stack:${NC}"
+
+# Check Grafana
+if curl -f -s http://localhost:3000/api/health >/dev/null 2>&1; then
+    print_status "OK" "Grafana is accessible"
+else
+    print_status "WARNING" "Grafana is not accessible"
+fi
+
+# Check Prometheus
+if curl -f -s http://localhost:9090/-/ready >/dev/null 2>&1; then
+    print_status "OK" "Prometheus is accessible"
+else
+    print_status "WARNING" "Prometheus is not accessible"
+fi
+
+# Check Loki
+if curl -f -s http://localhost:3100/ready >/dev/null 2>&1; then
+    print_status "OK" "Loki is accessible"
+else
+    print_status "WARNING" "Loki is not accessible"
+fi
+
+# Check Tempo
+if curl -f -s http://localhost:3200/ready >/dev/null 2>&1; then
+    print_status "OK" "Tempo is accessible"
+else
+    print_status "WARNING" "Tempo is not accessible"
+fi
+
 echo ""
 
 # Display access URLs
@@ -124,6 +155,10 @@ echo -e "${GREEN}Swagger UI:${NC} http://localhost:5001/swagger/index.html"
 echo -e "${GREEN}Health Check:${NC} http://localhost:5001/health/ready"
 echo -e "${GREEN}pgAdmin:${NC} http://localhost:8080 (admin@example.com / admin_password)"
 echo -e "${GREEN}PostgreSQL:${NC} localhost:5432"
+echo -e "${GREEN}Grafana:${NC} http://localhost:3000 (admin/admin)"
+echo -e "${GREEN}Prometheus:${NC} http://localhost:9090"
+echo -e "${GREEN}Loki:${NC} http://localhost:3100"
+echo -e "${GREEN}Tempo:${NC} http://localhost:3200"
 
 echo ""
 

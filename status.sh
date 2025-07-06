@@ -26,6 +26,11 @@ echo "---------------"
 docker-compose -f docker-compose.api.yml ps
 
 echo ""
+echo "📊 Grafana Services:"
+echo "-------------------"
+docker-compose -f docker-compose.grafana.yml ps
+
+echo ""
 echo "🔍 Health Checks:"
 echo "----------------"
 
@@ -69,6 +74,38 @@ else
     echo "❌ Not responding"
 fi
 
+# Check Grafana
+echo -n "Grafana: "
+if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
+    echo "✅ Running"
+else
+    echo "❌ Not responding"
+fi
+
+# Check Prometheus
+echo -n "Prometheus: "
+if curl -f http://localhost:9090/-/ready > /dev/null 2>&1; then
+    echo "✅ Running"
+else
+    echo "❌ Not responding"
+fi
+
+# Check Loki
+echo -n "Loki: "
+if curl -f http://localhost:3100/ready > /dev/null 2>&1; then
+    echo "✅ Running"
+else
+    echo "❌ Not responding"
+fi
+
+# Check Tempo
+echo -n "Tempo: "
+if curl -f http://localhost:3200/ready > /dev/null 2>&1; then
+    echo "✅ Running"
+else
+    echo "❌ Not responding"
+fi
+
 echo ""
 echo "🌐 Access Points:"
 echo "----------------"
@@ -79,4 +116,8 @@ echo "   - Password: admin_password"
 echo "🔍 Elasticsearch: http://localhost:9200"
 echo "📊 Kibana: http://localhost:5601"
 echo "🌐 API: http://localhost:5001"
-echo "📚 Swagger: http://localhost:5001/swagger" 
+echo "📚 Swagger: http://localhost:5001/swagger"
+echo "📊 Grafana: http://localhost:3000 (admin/admin)"
+echo "📈 Prometheus: http://localhost:9090"
+echo "📝 Loki: http://localhost:3100"
+echo "⏱️ Tempo: http://localhost:3200" 

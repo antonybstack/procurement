@@ -15,4 +15,8 @@ docker-compose -f docker-compose.elastic.yml down
 echo "📊 Stopping database services..."
 docker-compose -f docker-compose.db.yml down
 
+# Stop Grafana services
+echo "📊 Stopping Grafana services..."
+docker-compose -f docker-compose.grafana.yml down
+
 echo "✅ All services stopped!" 
