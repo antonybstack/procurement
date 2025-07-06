@@ -17,7 +17,10 @@ builder.Services.AddHttpClient();
 
 // Add Entity Framework with PostgreSQL
 builder.Services.AddDbContext<ProcurementDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .LogTo(Console.WriteLine, LogLevel.Information)
+           .EnableSensitiveDataLogging()
+           .EnableDetailedErrors());
 
 // Add Health Checks
 builder.Services.AddHealthChecks()

@@ -36,9 +36,16 @@ COPY --from=publish /app/publish .
 COPY wait-for-db.sh /app/wait-for-db.sh
 RUN chmod +x /app/wait-for-db.sh
 
-# Create a non-root user for security
+# Install debugging tools and shell
+RUN apt-get update && apt-get install -y \
+    procps \
+    curl \
+    netcat-traditional \
+    bash \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user for security (but don't switch to it for debugging)
 RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
 
 # Set environment to Development for Swagger
 ENV ASPNETCORE_ENVIRONMENT=Development

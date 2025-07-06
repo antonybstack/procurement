@@ -92,6 +92,18 @@ docker run -p 5001:8080 \
 - `GET /api/rfqs/statuses` - Get available RFQ statuses
 - `GET /api/rfqs/summary` - Get RFQ summary statistics
 
+### Quotes
+
+- `GET /api/quotes` - Get all quotes with pagination and filtering
+- `GET /api/quotes/{id}` - Get quote by ID with full details
+- `POST /api/quotes` - Create a new quote
+- `PUT /api/quotes/{id}` - Update an existing quote
+- `DELETE /api/quotes/{id}` - Delete a quote
+- `GET /api/quotes/statuses` - Get available quote statuses
+- `GET /api/quotes/rfq/{rfqId}` - Get quotes by RFQ ID
+- `GET /api/quotes/supplier/{supplierId}` - Get quotes by supplier ID with pagination
+- `GET /api/quotes/summary` - Get quote summary statistics
+
 ## Testing the API
 
 ### Using NSwag UI (Recommended)
@@ -116,6 +128,34 @@ curl "http://localhost:5001/api/suppliers/performance?top=10"
 
 # Get specific supplier
 curl "http://localhost:5001/api/suppliers/1"
+
+# Get quotes with filtering
+curl "http://localhost:5001/api/quotes?status=submitted&search=electronics"
+
+# Get quotes by RFQ
+curl "http://localhost:5001/api/quotes/rfq/1"
+
+# Get quotes by supplier
+curl "http://localhost:5001/api/quotes/supplier/1?page=1&pageSize=10"
+
+# Get quote summary statistics
+curl "http://localhost:5001/api/quotes/summary"
+
+# Create a new quote
+curl -X POST "http://localhost:5001/api/quotes" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rfqId": 1,
+    "supplierId": 1,
+    "lineItemId": 1,
+    "quoteNumber": "Q-2024-001",
+    "unitPrice": 100.00,
+    "totalPrice": 1000.00,
+    "quantityOffered": 10,
+    "deliveryDate": "2024-12-31",
+    "paymentTerms": "Net 30",
+    "warrantyPeriodMonths": 12
+  }'
 ```
 
 ## Database Schema
@@ -130,6 +170,43 @@ The API connects to a PostgreSQL database with the following main entities:
 - **Quotes** - Supplier responses to RFQ line items (10,000 records)
 - **PurchaseOrders** - Orders created from awarded quotes (1000 records)
 - **PurchaseOrderLines** - Individual items within a PO (10,000 records)
+
+## Quotes Management
+
+The Quotes API provides comprehensive functionality for managing supplier quotes in the procurement process.
+
+### Quote Lifecycle
+
+1. **Creation** - Suppliers submit quotes in response to RFQ line items
+2. **Review** - Procurement team reviews and evaluates quotes
+3. **Award** - Best quotes are selected and awarded
+4. **Purchase Order** - Awarded quotes are converted to purchase orders
+
+### Quote Statuses
+
+- **Pending** - Quote submitted, awaiting review
+- **Submitted** - Quote under review
+- **Awarded** - Quote selected for purchase order
+- **Rejected** - Quote not selected
+- **Expired** - Quote validity period expired
+
+### Key Features
+
+- **Comprehensive Filtering** - Filter by status, RFQ, supplier, date range
+- **Pagination** - Handle large datasets efficiently
+- **Full CRUD Operations** - Create, read, update, delete quotes
+- **Relationship Navigation** - Access related RFQ, supplier, and item data
+- **Summary Statistics** - Get overview of quote performance
+- **Validation** - Ensure data integrity and business rules
+
+### Quote Data Model
+
+Each quote includes:
+- **Basic Information**: Quote number, status, submission date
+- **Pricing**: Unit price, total price, quantity offered
+- **Delivery**: Delivery date, payment terms, warranty
+- **Technical Details**: Compliance notes, validity period
+- **Relationships**: Links to RFQ, supplier, and line item
 
 ## Configuration
 
@@ -183,6 +260,24 @@ ProcurementAPI/
 2. Define DTOs in the `DTOs/` directory
 3. Use Entity Framework for data access
 4. Add proper error handling and logging
+
+### Data Transfer Objects (DTOs)
+
+The API uses DTOs to control data exposure and provide optimized data structures:
+
+#### Quote DTOs
+
+- **QuoteDto** - Full quote details with related entities
+- **QuoteSummaryDto** - Simplified quote information for lists
+- **QuoteCreateDto** - Data required to create a new quote
+- **QuoteUpdateDto** - Data that can be updated on an existing quote
+
+#### Common DTOs
+
+- **PaginatedResult<T>** - Standard pagination wrapper for list responses
+- **SupplierDto** - Supplier information with all fields
+- **RfqDto** - RFQ information with summary data
+- **ItemDto** - Item/product information
 
 ### Database Migrations
 
@@ -272,6 +367,43 @@ The API is designed to work seamlessly with Angular frontends:
 - SQL injection protection via Entity Framework
 - CORS is configured for specific origins
 - Non-root user in Docker containers
+
+## Error Handling and Validation
+
+### Quote Validation Rules
+
+- **Quote Number** - Required, unique within RFQ-supplier-line item combination
+- **Unit Price** - Required, must be positive
+- **Total Price** - Required, must be positive and match unit price × quantity
+- **Quantity Offered** - Required, must be positive
+- **Status** - Must be a valid QuoteStatus enum value
+- **RFQ, Supplier, Line Item** - Must reference existing entities
+
+### Error Responses
+
+The API returns standardized error responses:
+
+```json
+{
+  "message": "Error description",
+  "statusCode": 400,
+  "details": "Additional error information"
+}
+```
+
+### Common Error Codes
+
+- **400 Bad Request** - Invalid input data or validation errors
+- **404 Not Found** - Resource not found
+- **409 Conflict** - Concurrency conflict or duplicate resource
+- **500 Internal Server Error** - Unexpected server error
+
+### Business Logic Validation
+
+- Prevents duplicate quotes for same supplier-line item combination
+- Validates relationships between RFQ, supplier, and line items
+- Ensures quote status transitions are valid
+- Maintains referential integrity across related entities
 
 ## Monitoring and Logging
 

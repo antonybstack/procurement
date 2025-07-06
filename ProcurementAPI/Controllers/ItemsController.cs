@@ -31,6 +31,10 @@ public class ItemsController : ControllerBase
     {
         try
         {
+            // Validate pagination parameters
+            page = Math.Max(1, page);
+            pageSize = Math.Max(1, Math.Min(100, pageSize)); // Cap at 100 to prevent abuse
+
             var query = _context.Items.AsQueryable();
 
             // Apply filters
