@@ -1,8 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Internal;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
 
+// Enable Npgsql OpenTelemetry instrumentation
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -27,6 +35,30 @@ builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "ready" })
     .AddCheck<SwaggerHealthCheck>("swagger", tags: new[] { "ready" })
     .AddCheck<ApiEndpointsHealthCheck>("api_endpoints", tags: new[] { "ready" });
+
+// Add OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: "procurement-api", serviceVersion: "1.0.0")
+        .AddAttributes(new KeyValuePair<string, object>[]
+        {
+            new("deployment.environment", builder.Environment.EnvironmentName),
+            new("service.instance.id", Environment.MachineName)
+        }))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddNpgsql()
+        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
+        .AddConsoleExporter())
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
+        .AddConsoleExporter())
+    .WithLogging(logging => logging
+        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
+        .AddConsoleExporter());
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>
