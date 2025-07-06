@@ -24,17 +24,25 @@ if ! ./start-db.sh; then
     exit 1
 fi
 
-# Step 2: Start API service
+# Step 2: Start Elastic stack
 echo ""
-echo "🌐 Step 2: Starting API service..."
+echo "🔍 Step 2: Starting Elastic stack..."
+if ! ./start-elastic.sh; then
+    echo "❌ Failed to start Elastic stack"
+    exit 1
+fi
+
+# Step 3: Start API service
+echo ""
+echo "🌐 Step 3: Starting API service..."
 if ! ./start-api.sh; then
     echo "❌ Failed to start API service"
     exit 1
 fi
 
-# Step 3: Run health checks
+# Step 4: Run health checks
 echo ""
-echo "🔍 Step 3: Running health checks..."
+echo "🔍 Step 4: Running health checks..."
 if ! ./health-check.sh; then
     echo "❌ Health checks failed"
     exit 1
@@ -47,11 +55,14 @@ echo "📊 PostgreSQL: localhost:5432"
 echo "🗄️  pgAdmin: http://localhost:8080"
 echo "   - Email: admin@example.com"
 echo "   - Password: admin_password"
+echo "🔍 Elasticsearch: http://localhost:9200"
+echo "📊 Kibana: http://localhost:5601"
 echo "🌐 API: http://localhost:5001"
 echo "📚 Swagger: http://localhost:5001/swagger"
 echo ""
 echo "📝 Useful commands:"
 echo "   - View logs: docker-compose -f docker-compose.db.yml logs -f"
 echo "   - API logs: docker-compose -f docker-compose.api.yml logs -f"
+echo "   - Elastic logs: docker-compose -f docker-compose.elastic.yml logs -f"
 echo "   - Stop all: ./stop.sh"
 echo "   - Restart API only: ./restart-api.sh" 

@@ -7,6 +7,10 @@ echo "🛑 Stopping all services..."
 echo "📦 Stopping API service..."
 docker-compose -f docker-compose.api.yml down
 
+# Stop Elastic services
+echo "🔍 Stopping Elastic services..."
+docker-compose -f docker-compose.elastic.yml down
+
 # Stop database services
 echo "📊 Stopping database services..."
 docker-compose -f docker-compose.db.yml down
