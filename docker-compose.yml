@@ -43,6 +43,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=myapp;Username=postgres;Password=postgres_password
     ports:
       - "5001:8080"
     depends_on:
@@ -78,6 +79,8 @@ services:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./servers.json:/var/lib/pgadmin/servers/1.json
+      - ./pgadmin_config.py:/pgadmin4/config_local.py
     depends_on:
       postgres:
         condition: service_healthy
