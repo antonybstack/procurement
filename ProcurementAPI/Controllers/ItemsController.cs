@@ -151,4 +151,180 @@ public class ItemsController : ControllerBase
             return StatusCode(500, "An error occurred while retrieving categories");
         }
     }
+
+    /// <summary>
+    /// Create a new item
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<ItemDto>> CreateItem([FromBody] ItemCreateDto createDto)
+    {
+        try
+        {
+            // Validate category
+            if (!Enum.TryParse<ItemCategory>(createDto.Category, true, out var category))
+            {
+                return BadRequest($"Invalid category: {createDto.Category}");
+            }
+
+            // Check if item code already exists
+            var existingItem = await _context.Items
+                .FirstOrDefaultAsync(i => i.ItemCode == createDto.ItemCode);
+            if (existingItem != null)
+            {
+                return BadRequest($"Item with code {createDto.ItemCode} already exists");
+            }
+
+            var item = new Item
+            {
+                ItemCode = createDto.ItemCode,
+                Description = createDto.Description,
+                Category = category,
+                UnitOfMeasure = createDto.UnitOfMeasure,
+                StandardCost = createDto.StandardCost,
+                MinOrderQuantity = createDto.MinOrderQuantity,
+                LeadTimeDays = createDto.LeadTimeDays,
+                IsActive = createDto.IsActive
+            };
+
+            _context.Items.Add(item);
+            await _context.SaveChangesAsync();
+
+            // Return the created item
+            return await GetItem(item.ItemId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating item");
+            return StatusCode(500, "An error occurred while creating the item");
+        }
+    }
+
+    /// <summary>
+    /// Update an existing item
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ItemDto>> UpdateItem(int id, [FromBody] ItemUpdateDto updateDto)
+    {
+        try
+        {
+            var item = await _context.Items.FindAsync(id);
+            if (item == null)
+            {
+                return NotFound($"Item with ID {id} not found");
+            }
+
+            // Validate category
+            if (!Enum.TryParse<ItemCategory>(updateDto.Category, true, out var category))
+            {
+                return BadRequest($"Invalid category: {updateDto.Category}");
+            }
+
+            // Check if item code already exists (excluding current item)
+            var existingItem = await _context.Items
+                .FirstOrDefaultAsync(i => i.ItemCode == updateDto.ItemCode && i.ItemId != id);
+            if (existingItem != null)
+            {
+                return BadRequest($"Item with code {updateDto.ItemCode} already exists");
+            }
+
+            // Update fields
+            item.ItemCode = updateDto.ItemCode;
+            item.Description = updateDto.Description;
+            item.Category = category;
+            item.UnitOfMeasure = updateDto.UnitOfMeasure;
+            item.StandardCost = updateDto.StandardCost;
+            item.MinOrderQuantity = updateDto.MinOrderQuantity;
+            item.LeadTimeDays = updateDto.LeadTimeDays;
+            item.IsActive = updateDto.IsActive;
+            item.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Item {ItemId} updated successfully", id);
+            return await GetItem(id);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogError(ex, "Concurrency error updating item {ItemId}", id);
+            return Conflict("The item was modified by another user. Please refresh and try again.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating item {ItemId}", id);
+            return StatusCode(500, "An error occurred while updating the item");
+        }
+    }
+
+    /// <summary>
+    /// Delete an item
+    /// </summary>
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteItem(int id)
+    {
+        try
+        {
+            var item = await _context.Items.FindAsync(id);
+            if (item == null)
+            {
+                return NotFound($"Item with ID {id} not found");
+            }
+
+            // Check if item is referenced by any RFQ line items
+            var hasReferences = await _context.RfqLineItems
+                .AnyAsync(rli => rli.ItemId == id);
+            if (hasReferences)
+            {
+                return BadRequest("Cannot delete item that is referenced by RFQ line items");
+            }
+
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Item {ItemId} deleted successfully", id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting item {ItemId}", id);
+            return StatusCode(500, "An error occurred while deleting the item");
+        }
+    }
+
+    /// <summary>
+    /// Get item summary statistics
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<object>> GetItemSummary()
+    {
+        try
+        {
+            var summary = await _context.Items
+                .GroupBy(i => i.Category)
+                .Select(g => new
+                {
+                    Category = g.Key.ToString(),
+                    Count = g.Count(),
+                    ActiveCount = g.Count(i => i.IsActive),
+                    AvgStandardCost = g.Average(i => i.StandardCost ?? 0)
+                })
+                .ToListAsync();
+
+            var totalItems = await _context.Items.CountAsync();
+            var activeItems = await _context.Items.CountAsync(i => i.IsActive);
+            var avgLeadTime = await _context.Items.AverageAsync(i => i.LeadTimeDays);
+
+            return Ok(new
+            {
+                Summary = summary,
+                TotalItems = totalItems,
+                ActiveItems = activeItems,
+                AverageLeadTime = avgLeadTime
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving item summary");
+            return StatusCode(500, "An error occurred while retrieving item summary");
+        }
+    }
 }

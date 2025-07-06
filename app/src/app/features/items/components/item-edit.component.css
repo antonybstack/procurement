@@ -1,0 +1,8 @@
+/* Additional styles for the item edit form */
+.form-error {
+    border-color: #ef4444;
+}
+
+.form-error:focus {
+    --tw-ring-color: #ef4444;
+}
