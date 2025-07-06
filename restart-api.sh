@@ -6,8 +6,8 @@ if ! docker network ls --format '{{.Name}}' | grep -qw postgres_network; then
   docker network create postgres_network
 fi
 
-# Start API Service
-echo "🚀 Starting API service..."
+# Restart API Service Only
+echo "🔄 Restarting API service..."
 
 # Check if docker-compose is available
 if ! command -v docker-compose &> /dev/null; then
@@ -22,36 +22,21 @@ if ! docker-compose -f docker-compose.db.yml ps postgres | grep -q "Up"; then
     exit 1
 fi
 
-# Check if PostgreSQL is healthy
-echo "⏳ Checking PostgreSQL health..."
-timeout=30
-counter=0
-while [ $counter -lt $timeout ]; do
-    if docker-compose -f docker-compose.db.yml exec -T postgres pg_isready -U postgres -d myapp > /dev/null 2>&1; then
-        echo "✅ PostgreSQL is healthy!"
-        break
-    fi
-    sleep 2
-    counter=$((counter + 2))
-    echo -n "."
-done
+# Stop API service
+echo "📦 Stopping API service..."
+docker-compose -f docker-compose.api.yml down
 
-if [ $counter -ge $timeout ]; then
-    echo "❌ PostgreSQL is not healthy. Please check database services."
-    exit 1
-fi
-
-# Start the API service
-echo "📦 Starting Procurement API..."
-docker-compose -f docker-compose.api.yml up -d
+# Start API service
+echo "📦 Starting API service..."
+docker-compose -f docker-compose.api.yml up -d --build
 
 # Check if service started successfully
 if [ $? -eq 0 ]; then
-    echo "✅ API service started successfully!"
+    echo "✅ API service restarted successfully!"
     echo "🌐 API: http://localhost:5001"
     echo "📚 Swagger: http://localhost:5001/swagger"
 else
-    echo "❌ Failed to start API service"
+    echo "❌ Failed to restart API service"
     exit 1
 fi
 
@@ -76,4 +61,4 @@ if [ $counter -ge $timeout ]; then
     exit 1
 fi
 
-echo "🎉 API service is ready!" 
+echo "🎉 API service restarted and ready!" 
