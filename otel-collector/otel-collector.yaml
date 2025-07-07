@@ -8,9 +8,21 @@ receivers:
 
 processors:
   batch:
+    timeout: 1s
   memory_limiter:
     limit_mib: 512
     check_interval: 1s
+  resource:
+    attributes:
+      - key: service.name
+        from_attribute: service.name
+        action: upsert
+      - key: service.version
+        from_attribute: service.version
+        action: upsert
+      - key: deployment.environment
+        from_attribute: deployment.environment
+        action: upsert
 
 exporters:
   otlp/tempo:
@@ -33,7 +45,7 @@ service:
     
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [loki]
     
     metrics:

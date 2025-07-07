@@ -42,6 +42,31 @@ builder.Services.AddHealthChecks()
     .AddCheck<SwaggerHealthCheck>("swagger", tags: new[] { "ready" })
     .AddCheck<ApiEndpointsHealthCheck>("api_endpoints", tags: new[] { "ready" });
 
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Determine OTLP endpoint based on environment
+var otlpEndpoint = builder.Environment.EnvironmentName == "Docker"
+    ? "http://otel-collector:4317"
+    : "http://localhost:4319"; // Use host port for local development
+
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.AddOtlpExporter(opts =>
+    {
+        opts.Endpoint = new Uri(otlpEndpoint);
+        opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
+        {
+            ScheduledDelayMilliseconds = 1000 // Send every 1 second
+        };
+    });
+    logging.AddConsoleExporter();
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
 // Add OpenTelemetry
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
@@ -55,16 +80,26 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddNpgsql()
-        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
+        .AddOtlpExporter(opts =>
+        {
+            opts.Endpoint = new Uri(otlpEndpoint);
+            opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
+            {
+                ScheduledDelayMilliseconds = 1000 // Send every 1 second
+            };
+        })
         .AddConsoleExporter())
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
-        .AddConsoleExporter())
-    .WithLogging(logging => logging
-        .AddOtlpExporter(opts => opts.Endpoint = new Uri("http://localhost:4317"))
-        .AddConsoleExporter());
+        .AddOtlpExporter(opts =>
+        {
+            opts.Endpoint = new Uri(otlpEndpoint);
+            opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
+            {
+                ScheduledDelayMilliseconds = 1000 // Send every 1 second
+            };
+        }));
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>
@@ -79,6 +114,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.Logger.LogInformation("Application Name: {ApplicationName} ZZZZZ", builder.Environment.ApplicationName);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
