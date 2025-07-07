@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Grafana - Main Dashboard
   grafana:
@@ -26,9 +24,9 @@ services:
     image: grafana/tempo:latest
     container_name: tempo
     ports:
-      - "3200:3200"   # Tempo HTTP
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - "3200:3200" # Tempo HTTP
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
     volumes:
       - ./tempo/tempo.yaml:/etc/tempo.yaml
       - tempo-storage:/var/tempo
@@ -88,12 +86,12 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
     ports:
-      - "4319:4317"   # OTLP gRPC receiver (different port to avoid conflict)
-      - "4320:4318"   # OTLP HTTP receiver (different port to avoid conflict)
-      - "8888:8888"   # Prometheus metrics
+      - "4319:4317" # OTLP gRPC receiver (different port to avoid conflict)
+      - "4320:4318" # OTLP HTTP receiver (different port to avoid conflict)
+      - "8889:8889" # Prometheus metrics
     volumes:
       - ./otel-collector/otel-collector.yaml:/etc/otel-collector-config.yaml
-    command: ["--config=/etc/otel-collector-config.yaml"]
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
     networks:
       - observability
     depends_on:

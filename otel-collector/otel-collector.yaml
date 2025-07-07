@@ -10,6 +10,7 @@ processors:
   batch:
   memory_limiter:
     limit_mib: 512
+    check_interval: 1s
 
 exporters:
   otlp/tempo:
@@ -21,7 +22,7 @@ exporters:
     endpoint: http://loki:3100/loki/api/v1/push
     
   prometheus:
-    endpoint: "0.0.0.0:8888"
+    endpoint: "0.0.0.0:8889"
 
 service:
   pipelines:

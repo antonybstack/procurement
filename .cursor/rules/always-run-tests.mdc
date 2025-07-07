@@ -1,0 +1,5 @@
+---
+description: always run dotnet test after making .net C# related changes and validate all are passing.
+globs:
+alwaysApply: true
+---
