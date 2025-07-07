@@ -27,6 +27,10 @@ metrics_generator:
     remote_write:
       - url: http://prometheus:9090/api/v1/write
         send_exemplars: true
+  processor:
+    local_blocks:
+      filter_server_spans: false
+      flush_to_storage: true
 
 storage:
   trace:
@@ -45,8 +49,12 @@ query_frontend:
     throughput_bytes_slo: 1.073741824e+09
   trace_by_id:
     duration_slo: 5s
+  metrics:
+    concurrent_jobs: 8
+    target_bytes_per_job: 1.25e+09 # ~1.25GB
+    interval: 30m0s
 
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics]
+      processors: [service-graphs, span-metrics, local-blocks]
