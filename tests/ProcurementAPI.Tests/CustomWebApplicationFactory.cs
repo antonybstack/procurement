@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
+using ProcurementAPI.Services;
+using ProcurementAPI.Services.DataServices;
 
 namespace ProcurementAPI.Tests;
 
@@ -31,6 +33,10 @@ public class CustomWebApplicationFactory<TStartup>
                 options.UseInMemoryDatabase(databaseName);
                 options.UseInternalServiceProvider(serviceProvider);
             });
+
+            // Register services for testing
+            services.AddScoped<ISupplierDataService, SupplierDataService>();
+            services.AddScoped<ISupplierService, SupplierService>();
 
             // Build the service provider.
             var sp = services.BuildServiceProvider();

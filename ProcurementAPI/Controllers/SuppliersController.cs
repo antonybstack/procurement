@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProcurementAPI.Data;
 using ProcurementAPI.DTOs;
-using ProcurementAPI.Models;
+using ProcurementAPI.Services;
 
 namespace ProcurementAPI.Controllers;
 
@@ -10,12 +8,12 @@ namespace ProcurementAPI.Controllers;
 [Route("api/[controller]")]
 public class SuppliersController : ControllerBase
 {
-    private readonly ProcurementDbContext _context;
+    private readonly ISupplierService _supplierService;
     private readonly ILogger<SuppliersController> _logger;
 
-    public SuppliersController(ProcurementDbContext context, ILogger<SuppliersController> logger)
+    public SuppliersController(ISupplierService supplierService, ILogger<SuppliersController> logger)
     {
-        _context = context;
+        _supplierService = supplierService;
         _logger = logger;
     }
 
@@ -33,75 +31,7 @@ public class SuppliersController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            page = Math.Max(1, page);
-            pageSize = Math.Max(1, Math.Min(100, pageSize)); // Cap at 100 to prevent abuse
-
-            var query = _context.Suppliers.AsQueryable();
-
-            // Apply filters
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(s =>
-                    s.CompanyName.Contains(search) ||
-                    s.SupplierCode.Contains(search) ||
-                    s.ContactName!.Contains(search));
-            }
-
-            if (!string.IsNullOrWhiteSpace(country))
-            {
-                query = query.Where(s => s.Country == country);
-            }
-
-            if (minRating.HasValue)
-            {
-                query = query.Where(s => s.Rating >= minRating.Value);
-            }
-
-            if (isActive.HasValue)
-            {
-                query = query.Where(s => s.IsActive == isActive.Value);
-            }
-
-            // Get total count for pagination
-            var totalCount = await query.CountAsync();
-
-            // Apply pagination
-            var suppliers = await query
-                .OrderBy(s => s.CompanyName)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(s => new SupplierDto
-                {
-                    SupplierId = s.SupplierId,
-                    SupplierCode = s.SupplierCode,
-                    CompanyName = s.CompanyName,
-                    ContactName = s.ContactName,
-                    Email = s.Email,
-                    Phone = s.Phone,
-                    Address = s.Address,
-                    City = s.City,
-                    State = s.State,
-                    Country = s.Country,
-                    PostalCode = s.PostalCode,
-                    TaxId = s.TaxId,
-                    PaymentTerms = s.PaymentTerms,
-                    CreditLimit = s.CreditLimit,
-                    Rating = s.Rating,
-                    IsActive = s.IsActive,
-                    CreatedAt = s.CreatedAt
-                })
-                .ToListAsync();
-
-            var result = new PaginatedResult<SupplierDto>
-            {
-                Data = suppliers,
-                Page = page,
-                PageSize = pageSize,
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-            };
-
+            var result = await _supplierService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
             return Ok(result);
         }
         catch (Exception ex)
@@ -119,29 +49,7 @@ public class SuppliersController : ControllerBase
     {
         try
         {
-            var supplier = await _context.Suppliers
-                .Where(s => s.SupplierId == id)
-                .Select(s => new SupplierDto
-                {
-                    SupplierId = s.SupplierId,
-                    SupplierCode = s.SupplierCode,
-                    CompanyName = s.CompanyName,
-                    ContactName = s.ContactName,
-                    Email = s.Email,
-                    Phone = s.Phone,
-                    Address = s.Address,
-                    City = s.City,
-                    State = s.State,
-                    Country = s.Country,
-                    PostalCode = s.PostalCode,
-                    TaxId = s.TaxId,
-                    PaymentTerms = s.PaymentTerms,
-                    CreditLimit = s.CreditLimit,
-                    Rating = s.Rating,
-                    IsActive = s.IsActive,
-                    CreatedAt = s.CreatedAt
-                })
-                .FirstOrDefaultAsync();
+            var supplier = await _supplierService.GetSupplierByIdAsync(id);
 
             if (supplier == null)
             {
@@ -158,76 +66,82 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Update a supplier - expects full DTO from client, EF Core change tracker handles updates
+    /// Create a new supplier
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<SupplierDto>> CreateSupplier([FromBody] SupplierUpdateDto createDto)
+    {
+        try
+        {
+            var supplier = await _supplierService.CreateSupplierAsync(createDto);
+            return CreatedAtAction(nameof(GetSupplier), new { id = supplier.SupplierId }, supplier);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error creating supplier");
+            return BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid data provided for supplier creation");
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating supplier");
+            return StatusCode(500, "An error occurred while creating the supplier");
+        }
+    }
+
+    /// <summary>
+    /// Update a supplier
     /// </summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<SupplierDto>> UpdateSupplier(int id, [FromBody] SupplierUpdateDto updateDto)
     {
         try
         {
-            var supplier = await _context.Suppliers.FindAsync(id);
-            if (supplier == null)
-            {
-                return NotFound($"Supplier with ID {id} not found");
-            }
-
-            // Update all fields from the DTO
-            supplier.SupplierCode = updateDto.SupplierCode;
-            supplier.CompanyName = updateDto.CompanyName;
-            supplier.ContactName = updateDto.ContactName;
-            supplier.Email = updateDto.Email;
-            supplier.Phone = updateDto.Phone;
-            supplier.Address = updateDto.Address;
-            supplier.City = updateDto.City;
-            supplier.State = updateDto.State;
-            supplier.Country = updateDto.Country;
-            supplier.PostalCode = updateDto.PostalCode;
-            supplier.TaxId = updateDto.TaxId;
-            supplier.PaymentTerms = updateDto.PaymentTerms;
-            supplier.CreditLimit = updateDto.CreditLimit;
-            supplier.Rating = updateDto.Rating;
-            supplier.IsActive = updateDto.IsActive;
-
-            // Update the timestamp
-            supplier.UpdatedAt = DateTime.UtcNow;
-
-            // EF Core change tracker will automatically detect which fields changed
-            await _context.SaveChangesAsync();
-
-            // Return the updated supplier
-            var updatedSupplier = new SupplierDto
-            {
-                SupplierId = supplier.SupplierId,
-                SupplierCode = supplier.SupplierCode,
-                CompanyName = supplier.CompanyName,
-                ContactName = supplier.ContactName,
-                Email = supplier.Email,
-                Phone = supplier.Phone,
-                Address = supplier.Address,
-                City = supplier.City,
-                State = supplier.State,
-                Country = supplier.Country,
-                PostalCode = supplier.PostalCode,
-                TaxId = supplier.TaxId,
-                PaymentTerms = supplier.PaymentTerms,
-                CreditLimit = supplier.CreditLimit,
-                Rating = supplier.Rating,
-                IsActive = supplier.IsActive,
-                CreatedAt = supplier.CreatedAt
-            };
-
-            _logger.LogInformation("Supplier {SupplierId} updated successfully", id);
-            return Ok(updatedSupplier);
+            var supplier = await _supplierService.UpdateSupplierAsync(id, updateDto);
+            return Ok(supplier);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Concurrency error updating supplier {SupplierId}", id);
-            return Conflict("The supplier was modified by another user. Please refresh and try again.");
+            _logger.LogWarning(ex, "Validation error updating supplier {SupplierId}", id);
+            return BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid data provided for supplier update {SupplierId}", id);
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating supplier {SupplierId}", id);
             return StatusCode(500, "An error occurred while updating the supplier");
+        }
+    }
+
+    /// <summary>
+    /// Delete a supplier
+    /// </summary>
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteSupplier(int id)
+    {
+        try
+        {
+            var result = await _supplierService.DeleteSupplierAsync(id);
+
+            if (!result)
+            {
+                return NotFound($"Supplier with ID {id} not found");
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting supplier {SupplierId}", id);
+            return StatusCode(500, "An error occurred while deleting the supplier");
         }
     }
 
@@ -239,19 +153,38 @@ public class SuppliersController : ControllerBase
     {
         try
         {
-            var countries = await _context.Suppliers
-                .Where(s => !string.IsNullOrEmpty(s.Country))
-                .Select(s => s.Country!)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToListAsync();
-
+            var countries = await _supplierService.GetCountriesAsync();
             return Ok(countries);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving countries");
             return StatusCode(500, "An error occurred while retrieving countries");
+        }
+    }
+
+    /// <summary>
+    /// Validate if a supplier code is available
+    /// </summary>
+    [HttpGet("validate-code")]
+    public async Task<ActionResult<bool>> ValidateSupplierCode(
+        [FromQuery] string supplierCode,
+        [FromQuery] int? excludeId = null)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(supplierCode))
+            {
+                return BadRequest("Supplier code is required");
+            }
+
+            var isValid = await _supplierService.ValidateSupplierCodeAsync(supplierCode, excludeId);
+            return Ok(isValid);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating supplier code");
+            return StatusCode(500, "An error occurred while validating the supplier code");
         }
     }
 }

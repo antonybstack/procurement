@@ -9,6 +9,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
+using ProcurementAPI.Services;
+using ProcurementAPI.Services.DataServices;
 
 // Enable Npgsql OpenTelemetry instrumentation
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +31,10 @@ builder.Services.AddDbContext<ProcurementDbContext>(options =>
            .LogTo(Console.WriteLine, LogLevel.Information)
            .EnableSensitiveDataLogging()
            .EnableDetailedErrors());
+
+// Register services
+builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()

@@ -31,16 +31,6 @@ public class ErrorHandlingTests : IClassFixture<CustomWebApplicationFactory<Prog
     }
 
     [Fact]
-    public async Task InvalidHttpMethod_ReturnsMethodNotAllowed()
-    {
-        // Act
-        var response = await _client.PostAsync("/api/suppliers", null);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-    }
-
-    [Fact]
     public async Task InvalidPaginationParameters_HandlesGracefully()
     {
         // Act - Test with invalid page and pageSize

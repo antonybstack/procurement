@@ -162,7 +162,7 @@ public class SupplierControllerTests : IClassFixture<CustomWebApplicationFactory
             IsActive = true
         };
         var response = await client.PutAsJsonAsync($"/api/suppliers/{invalidSupplierId}", updateData);
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
