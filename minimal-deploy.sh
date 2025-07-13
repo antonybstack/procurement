@@ -27,6 +27,7 @@ docker network create postgres_network 2>/dev/null || true
 docker network create procurement_observability 2>/dev/null || true
 
 sudo ufw allow 22
+sudo ufw allow 80
 sudo ufw allow 443
 sudo ufw allow 4200
 sudo ufw allow 5001
@@ -47,12 +48,16 @@ if [ -f docker-compose.frontend.yml ]; then
   docker-compose -f docker-compose.frontend.yml up -d
 fi
 
+# Start Nginx proxy with HTTPS
+if [ -f docker-compose.nginx.yml ]; then
+  docker-compose -f docker-compose.nginx.yml up -d
+fi
+
 echo "\n====================================="
-echo "Minimal stack deployed with Nginx proxy!"
-echo "- Frontend:      http://<your-ip>:8080/app"
-echo "- API:           http://<your-ip>:8080/api"
-echo "- pgAdmin:       http://<your-ip>:8080/pg"
-echo "- Health check:  http://<your-ip>:8080/health"
+echo "Minimal stack deployed with HTTPS support!"
+echo "- Frontend:      https://sparkify.dev"
+echo "- API:           https://sparkify.dev/api"
+echo "- API Swagger:   https://sparkify.dev/api/swagger"
 echo ""
-echo "Port 80 is now free for Let's Encrypt setup!"
+echo "Using Let's Encrypt certificates for secure HTTPS"
 echo "=====================================" 
