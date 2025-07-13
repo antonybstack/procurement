@@ -1,19 +1,16 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Npgsql;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Internal;
-using OpenTelemetry;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
 using ProcurementAPI.Services;
 using ProcurementAPI.Services.DataServices;
+using Sparkify.Observability;
 
-// Enable Npgsql OpenTelemetry instrumentation
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Register OpenTelemetry and Serilog
+builder.RegisterOpenTelemetry()
+       .RegisterSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -42,64 +39,10 @@ builder.Services.AddHealthChecks()
     .AddCheck<SwaggerHealthCheck>("swagger", tags: new[] { "ready" })
     .AddCheck<ApiEndpointsHealthCheck>("api_endpoints", tags: new[] { "ready" });
 
-// Configure logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-
 // Determine OTLP endpoint based on environment
 var otlpEndpoint = builder.Environment.EnvironmentName == "Docker"
     ? "http://otel-collector:4317"
     : "http://localhost:4319"; // Use host port for local development
-
-builder.Logging.AddOpenTelemetry(logging =>
-{
-    logging.AddOtlpExporter(opts =>
-    {
-        opts.Endpoint = new Uri(otlpEndpoint);
-        opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
-        {
-            ScheduledDelayMilliseconds = 1000 // Send every 1 second
-        };
-    });
-    logging.AddConsoleExporter();
-    logging.IncludeScopes = true;
-    logging.IncludeFormattedMessage = true;
-});
-builder.Logging.SetMinimumLevel(LogLevel.Information);
-
-// Add OpenTelemetry
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: "procurement-api", serviceVersion: "1.0.0")
-        .AddAttributes(new KeyValuePair<string, object>[]
-        {
-            new("deployment.environment", builder.Environment.EnvironmentName),
-            new("service.instance.id", Environment.MachineName)
-        }))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddNpgsql()
-        .AddOtlpExporter(opts =>
-        {
-            opts.Endpoint = new Uri(otlpEndpoint);
-            opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
-            {
-                ScheduledDelayMilliseconds = 1000 // Send every 1 second
-            };
-        })
-        .AddConsoleExporter())
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter(opts =>
-        {
-            opts.Endpoint = new Uri(otlpEndpoint);
-            opts.BatchExportProcessorOptions = new OpenTelemetry.BatchExportProcessorOptions<System.Diagnostics.Activity>
-            {
-                ScheduledDelayMilliseconds = 1000 // Send every 1 second
-            };
-        }));
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>
@@ -115,7 +58,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.Logger.LogInformation("Application Name: {ApplicationName} ZZZZZ", builder.Environment.ApplicationName);
+// Log startup information
+app.LogStartupInfo(builder);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
@@ -128,6 +72,9 @@ app.UseHttpsRedirection();
 
 // Use CORS
 app.UseCors("AllowAngular");
+
+// Use Serilog request logging
+app.RegisterSerilogRequestLogging();
 
 app.UseAuthorization();
 

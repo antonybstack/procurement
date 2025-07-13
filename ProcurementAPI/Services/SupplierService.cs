@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using ProcurementAPI.DTOs;
-using ProcurementAPI.Extensions;
 using ProcurementAPI.Models;
 using ProcurementAPI.Services.DataServices;
 
@@ -25,14 +24,20 @@ public class SupplierService : ISupplierService
         int? minRating,
         bool? isActive)
     {
+        using var activity = new Activity("SupplierService.GetSuppliersAsync").Start();
+        activity?.SetTag("page", page);
+        activity?.SetTag("pageSize", pageSize);
+        activity?.SetTag("search", search);
+        activity?.SetTag("country", country);
+        activity?.SetTag("minRating", minRating);
+        activity?.SetTag("isActive", isActive);
         var stopwatch = Stopwatch.StartNew();
         var correlationId = Activity.Current?.Id ?? "unknown";
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_get_suppliers_started",
-                correlationId: correlationId,
-                additionalData: new { page, pageSize, search, country, minRating, isActive });
+            _logger.LogInformation("Service get suppliers started - CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}",
+                correlationId, page, pageSize, search, country, minRating, isActive);
 
             // Validate pagination parameters
             page = Math.Max(1, page);
@@ -40,28 +45,26 @@ public class SupplierService : ISupplierService
 
             if (pageSize > 100)
             {
-                _logger.LogValidationError("pageSize", pageSize.ToString(), "Page size exceeds maximum limit of 100",
-                    correlationId: correlationId);
+                _logger.LogWarning("Validation error - PageSize: {PageSize}, Message: Page size exceeds maximum limit of 100, CorrelationId: {CorrelationId}",
+                    pageSize, correlationId);
             }
 
             var result = await _supplierDataService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_get_suppliers", stopwatch.ElapsedMilliseconds, correlationId,
-                new { result.TotalCount, result.Page, result.PageSize, result.TotalPages });
+            _logger.LogInformation("Performance metric - Service get suppliers completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}, Page: {Page}, PageSize: {PageSize}, TotalPages: {TotalPages}",
+                stopwatch.ElapsedMilliseconds, correlationId, result.TotalCount, result.Page, result.PageSize, result.TotalPages);
 
-            _logger.LogSupplierOperation(LogLevel.Information, "service_get_suppliers_completed",
-                correlationId: correlationId,
-                additionalData: new { totalCount = result.TotalCount, page = result.Page, pageSize = result.PageSize });
+            _logger.LogInformation("Service get suppliers completed - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}, Page: {Page}, PageSize: {PageSize}",
+                correlationId, result.TotalCount, result.Page, result.PageSize);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_get_suppliers_failed",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { page, pageSize, search, country, minRating, isActive, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service get suppliers failed - CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}, DurationMs: {DurationMs}",
+                correlationId, page, pageSize, search, country, minRating, isActive, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -73,33 +76,29 @@ public class SupplierService : ISupplierService
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_get_supplier_by_id_started",
-                supplierId: id, correlationId: correlationId);
+            _logger.LogInformation("Service get supplier by ID started - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}", id, correlationId);
 
             if (id <= 0)
             {
-                _logger.LogValidationError("supplierId", id.ToString(), "Invalid supplier ID requested",
-                    supplierId: id, correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierId: {SupplierId}, Message: Invalid supplier ID requested, CorrelationId: {CorrelationId}", id, correlationId);
                 return null;
             }
 
             var result = await _supplierDataService.GetSupplierByIdAsync(id);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_get_supplier_by_id", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, found = result != null });
+            _logger.LogInformation("Performance metric - Service get supplier by ID completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Found: {Found}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, result != null);
 
             if (result != null)
             {
-                _logger.LogSupplierOperation(LogLevel.Information, "service_get_supplier_by_id_completed",
-                    supplierId: id, supplierCode: result.SupplierCode, companyName: result.CompanyName,
-                    correlationId: correlationId);
+                _logger.LogInformation("Service get supplier by ID completed - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}",
+                    id, result.SupplierCode, result.CompanyName, correlationId);
             }
             else
             {
-                _logger.LogSupplierOperation(LogLevel.Warning, "service_get_supplier_by_id_not_found",
-                    supplierId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Service get supplier by ID not found - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                    id, correlationId, stopwatch.ElapsedMilliseconds);
             }
 
             return result;
@@ -107,9 +106,8 @@ public class SupplierService : ISupplierService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_get_supplier_by_id_failed",
-                supplierId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service get supplier by ID failed - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                id, correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -121,15 +119,14 @@ public class SupplierService : ISupplierService
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_create_supplier_started",
-                supplierCode: createDto.SupplierCode, companyName: createDto.CompanyName,
-                correlationId: correlationId, additionalData: new { country = createDto.Country, isActive = createDto.IsActive });
+            _logger.LogInformation("Service create supplier started - SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, Country: {Country}, IsActive: {IsActive}, CorrelationId: {CorrelationId}",
+                createDto.SupplierCode, createDto.CompanyName, createDto.Country, createDto.IsActive, correlationId);
 
             // Validate supplier code uniqueness
             if (await _supplierDataService.SupplierCodeExistsAsync(createDto.SupplierCode))
             {
-                _logger.LogValidationError("supplierCode", createDto.SupplierCode, "Supplier code already exists",
-                    correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierCode: {SupplierCode}, Message: Supplier code already exists, CorrelationId: {CorrelationId}",
+                    createDto.SupplierCode, correlationId);
                 throw new InvalidOperationException($"Supplier code '{createDto.SupplierCode}' already exists.");
             }
 
@@ -158,12 +155,11 @@ public class SupplierService : ISupplierService
             var createdSupplier = await _supplierDataService.CreateSupplierAsync(supplier);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_create_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = createdSupplier.SupplierId, supplierCode = createdSupplier.SupplierCode });
+            _logger.LogInformation("Performance metric - Service create supplier completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, SupplierCode: {SupplierCode}",
+                stopwatch.ElapsedMilliseconds, correlationId, createdSupplier.SupplierId, createdSupplier.SupplierCode);
 
-            _logger.LogSupplierOperation(LogLevel.Information, "service_create_supplier_completed",
-                supplierId: createdSupplier.SupplierId, supplierCode: createdSupplier.SupplierCode,
-                companyName: createdSupplier.CompanyName, correlationId: correlationId);
+            _logger.LogInformation("Service create supplier completed - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}",
+                createdSupplier.SupplierId, createdSupplier.SupplierCode, createdSupplier.CompanyName, correlationId);
 
             return new SupplierDto
             {
@@ -189,10 +185,8 @@ public class SupplierService : ISupplierService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_create_supplier_failed",
-                supplierCode: createDto.SupplierCode, companyName: createDto.CompanyName,
-                correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service create supplier failed - SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                createDto.SupplierCode, createDto.CompanyName, correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -202,34 +196,32 @@ public class SupplierService : ISupplierService
         var stopwatch = Stopwatch.StartNew();
         var correlationId = Activity.Current?.Id ?? "unknown";
 
+
+
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_update_supplier_started",
-                supplierId: id, supplierCode: updateDto.SupplierCode, companyName: updateDto.CompanyName,
-                correlationId: correlationId, additionalData: new { country = updateDto.Country, isActive = updateDto.IsActive });
+            _logger.LogInformation("Service update supplier started - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, Country: {Country}, IsActive: {IsActive}, CorrelationId: {CorrelationId}",
+                id, updateDto.SupplierCode, updateDto.CompanyName, updateDto.Country, updateDto.IsActive, correlationId);
 
             if (id <= 0)
             {
-                _logger.LogValidationError("supplierId", id.ToString(), "Invalid supplier ID",
-                    supplierId: id, correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierId: {SupplierId}, Message: Invalid supplier ID, CorrelationId: {CorrelationId}", id, correlationId);
                 throw new ArgumentException("Invalid supplier ID", nameof(id));
             }
 
-            // Check if supplier exists
             var existingSupplier = await _supplierDataService.GetSupplierEntityByIdAsync(id);
+
             if (existingSupplier == null)
             {
-                _logger.LogSupplierOperation(LogLevel.Warning, "service_update_supplier_not_found",
-                    supplierId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Service update supplier not found - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                    id, correlationId, stopwatch.ElapsedMilliseconds);
                 throw new InvalidOperationException($"Supplier with ID {id} not found.");
             }
 
-            // Validate supplier code uniqueness (excluding current supplier)
             if (await _supplierDataService.SupplierCodeExistsAsync(updateDto.SupplierCode, id))
             {
-                _logger.LogValidationError("supplierCode", updateDto.SupplierCode, "Supplier code already exists",
-                    supplierId: id, correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierCode: {SupplierCode}, Message: Supplier code already exists, SupplierId: {SupplierId}, CorrelationId: {CorrelationId}",
+                    updateDto.SupplierCode, id, correlationId);
                 throw new InvalidOperationException($"Supplier code '{updateDto.SupplierCode}' already exists.");
             }
 
@@ -256,12 +248,11 @@ public class SupplierService : ISupplierService
             var updatedSupplier = await _supplierDataService.UpdateSupplierAsync(existingSupplier);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_update_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, supplierCode = updatedSupplier.SupplierCode });
+            _logger.LogInformation("Performance metric - Service update supplier completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, SupplierCode: {SupplierCode}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, updatedSupplier.SupplierCode);
 
-            _logger.LogSupplierOperation(LogLevel.Information, "service_update_supplier_completed",
-                supplierId: updatedSupplier.SupplierId, supplierCode: updatedSupplier.SupplierCode,
-                companyName: updatedSupplier.CompanyName, correlationId: correlationId);
+            _logger.LogInformation("Service update supplier completed - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}",
+                updatedSupplier.SupplierId, updatedSupplier.SupplierCode, updatedSupplier.CompanyName, correlationId);
 
             return new SupplierDto
             {
@@ -287,10 +278,8 @@ public class SupplierService : ISupplierService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_update_supplier_failed",
-                supplierId: id, supplierCode: updateDto.SupplierCode, companyName: updateDto.CompanyName,
-                correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service update supplier failed - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                id, updateDto.SupplierCode, updateDto.CompanyName, correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -302,32 +291,28 @@ public class SupplierService : ISupplierService
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_delete_supplier_started",
-                supplierId: id, correlationId: correlationId);
+            _logger.LogInformation("Service delete supplier started - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}", id, correlationId);
 
             if (id <= 0)
             {
-                _logger.LogValidationError("supplierId", id.ToString(), "Invalid supplier ID for deletion",
-                    supplierId: id, correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierId: {SupplierId}, Message: Invalid supplier ID for deletion, CorrelationId: {CorrelationId}", id, correlationId);
                 return false;
             }
 
             var result = await _supplierDataService.DeleteSupplierAsync(id);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_delete_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, deleted = result });
+            _logger.LogInformation("Performance metric - Service delete supplier completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Deleted: {Deleted}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, result);
 
             if (result)
             {
-                _logger.LogSupplierOperation(LogLevel.Information, "service_delete_supplier_completed",
-                    supplierId: id, correlationId: correlationId);
+                _logger.LogInformation("Service delete supplier completed - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}", id, correlationId);
             }
             else
             {
-                _logger.LogSupplierOperation(LogLevel.Warning, "service_delete_supplier_not_found",
-                    supplierId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Service delete supplier not found - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                    id, correlationId, stopwatch.ElapsedMilliseconds);
             }
 
             return result;
@@ -335,9 +320,8 @@ public class SupplierService : ISupplierService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_delete_supplier_failed",
-                supplierId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service delete supplier failed - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                id, correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -349,26 +333,23 @@ public class SupplierService : ISupplierService
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_get_countries_started",
-                correlationId: correlationId);
+            _logger.LogInformation("Service get countries started - CorrelationId: {CorrelationId}", correlationId);
 
             var result = await _supplierDataService.GetCountriesAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_get_countries", stopwatch.ElapsedMilliseconds, correlationId,
-                new { countryCount = result.Count });
+            _logger.LogInformation("Performance metric - Service get countries completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, CountryCount: {CountryCount}",
+                stopwatch.ElapsedMilliseconds, correlationId, result.Count);
 
-            _logger.LogSupplierOperation(LogLevel.Information, "service_get_countries_completed",
-                correlationId: correlationId, additionalData: new { countryCount = result.Count });
+            _logger.LogInformation("Service get countries completed - CorrelationId: {CorrelationId}, CountryCount: {CountryCount}", correlationId, result.Count);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_get_countries_failed",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service get countries failed - CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -380,35 +361,32 @@ public class SupplierService : ISupplierService
 
         try
         {
-            _logger.LogSupplierOperation(LogLevel.Information, "service_validate_supplier_code_started",
-                supplierCode: supplierCode, correlationId: correlationId,
-                additionalData: new { excludeId });
+            _logger.LogInformation("Service validate supplier code started - SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, CorrelationId: {CorrelationId}",
+                supplierCode, excludeId, correlationId);
 
             if (string.IsNullOrWhiteSpace(supplierCode))
             {
-                _logger.LogValidationError("supplierCode", supplierCode ?? "null", "Supplier code is null or empty",
-                    correlationId: correlationId);
+                _logger.LogWarning("Validation error - SupplierCode: {SupplierCode}, Message: Supplier code is null or empty, CorrelationId: {CorrelationId}",
+                    supplierCode ?? "null", correlationId);
                 return false;
             }
 
             var result = !await _supplierDataService.SupplierCodeExistsAsync(supplierCode, excludeId);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("service_validate_supplier_code", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierCode, excludeId, isValid = result });
+            _logger.LogInformation("Performance metric - Service validate supplier code completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, IsValid: {IsValid}",
+                stopwatch.ElapsedMilliseconds, correlationId, supplierCode, excludeId, result);
 
-            _logger.LogSupplierOperation(LogLevel.Information, "service_validate_supplier_code_completed",
-                supplierCode: supplierCode, correlationId: correlationId,
-                additionalData: new { excludeId, isValid = result });
+            _logger.LogInformation("Service validate supplier code completed - SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, IsValid: {IsValid}, CorrelationId: {CorrelationId}",
+                supplierCode, excludeId, result, correlationId);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogSupplierOperation(LogLevel.Error, "service_validate_supplier_code_failed",
-                supplierCode: supplierCode, correlationId: correlationId, exception: ex,
-                additionalData: new { excludeId, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Service validate supplier code failed - SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                supplierCode, excludeId, correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -419,42 +397,41 @@ public class SupplierService : ISupplierService
 
         if (string.IsNullOrWhiteSpace(dto.SupplierCode))
         {
-            _logger.LogValidationError("supplierCode", dto.SupplierCode ?? "null", "Supplier code is required",
-                correlationId: correlationId);
+            _logger.LogWarning("Validation error - SupplierCode: {SupplierCode}, Message: Supplier code is required, CorrelationId: {CorrelationId}",
+                dto.SupplierCode ?? "null", correlationId);
             throw new ArgumentException("Supplier code is required", nameof(dto.SupplierCode));
         }
 
         if (string.IsNullOrWhiteSpace(dto.CompanyName))
         {
-            _logger.LogValidationError("companyName", dto.CompanyName ?? "null", "Company name is required",
-                correlationId: correlationId);
+            _logger.LogWarning("Validation error - CompanyName: {CompanyName}, Message: Company name is required, CorrelationId: {CorrelationId}",
+                dto.CompanyName ?? "null", correlationId);
             throw new ArgumentException("Company name is required", nameof(dto.CompanyName));
         }
 
         if (dto.Rating.HasValue && (dto.Rating < 1 || dto.Rating > 5))
         {
-            _logger.LogValidationError("rating", dto.Rating.Value.ToString(), "Rating must be between 1 and 5",
-                correlationId: correlationId);
+            _logger.LogWarning("Validation error - Rating: {Rating}, Message: Rating must be between 1 and 5, CorrelationId: {CorrelationId}",
+                dto.Rating.Value, correlationId);
             throw new ArgumentException("Rating must be between 1 and 5", nameof(dto.Rating));
         }
 
         if (dto.CreditLimit.HasValue && dto.CreditLimit < 0)
         {
-            _logger.LogValidationError("creditLimit", dto.CreditLimit.Value.ToString(), "Credit limit cannot be negative",
-                correlationId: correlationId);
+            _logger.LogWarning("Validation error - CreditLimit: {CreditLimit}, Message: Credit limit cannot be negative, CorrelationId: {CorrelationId}",
+                dto.CreditLimit.Value, correlationId);
             throw new ArgumentException("Credit limit cannot be negative", nameof(dto.CreditLimit));
         }
 
         if (!string.IsNullOrWhiteSpace(dto.Email) && !IsValidEmail(dto.Email))
         {
-            _logger.LogValidationError("email", dto.Email, "Invalid email format",
-                correlationId: correlationId);
+            _logger.LogWarning("Validation error - Email: {Email}, Message: Invalid email format, CorrelationId: {CorrelationId}",
+                dto.Email, correlationId);
             throw new ArgumentException("Invalid email format", nameof(dto.Email));
         }
 
-        _logger.LogSupplierOperation(LogLevel.Information, "supplier_validation_passed",
-            supplierCode: dto.SupplierCode, companyName: dto.CompanyName,
-            correlationId: correlationId);
+        _logger.LogInformation("Supplier validation passed - SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}",
+            dto.SupplierCode, dto.CompanyName, correlationId);
     }
 
     private static bool IsValidEmail(string email)

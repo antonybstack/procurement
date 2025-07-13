@@ -23,6 +23,9 @@ processors:
       - key: deployment.environment
         from_attribute: deployment.environment
         action: upsert
+      - key: exporter
+        value: OLTP
+        action: insert
 
 exporters:
   otlp/tempo:
@@ -32,7 +35,7 @@ exporters:
   
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
-    
+  
   prometheus:
     endpoint: "0.0.0.0:8889"
 

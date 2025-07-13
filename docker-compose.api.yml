@@ -14,7 +14,7 @@ services:
       - "5001:8080"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
-      interval: 30s
+      interval: 2m
       timeout: 15s
       retries: 3
       start_period: 90s

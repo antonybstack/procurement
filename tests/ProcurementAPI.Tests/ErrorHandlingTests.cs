@@ -171,7 +171,7 @@ public class ErrorHandlingTests : IClassFixture<CustomWebApplicationFactory<Prog
 
         // Assert
         // At least one should succeed
-        Assert.True(responses.Any(r => r.IsSuccessStatusCode));
+        Assert.Contains(responses, r => r.IsSuccessStatusCode);
     }
 
     [Fact]

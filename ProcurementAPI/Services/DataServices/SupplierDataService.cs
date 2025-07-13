@@ -2,7 +2,6 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using ProcurementAPI.Data;
 using ProcurementAPI.DTOs;
-using ProcurementAPI.Extensions;
 using ProcurementAPI.Models;
 
 namespace ProcurementAPI.Services.DataServices;
@@ -26,14 +25,20 @@ public class SupplierDataService : ISupplierDataService
         int? minRating,
         bool? isActive)
     {
+        using var activity = new Activity("SupplierDataService.GetSuppliersAsync").Start();
+        activity?.SetTag("page", page);
+        activity?.SetTag("pageSize", pageSize);
+        activity?.SetTag("search", search);
+        activity?.SetTag("country", country);
+        activity?.SetTag("minRating", minRating);
+        activity?.SetTag("isActive", isActive);
         var stopwatch = Stopwatch.StartNew();
         var correlationId = Activity.Current?.Id ?? "unknown";
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_suppliers_started", "supplier",
-                correlationId: correlationId,
-                additionalData: new { page, pageSize, search, country, minRating, isActive });
+            _logger.LogInformation("Database operation - Get suppliers started - EntityType: supplier, CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}",
+                correlationId, page, pageSize, search, country, minRating, isActive);
 
             var query = _context.Suppliers.AsNoTracking().AsQueryable();
 
@@ -45,36 +50,31 @@ public class SupplierDataService : ISupplierDataService
                     s.SupplierCode.Contains(search) ||
                     s.ContactName!.Contains(search));
 
-                _logger.LogDatabaseOperation(LogLevel.Debug, "applied_search_filter", "supplier",
-                    correlationId: correlationId, additionalData: new { search });
+                _logger.LogDebug("Database operation - Applied search filter - EntityType: supplier, CorrelationId: {CorrelationId}, Search: {Search}", correlationId, search);
             }
 
             if (!string.IsNullOrWhiteSpace(country))
             {
                 query = query.Where(s => s.Country == country);
-                _logger.LogDatabaseOperation(LogLevel.Debug, "applied_country_filter", "supplier",
-                    correlationId: correlationId, additionalData: new { country });
+                _logger.LogDebug("Database operation - Applied country filter - EntityType: supplier, CorrelationId: {CorrelationId}, Country: {Country}", correlationId, country);
             }
 
             if (minRating.HasValue)
             {
                 query = query.Where(s => s.Rating >= minRating.Value);
-                _logger.LogDatabaseOperation(LogLevel.Debug, "applied_rating_filter", "supplier",
-                    correlationId: correlationId, additionalData: new { minRating });
+                _logger.LogDebug("Database operation - Applied rating filter - EntityType: supplier, CorrelationId: {CorrelationId}, MinRating: {MinRating}", correlationId, minRating);
             }
 
             if (isActive.HasValue)
             {
                 query = query.Where(s => s.IsActive == isActive.Value);
-                _logger.LogDatabaseOperation(LogLevel.Debug, "applied_active_filter", "supplier",
-                    correlationId: correlationId, additionalData: new { isActive });
+                _logger.LogDebug("Database operation - Applied active filter - EntityType: supplier, CorrelationId: {CorrelationId}, IsActive: {IsActive}", correlationId, isActive);
             }
 
             // Get total count for pagination
             var totalCount = await query.CountAsync();
 
-            _logger.LogDatabaseOperation(LogLevel.Debug, "count_query_executed", "supplier",
-                correlationId: correlationId, additionalData: new { totalCount });
+            _logger.LogDebug("Database operation - Count query executed - EntityType: supplier, CorrelationId: {CorrelationId}, TotalCount: {TotalCount}", correlationId, totalCount);
 
             // Apply pagination and projection
             var suppliers = await query
@@ -104,12 +104,11 @@ public class SupplierDataService : ISupplierDataService
                 .ToListAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_get_suppliers", stopwatch.ElapsedMilliseconds, correlationId,
-                new { totalCount, page, pageSize, resultCount = suppliers.Count });
+            _logger.LogInformation("Performance metric - Database get suppliers completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}, Page: {Page}, PageSize: {PageSize}, ResultCount: {ResultCount}",
+                stopwatch.ElapsedMilliseconds, correlationId, totalCount, page, pageSize, suppliers.Count);
 
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_suppliers_completed", "supplier",
-                correlationId: correlationId,
-                additionalData: new { totalCount, page, pageSize, resultCount = suppliers.Count });
+            _logger.LogInformation("Database operation - Get suppliers completed - EntityType: supplier, CorrelationId: {CorrelationId}, TotalCount: {TotalCount}, Page: {Page}, PageSize: {PageSize}, ResultCount: {ResultCount}",
+                correlationId, totalCount, page, pageSize, suppliers.Count);
 
             return new PaginatedResult<SupplierDto>
             {
@@ -123,9 +122,8 @@ public class SupplierDataService : ISupplierDataService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "get_suppliers_failed", "supplier",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { page, pageSize, search, country, minRating, isActive, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Get suppliers failed - EntityType: supplier, CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}, DurationMs: {DurationMs}",
+                correlationId, page, pageSize, search, country, minRating, isActive, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -137,8 +135,8 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_supplier_by_id_started", "supplier",
-                entityId: id, correlationId: correlationId);
+            _logger.LogInformation("Database operation - Get supplier by ID started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
             var result = await _context.Suppliers
                 .AsNoTracking()
@@ -166,20 +164,18 @@ public class SupplierDataService : ISupplierDataService
                 .FirstOrDefaultAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_get_supplier_by_id", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, found = result != null });
+            _logger.LogInformation("Performance metric - Database get supplier by ID completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Found: {Found}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, result != null);
 
             if (result != null)
             {
-                _logger.LogDatabaseOperation(LogLevel.Information, "get_supplier_by_id_completed", "supplier",
-                    entityId: id, correlationId: correlationId,
-                    additionalData: new { supplierCode = result.SupplierCode, companyName = result.CompanyName });
+                _logger.LogInformation("Database operation - Get supplier by ID completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                    correlationId, id);
             }
             else
             {
-                _logger.LogDatabaseOperation(LogLevel.Warning, "get_supplier_by_id_not_found", "supplier",
-                    entityId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Database operation - Get supplier by ID not found - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                    correlationId, id);
             }
 
             return result;
@@ -187,9 +183,8 @@ public class SupplierDataService : ISupplierDataService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "get_supplier_by_id_failed", "supplier",
-                entityId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Get supplier by ID failed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, DurationMs: {DurationMs}",
+                correlationId, id, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -201,26 +196,26 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_supplier_entity_by_id_started", "supplier",
-                entityId: id, correlationId: correlationId);
+            _logger.LogInformation("Database operation - Get supplier entity by ID started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
-            var result = await _context.Suppliers.FindAsync(id);
+            var result = await _context.Suppliers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SupplierId == id);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_get_supplier_entity_by_id", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, found = result != null });
+            _logger.LogInformation("Performance metric - Database get supplier entity by ID completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Found: {Found}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, result != null);
 
             if (result != null)
             {
-                _logger.LogDatabaseOperation(LogLevel.Information, "get_supplier_entity_by_id_completed", "supplier",
-                    entityId: id, correlationId: correlationId,
-                    additionalData: new { supplierCode = result.SupplierCode, companyName = result.CompanyName });
+                _logger.LogInformation("Database operation - Get supplier entity by ID completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                    correlationId, id);
             }
             else
             {
-                _logger.LogDatabaseOperation(LogLevel.Warning, "get_supplier_entity_by_id_not_found", "supplier",
-                    entityId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Database operation - Get supplier entity by ID not found - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                    correlationId, id);
             }
 
             return result;
@@ -228,9 +223,8 @@ public class SupplierDataService : ISupplierDataService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "get_supplier_entity_by_id_failed", "supplier",
-                entityId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Get supplier entity by ID failed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, DurationMs: {DurationMs}",
+                correlationId, id, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -242,9 +236,8 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "create_supplier_started", "supplier",
-                correlationId: correlationId,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName });
+            _logger.LogInformation("Database operation - Create supplier started - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}",
+                correlationId, supplier.SupplierCode, supplier.CompanyName);
 
             supplier.CreatedAt = DateTime.UtcNow;
             supplier.UpdatedAt = DateTime.UtcNow;
@@ -253,21 +246,19 @@ public class SupplierDataService : ISupplierDataService
             await _context.SaveChangesAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_create_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = supplier.SupplierId, supplierCode = supplier.SupplierCode });
+            _logger.LogInformation("Performance metric - Database create supplier completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                stopwatch.ElapsedMilliseconds, correlationId, supplier.SupplierId);
 
-            _logger.LogDatabaseOperation(LogLevel.Information, "create_supplier_completed", "supplier",
-                entityId: supplier.SupplierId, correlationId: correlationId,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName });
+            _logger.LogInformation("Database operation - Create supplier completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, supplier.SupplierId);
 
             return supplier;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "create_supplier_failed", "supplier",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Create supplier failed - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, DurationMs: {DurationMs}",
+                correlationId, supplier.SupplierCode, supplier.CompanyName, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -279,31 +270,24 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "update_supplier_started", "supplier",
-                entityId: supplier.SupplierId, correlationId: correlationId,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName });
+            _logger.LogInformation("Database operation - Update supplier started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}",
+                correlationId, supplier.SupplierId, supplier.SupplierCode, supplier.CompanyName);
 
             supplier.UpdatedAt = DateTime.UtcNow;
 
             _context.Suppliers.Update(supplier);
             await _context.SaveChangesAsync();
 
-            stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_update_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = supplier.SupplierId, supplierCode = supplier.SupplierCode });
-
-            _logger.LogDatabaseOperation(LogLevel.Information, "update_supplier_completed", "supplier",
-                entityId: supplier.SupplierId, correlationId: correlationId,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName });
+            _logger.LogInformation("Database operation - Update supplier completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, supplier.SupplierId);
 
             return supplier;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "update_supplier_failed", "supplier",
-                entityId: supplier.SupplierId, correlationId: correlationId, exception: ex,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Update supplier failed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, DurationMs: {DurationMs}",
+                correlationId, supplier.SupplierId, supplier.SupplierCode, supplier.CompanyName, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -315,16 +299,15 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "delete_supplier_started", "supplier",
-                entityId: id, correlationId: correlationId);
+            _logger.LogInformation("Database operation - Delete supplier started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
             var supplier = await _context.Suppliers.FindAsync(id);
             if (supplier == null)
             {
                 stopwatch.Stop();
-                _logger.LogDatabaseOperation(LogLevel.Warning, "delete_supplier_not_found", "supplier",
-                    entityId: id, correlationId: correlationId,
-                    additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+                _logger.LogWarning("Database operation - Delete supplier not found - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                    correlationId, id);
                 return false;
             }
 
@@ -332,21 +315,19 @@ public class SupplierDataService : ISupplierDataService
             await _context.SaveChangesAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_delete_supplier", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, supplierCode = supplier.SupplierCode });
+            _logger.LogInformation("Performance metric - Database delete supplier completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                stopwatch.ElapsedMilliseconds, correlationId, id);
 
-            _logger.LogDatabaseOperation(LogLevel.Information, "delete_supplier_completed", "supplier",
-                entityId: id, correlationId: correlationId,
-                additionalData: new { supplierCode = supplier.SupplierCode, companyName = supplier.CompanyName });
+            _logger.LogInformation("Database operation - Delete supplier completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
             return true;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "delete_supplier_failed", "supplier",
-                entityId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Delete supplier failed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, DurationMs: {DurationMs}",
+                correlationId, id, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -358,26 +339,25 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Debug, "supplier_exists_check_started", "supplier",
-                entityId: id, correlationId: correlationId);
+            _logger.LogDebug("Database operation - Supplier exists check started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
             var result = await _context.Suppliers.AnyAsync(s => s.SupplierId == id);
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_supplier_exists_check", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierId = id, exists = result });
+            _logger.LogInformation("Performance metric - Database supplier exists check completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Exists: {Exists}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, result);
 
-            _logger.LogDatabaseOperation(LogLevel.Debug, "supplier_exists_check_completed", "supplier",
-                entityId: id, correlationId: correlationId, additionalData: new { exists = result });
+            _logger.LogDebug("Database operation - Supplier exists check completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
+                correlationId, id);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "supplier_exists_check_failed", "supplier",
-                entityId: id, correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Supplier exists check failed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, DurationMs: {DurationMs}",
+                correlationId, id, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -389,9 +369,8 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Debug, "supplier_code_exists_check_started", "supplier",
-                correlationId: correlationId,
-                additionalData: new { supplierCode, excludeId });
+            _logger.LogDebug("Database operation - Supplier code exists check started - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}",
+                correlationId, supplierCode, excludeId);
 
             var query = _context.Suppliers.AsNoTracking().Where(s => s.SupplierCode == supplierCode);
 
@@ -403,20 +382,19 @@ public class SupplierDataService : ISupplierDataService
             var result = await query.AnyAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_supplier_code_exists_check", stopwatch.ElapsedMilliseconds, correlationId,
-                new { supplierCode, excludeId, exists = result });
+            _logger.LogInformation("Performance metric - Database supplier code exists check completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, Exists: {Exists}",
+                stopwatch.ElapsedMilliseconds, correlationId, supplierCode, excludeId, result);
 
-            _logger.LogDatabaseOperation(LogLevel.Debug, "supplier_code_exists_check_completed", "supplier",
-                correlationId: correlationId, additionalData: new { supplierCode, excludeId, exists = result });
+            _logger.LogDebug("Database operation - Supplier code exists check completed - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, Exists: {Exists}",
+                correlationId, supplierCode, excludeId, result);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "supplier_code_exists_check_failed", "supplier",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { supplierCode, excludeId, durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Supplier code exists check failed - CorrelationId: {CorrelationId}, SupplierCode: {SupplierCode}, ExcludeId: {ExcludeId}, DurationMs: {DurationMs}",
+                correlationId, supplierCode, excludeId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -428,8 +406,8 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_countries_started", "supplier",
-                correlationId: correlationId);
+            _logger.LogInformation("Database operation - Get countries started - CorrelationId: {CorrelationId}",
+                correlationId);
 
             var result = await _context.Suppliers
                 .AsNoTracking()
@@ -440,20 +418,19 @@ public class SupplierDataService : ISupplierDataService
                 .ToListAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_get_countries", stopwatch.ElapsedMilliseconds, correlationId,
-                new { countryCount = result.Count });
+            _logger.LogInformation("Performance metric - Database get countries completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, CountryCount: {CountryCount}",
+                stopwatch.ElapsedMilliseconds, correlationId, result.Count);
 
-            _logger.LogDatabaseOperation(LogLevel.Information, "get_countries_completed", "supplier",
-                correlationId: correlationId, additionalData: new { countryCount = result.Count });
+            _logger.LogInformation("Database operation - Get countries completed - CorrelationId: {CorrelationId}, CountryCount: {CountryCount}",
+                correlationId, result.Count);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "get_countries_failed", "supplier",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Get countries failed - CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
@@ -465,26 +442,25 @@ public class SupplierDataService : ISupplierDataService
 
         try
         {
-            _logger.LogDatabaseOperation(LogLevel.Debug, "get_total_suppliers_count_started", "supplier",
-                correlationId: correlationId);
+            _logger.LogDebug("Database operation - Get total suppliers count started - CorrelationId: {CorrelationId}",
+                correlationId);
 
             var result = await _context.Suppliers.CountAsync();
 
             stopwatch.Stop();
-            _logger.LogPerformanceMetric("database_get_total_suppliers_count", stopwatch.ElapsedMilliseconds, correlationId,
-                new { totalCount = result });
+            _logger.LogInformation("Performance metric - Database get total suppliers count completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}",
+                stopwatch.ElapsedMilliseconds, correlationId, result);
 
-            _logger.LogDatabaseOperation(LogLevel.Debug, "get_total_suppliers_count_completed", "supplier",
-                correlationId: correlationId, additionalData: new { totalCount = result });
+            _logger.LogDebug("Database operation - Get total suppliers count completed - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}",
+                correlationId, result);
 
             return result;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogDatabaseOperation(LogLevel.Error, "get_total_suppliers_count_failed", "supplier",
-                correlationId: correlationId, exception: ex,
-                additionalData: new { durationMs = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Database operation - Get total suppliers count failed - CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
+                correlationId, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
