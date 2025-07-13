@@ -40,7 +40,15 @@ if ! ./start-api.sh; then
     exit 1
 fi
 
-# Step 4: Start Grafana Observability Stack (optional)
+# Step 4: Start Frontend service
+echo ""
+echo "🎨 Step 4: Starting Frontend service..."
+if ! ./start-frontend.sh; then
+    echo "❌ Failed to start Frontend service"
+    exit 1
+fi
+
+# Step 5: Start Grafana Observability Stack (optional)
 echo ""
 echo "📊 Step 4: Starting Grafana Observability Stack..."
 if [ -f "./start-grafana.sh" ]; then
@@ -51,9 +59,9 @@ else
     echo "⚠️  start-grafana.sh not found (skipping Grafana)"
 fi
 
-# Step 5: Run health checks
+# Step 6: Run health checks
 echo ""
-echo "🔍 Step 5: Running health checks..."
+echo "🔍 Step 6: Running health checks..."
 if ! ./health-check.sh; then
     echo "❌ Health checks failed"
     exit 1
@@ -70,6 +78,7 @@ echo "🔍 Elasticsearch: http://localhost:9200"
 echo "📊 Kibana: http://localhost:5601"
 echo "🌐 API: http://localhost:5001"
 echo "📚 Swagger: http://localhost:5001/swagger"
+echo "🎨 Frontend: http://localhost:4200"
 echo "📊 Grafana: http://localhost:3000 (admin/admin)"
 echo "📈 Prometheus: http://localhost:9090"
 echo "📝 Loki: http://localhost:3100"
@@ -78,6 +87,7 @@ echo ""
 echo "📝 Useful commands:"
 echo "   - View logs: docker-compose -f docker-compose.db.yml logs -f"
 echo "   - API logs: docker-compose -f docker-compose.api.yml logs -f"
+echo "   - Frontend logs: docker-compose -f docker-compose.frontend.yml logs -f"
 echo "   - Elastic logs: docker-compose -f docker-compose.elastic.yml logs -f"
 echo "   - Grafana logs: docker-compose -f docker-compose.grafana.yml logs -f"
 echo "   - Stop all: ./stop.sh"
