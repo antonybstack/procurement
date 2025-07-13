@@ -1,0 +1,40 @@
+services:
+  ai-recommendation-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ai_recommendation_service
+    restart: unless-stopped
+    environment:
+      - MODEL_NAME=defog/sqlcoder-7b
+      - MAX_TOKENS=512
+      - TEMPERATURE=0.1
+      - TOP_P=0.95
+      - DATABASE_URL=postgresql://postgres:postgres_password@postgres:5432/myapp
+      - FLASK_ENV=production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai-service:/app
+      - ./database-schema.sql:/app/schema.sql
+    # No direct dependency - will connect to existing postgres service
+    networks:
+      - postgres_network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  postgres_network:
+    external: true
