@@ -43,7 +43,7 @@ fi
 
 # Start the API service
 echo "📦 Starting Procurement API..."
-docker-compose -f docker-compose.api.yml up -d --build --no-cache
+docker-compose -f docker-compose.api.yml up -d --build
 
 # Check if service started successfully
 if [ $? -eq 0 ]; then

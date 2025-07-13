@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# SSH into Oracle Cloud VM for deployment
-HOST=146.235.218.2
-USER=ubuntu
+# SSH into Digital Ocean Droplet for deployment
+HOST=24.199.78.31
+USER=root
 KEY=~/.ssh/ssh-oracle.key
 
 # Print info
 cat <<EOF
 ========================================
-Connecting to Oracle Cloud VM ($USER@$HOST)
+Connecting to Digital Ocean Droplet ($USER@$HOST)
 - SSH key: $KEY
 - User: $USER
 - Host: $HOST

@@ -6,13 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with memory optimization
+RUN npm ci --no-audit --no-fund --prefer-offline --maxsockets 1
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with memory optimization
 RUN npm run build
 
 # Production stage
