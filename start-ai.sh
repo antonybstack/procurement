@@ -8,8 +8,8 @@ set -e
 echo "🚀 Starting AI Recommendation Service..."
 
 # Check if we're in the right directory
-if [ ! -f "docker-compose.ai.yml" ]; then
-    echo "❌ Error: docker-compose.ai.yml not found. Please run this script from the project root."
+if [ ! -f "docker-compose.ai.mini.yml" ]; then
+    echo "❌ Error: docker-compose.ai.mini.yml not found. Please run this script from the project root."
     exit 1
 fi
 
@@ -27,7 +27,7 @@ fi
 
 # Start the AI service
 echo "🤖 Starting AI Recommendation Service..."
-docker-compose -f docker-compose.ai.yml up -d
+docker-compose -f docker-compose.ai.mini.yml up -d
 
 # Wait for the service to be healthy
 echo "⏳ Waiting for AI service to be ready..."
@@ -50,7 +50,7 @@ done
 if [ $i -eq 30 ]; then
     echo "❌ AI service failed to start within 60 seconds"
     echo "📋 Checking logs..."
-    docker-compose -f docker-compose.ai.yml logs ai-recommendation-service
+    docker-compose -f docker-compose.ai.mini.yml logs ai-recommendation-service
     exit 1
 fi
 
@@ -62,4 +62,4 @@ echo "1. Test the service: curl http://localhost:8000/health"
 echo "2. The .NET API will automatically connect to this service"
 echo "3. Use the AI recommendations in your procurement app"
 echo ""
-echo "🛑 To stop: docker-compose -f docker-compose.ai.yml down" 
+echo "🛑 To stop: docker-compose -f docker-compose.ai.mini.yml down" 
