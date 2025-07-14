@@ -88,23 +88,23 @@ public class AiRecommendationsController : ControllerBase
     /// <summary>
     /// Get AI-powered analysis of supplier performance for a specific item
     /// </summary>
-    [HttpGet("analysis/{itemCode}")]
-    public async Task<ActionResult<SupplierPerformanceAnalysisDto>> GetSupplierPerformanceAnalysis(string itemCode)
+    [HttpGet("analysis/{itemId:int}")]
+    public async Task<ActionResult<SupplierPerformanceAnalysisDto>> GetSupplierPerformanceAnalysis(int itemId)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(itemCode) || itemCode == "\"\"")
+            if (itemId <= 0)
             {
-                return BadRequest("Item code is required");
+                return BadRequest("Item ID is required");
             }
 
-            var analysis = await _aiRecommendationService.GetSupplierPerformanceAnalysisAsync(itemCode);
+            var analysis = await _aiRecommendationService.GetSupplierPerformanceAnalysisAsync(itemId);
 
             return Ok(analysis);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting supplier performance analysis for item {ItemCode}", itemCode);
+            _logger.LogError(ex, "Error getting supplier performance analysis for item {ItemId}", itemId);
             return StatusCode(500, "An error occurred while getting supplier performance analysis");
         }
     }

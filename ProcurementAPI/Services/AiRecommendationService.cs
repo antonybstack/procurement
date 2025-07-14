@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using ProcurementAPI.Data;
 using ProcurementAPI.DTOs;
+using ProcurementAPI.Models;
 
 namespace ProcurementAPI.Services;
 
@@ -111,28 +112,31 @@ public class AiRecommendationService : IAiRecommendationService
         }
     }
 
-    public async Task<SupplierPerformanceAnalysisDto> GetSupplierPerformanceAnalysisAsync(string itemCode)
+    public async Task<SupplierPerformanceAnalysisDto> GetSupplierPerformanceAnalysisAsync(int itemId)
     {
         using var activity = new Activity("AiRecommendationService.GetSupplierPerformanceAnalysisAsync").Start();
-        activity?.SetTag("itemCode", itemCode);
+        activity?.SetTag("itemId", itemId);
 
         try
         {
-            var prompt = BuildPerformanceAnalysisPrompt(itemCode);
+            var prompt = BuildPerformanceAnalysisPrompt(itemId.ToString());
             var sqlQuery = await GetSqlQueryFromAiAsync(prompt);
 
             if (string.IsNullOrEmpty(sqlQuery))
             {
-                return new SupplierPerformanceAnalysisDto { ItemCode = itemCode };
+                _logger.LogWarning("AI service returned empty SQL query for analysis - ItemId: {ItemId}", itemId);
+                return await GetMockPerformanceAnalysisAsync(itemId.ToString());
             }
 
-            // For now, return mock analysis
-            return await GetMockPerformanceAnalysisAsync(itemCode);
+            _logger.LogInformation("Executing AI-generated SQL query for analysis of item {ItemId}: {SqlQuery}", itemId, sqlQuery);
+
+            // Execute the SQL query and get real analysis
+            return await GetRealPerformanceAnalysisAsync(itemId, sqlQuery);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "AI performance analysis failed - ItemCode: {ItemCode}", itemCode);
-            return new SupplierPerformanceAnalysisDto { ItemCode = itemCode };
+            _logger.LogError(ex, "AI performance analysis failed - ItemId: {ItemId}", itemId);
+            return await GetMockPerformanceAnalysisAsync(itemId.ToString());
         }
     }
 
@@ -499,6 +503,201 @@ Write a SQL query that returns comprehensive supplier performance analysis for t
                 ConfidenceScore = 0.60m
             }
         }.Take(maxResults).ToList();
+    }
+
+    private async Task<SupplierPerformanceAnalysisDto> GetRealPerformanceAnalysisAsync(int itemId, string? sqlQuery = null)
+    {
+        try
+        {
+            _logger.LogDebug("Performing real performance analysis for itemId: {ItemId}", itemId);
+
+            var item = await _context.Items.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+            if (item == null)
+            {
+                _logger.LogWarning("Analysis requested for non-existent item with ID {ItemId}", itemId);
+                return new SupplierPerformanceAnalysisDto { ItemCode = itemId.ToString(), ItemDescription = "Item not found." };
+            }
+
+            var itemSuppliers = await (from q in _context.Quotes
+                                       join rli in _context.RfqLineItems on q.LineItemId equals rli.LineItemId
+                                       join s in _context.Suppliers on q.SupplierId equals s.SupplierId
+                                       where rli.ItemId == itemId
+                                       select new { Supplier = s, Quote = q })
+                                       .AsNoTracking()
+                                       .ToListAsync();
+
+            int totalItemSuppliers = itemSuppliers.Select(x => x.Supplier.SupplierId).Distinct().Count();
+            int activeItemSuppliers = itemSuppliers.Where(x => x.Supplier.IsActive).Select(x => x.Supplier.SupplierId).Distinct().Count();
+
+            var prices = itemSuppliers.Select(x => x.Quote.UnitPrice).ToList();
+            decimal averagePrice = 0, minPrice = 0, maxPrice = 0, priceVariance = 0;
+            List<SupplierRecommendationDto> topPerformers = new();
+            List<SupplierRecommendationDto> mostCompetitive = new();
+
+            if (prices.Any())
+            {
+                averagePrice = prices.Average();
+                minPrice = prices.Min();
+                maxPrice = prices.Max();
+                priceVariance = averagePrice > 0 ? ((maxPrice - minPrice) / averagePrice) * 100 : 0;
+
+                var supplierPerformance = itemSuppliers
+                    .GroupBy(x => x.Supplier)
+                    .Select(g => new
+                    {
+                        Supplier = g.Key,
+                        QuoteCount = g.Count(),
+                        AveragePrice = g.Average(x => x.Quote.UnitPrice),
+                        SuccessRate = CalculateSuccessRate(g.Key.SupplierId, itemId)
+                    }).ToList();
+
+                topPerformers = supplierPerformance.OrderByDescending(s => s.Supplier.Rating)
+                    .ThenByDescending(s => s.SuccessRate)
+                    .Take(3)
+                    .Select(s => new SupplierRecommendationDto
+                    {
+                        SupplierId = s.Supplier.SupplierId,
+                        CompanyName = s.Supplier.CompanyName,
+                        Rating = s.Supplier.Rating,
+                        AveragePrice = s.AveragePrice,
+                        QuoteCount = s.QuoteCount,
+                        SuccessRate = s.SuccessRate
+                    }).ToList();
+
+                mostCompetitive = supplierPerformance.OrderBy(s => s.AveragePrice)
+                    .Take(3)
+                    .Select(s => new SupplierRecommendationDto
+                    {
+                        SupplierId = s.Supplier.SupplierId,
+                        CompanyName = s.Supplier.CompanyName,
+                        Rating = s.Supplier.Rating,
+                        AveragePrice = s.AveragePrice,
+                        QuoteCount = s.QuoteCount,
+                        SuccessRate = s.SuccessRate
+                    }).ToList();
+            }
+
+            var marketInsights = GenerateMarketInsights(totalItemSuppliers, activeItemSuppliers, priceVariance, item.Description);
+            var recommendations = GenerateRecommendations(totalItemSuppliers, priceVariance, topPerformers.Any());
+
+            return new SupplierPerformanceAnalysisDto
+            {
+                ItemCode = item.ItemCode,
+                ItemDescription = item.Description ?? string.Empty,
+                TotalSuppliers = totalItemSuppliers,
+                ActiveSuppliers = activeItemSuppliers,
+                AveragePrice = averagePrice,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                PriceVariance = priceVariance,
+                TopPerformers = topPerformers,
+                MostCompetitive = mostCompetitive,
+                MarketInsights = marketInsights,
+                Recommendations = recommendations
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get real performance analysis for itemId: {ItemId}", itemId);
+            return new SupplierPerformanceAnalysisDto { ItemCode = itemId.ToString(), ItemDescription = "An error occurred during analysis." };
+        }
+    }
+
+    private decimal CalculateSuccessRate(int supplierId, int itemId)
+    {
+        try
+        {
+            // Calculate success rate based on quotes vs awarded orders
+            var totalQuotes = _context.Quotes
+                .Join(_context.RfqLineItems, q => q.LineItemId, rli => rli.LineItemId, (q, rli) => new { q, rli })
+                .Where(x => x.q.SupplierId == supplierId && x.rli.ItemId == itemId)
+                .Count();
+
+            if (totalQuotes == 0) return 0;
+
+            var awardedQuotes = _context.Quotes
+                .Join(_context.RfqLineItems, q => q.LineItemId, rli => rli.LineItemId, (q, rli) => new { q, rli })
+                .Where(x => x.q.SupplierId == supplierId && x.rli.ItemId == itemId && x.q.Status == QuoteStatus.Awarded)
+                .Count();
+
+            return (decimal)awardedQuotes / totalQuotes * 100;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private decimal CalculateGeneralSuccessRate(int supplierId)
+    {
+        try
+        {
+            // Calculate success rate based on all quotes from a supplier
+            var totalQuotes = _context.Quotes.Count(q => q.SupplierId == supplierId);
+
+            if (totalQuotes == 0) return 0;
+
+            var awardedQuotes = _context.Quotes.Count(q => q.SupplierId == supplierId && q.Status == QuoteStatus.Awarded);
+
+            return (decimal)awardedQuotes / totalQuotes * 100;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private string GenerateMarketInsights(int totalSuppliers, int activeSuppliers, decimal priceVariance, string itemDescription)
+    {
+        if (totalSuppliers == 0)
+        {
+            return $"No supplier history found for '{itemDescription}'. No quotes have been submitted for this item.";
+        }
+
+        var insights = new StringBuilder();
+        insights.Append($"Found {totalSuppliers} supplier(s) who have quoted for '{itemDescription}', with {activeSuppliers} currently active. ");
+
+        if (priceVariance > 0)
+        {
+            insights.Append($"Price variance is {priceVariance:F2}%, indicating potential for cost savings. ");
+        }
+        else
+        {
+            insights.Append("Limited pricing data available. ");
+        }
+
+        if (activeSuppliers < 3)
+        {
+            insights.Append("There is a limited supplier base, which could be a risk. ");
+        }
+
+        return insights.ToString().Trim();
+    }
+
+    private List<string> GenerateRecommendations(int totalSuppliers, decimal priceVariance, bool hasTopPerformers)
+    {
+        var recommendations = new List<string>();
+
+        if (totalSuppliers == 0)
+        {
+            recommendations.Add("Initiate a sourcing event (RFQ) to find new suppliers for this item.");
+            recommendations.Add("Broaden supplier search to new regions or categories.");
+            return recommendations;
+        }
+
+        if (totalSuppliers > 5)
+            recommendations.Add("Consider multiple quotes to leverage competition");
+
+        if (hasTopPerformers)
+            recommendations.Add("Focus on suppliers with proven track records");
+
+        if (priceVariance > 20)
+            recommendations.Add("Evaluate total cost including shipping and lead times");
+
+        recommendations.Add("Review supplier performance history before awarding");
+
+        return recommendations;
     }
 
     private async Task<SupplierPerformanceAnalysisDto> GetMockPerformanceAnalysisAsync(string itemCode)

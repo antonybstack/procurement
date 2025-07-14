@@ -43,7 +43,7 @@ public interface IAiRecommendationService
     /// </summary>
     /// <param name="itemCode">The item/part number</param>
     /// <returns>Supplier performance analysis</returns>
-    Task<SupplierPerformanceAnalysisDto> GetSupplierPerformanceAnalysisAsync(string itemCode);
+    Task<SupplierPerformanceAnalysisDto> GetSupplierPerformanceAnalysisAsync(int itemId);
 
     /// <summary>
     /// Check if the AI service is healthy and available
