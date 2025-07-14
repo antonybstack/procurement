@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ItemService } from '../services/item.service';
 import { Item } from '../../../shared/models/item.model';
+import { AiService } from '../services/ai.service';
+import { SupplierPerformanceAnalysisDto } from '../../../shared/models/ai-analysis.model';
 
 @Component({
     selector: 'app-item-detail',
@@ -13,6 +15,7 @@ import { Item } from '../../../shared/models/item.model';
 })
 export class ItemDetailComponent implements OnInit {
     private itemService = inject(ItemService);
+    private aiService = inject(AiService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
@@ -20,6 +23,10 @@ export class ItemDetailComponent implements OnInit {
     item = signal<Item | null>(null);
     loading = signal(false);
     error = signal<string | null>(null);
+
+    analysis = signal<SupplierPerformanceAnalysisDto | null>(null);
+    loadingAnalysis = signal(false);
+    analysisError = signal<string | null>(null);
 
     ngOnInit(): void {
         this.loadItem();
@@ -39,6 +46,7 @@ export class ItemDetailComponent implements OnInit {
             next: (item: Item) => {
                 this.item.set(item);
                 this.loading.set(false);
+                this.loadAnalysis(item.itemId);
             },
             error: (err) => {
                 this.error.set('Failed to load item details. Please try again.');
@@ -46,6 +54,30 @@ export class ItemDetailComponent implements OnInit {
                 console.error('Error loading item:', err);
             }
         });
+    }
+
+    loadAnalysis(itemId: number): void {
+        this.loadingAnalysis.set(true);
+        this.analysisError.set(null);
+
+        this.aiService.getPerformanceAnalysis(itemId).subscribe({
+            next: (data) => {
+                this.analysis.set(data);
+                this.loadingAnalysis.set(false);
+            },
+            error: (err) => {
+                this.analysisError.set('Failed to load AI performance analysis.');
+                this.loadingAnalysis.set(false);
+                console.error('Error loading AI analysis:', err);
+            }
+        });
+    }
+
+    retryAnalysis(): void {
+        const item = this.item();
+        if (item) {
+            this.loadAnalysis(item.itemId);
+        }
     }
 
     goBack(): void {
@@ -78,4 +110,4 @@ export class ItemDetailComponent implements OnInit {
     getCreatedAtDisplay(createdAt: string): string {
         return new Date(createdAt).toLocaleString();
     }
-} 
+}

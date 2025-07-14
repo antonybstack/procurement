@@ -16,6 +16,7 @@ services:
       start_period: 40s
     networks:
       - procurement_observability
+      - postgres_network
     deploy:
       resources:
         limits:
@@ -27,4 +28,6 @@ services:
 
 networks:
   procurement_observability:
+    external: true
+  postgres_network:
     external: true
