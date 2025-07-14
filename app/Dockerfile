@@ -13,7 +13,7 @@ RUN npm ci --no-audit --no-fund --prefer-offline --maxsockets 1
 COPY . .
 
 # Build the application with memory optimization
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
 
 # Production stage
 FROM nginx:alpine
