@@ -4,7 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef } from 'ag-grid-community';
 import { RfqService } from '../services/rfq.service';
-import { RfqDetailDto, RfqLineItemDto, QuoteDto } from '../../../shared/models/rfq.model';
+import { RfqDetailDto, RfqLineItemDto } from '../../../shared/models/rfq.model';
+import { QuoteDto } from '../../../shared/models/quote.model';
 
 @Component({
   selector: 'app-rfq-detail',

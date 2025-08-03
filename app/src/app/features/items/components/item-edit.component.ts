@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ItemService } from '../services/item.service';
-import { Item } from '../../../shared/models/item.model';
+import { ItemDto } from '../../../shared/models/item.model';
 
 @Component({
     selector: 'app-item-edit',
@@ -18,7 +18,7 @@ export class ItemEditComponent implements OnInit {
     private router = inject(Router);
 
     // Signals
-    item = signal<Partial<Item>>({});
+    item = signal<Partial<ItemDto>>({});
     loading = signal(false);
     saving = signal(false);
     error = signal<string | null>(null);
@@ -70,7 +70,7 @@ export class ItemEditComponent implements OnInit {
         this.error.set(null);
 
         this.itemService.getItemById(id).subscribe({
-            next: (item: Item) => {
+            next: (item: ItemDto) => {
                 this.item.set(item);
                 this.loading.set(false);
             },
@@ -164,7 +164,7 @@ export class ItemEditComponent implements OnInit {
         return true;
     }
 
-    updateField(field: keyof Item, value: any) {
+    updateField(field: keyof ItemDto, value: any) {
         this.item.update(item => ({ ...item, [field]: value }));
     }
-} 
+}

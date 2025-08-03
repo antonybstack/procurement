@@ -133,7 +133,7 @@ CREATE TABLE purchase_order_lines (
     po_id INTEGER REFERENCES purchase_orders(po_id) ON DELETE CASCADE,
     quote_id INTEGER REFERENCES quotes(quote_id),
     line_number INTEGER NOT NULL,
-    item_id INTEGER REFERENCES items(item_id),
+    item_id INTEGER NOT NULL REFERENCES items(item_id),
     quantity_ordered INTEGER NOT NULL,
     unit_price DECIMAL(15,2) NOT NULL,
     total_price DECIMAL(15,2) NOT NULL,

@@ -21,8 +21,9 @@ public class PurchaseOrderLine
     [Column("line_number")]
     public int LineNumber { get; set; }
 
+    [Required]
     [Column("item_id")]
-    public int? ItemId { get; set; }
+    public int ItemId { get; set; }
 
     [Required]
     [Column("quantity_ordered")]

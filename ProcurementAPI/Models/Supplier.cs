@@ -78,4 +78,5 @@ public class Supplier
     public virtual ICollection<RfqSupplier> RfqSuppliers { get; set; } = new List<RfqSupplier>();
     public virtual ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+    public virtual ICollection<SupplierCapability> SupplierCapabilities { get; set; } = new List<SupplierCapability>();
 }

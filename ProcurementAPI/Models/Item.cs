@@ -49,4 +49,5 @@ public class Item
     // Navigation properties
     public virtual ICollection<RfqLineItem> RfqLineItems { get; set; } = new List<RfqLineItem>();
     public virtual ICollection<PurchaseOrderLine> PurchaseOrderLines { get; set; } = new List<PurchaseOrderLine>();
+    public virtual ICollection<ItemSpecification> ItemSpecifications { get; set; } = new List<ItemSpecification>();
 }

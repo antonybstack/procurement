@@ -16,6 +16,7 @@ export interface SupplierDto {
     rating?: number;
     isActive: boolean;
     createdAt: string;
+    updatedAt?: string;
 }
 
 export interface SupplierSummaryDto {
@@ -27,4 +28,4 @@ export interface SupplierSummaryDto {
     avgQuotePrice?: number;
     totalPurchaseOrders: number;
     totalPoValue?: number;
-} 
+}

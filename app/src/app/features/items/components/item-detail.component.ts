@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ItemService } from '../services/item.service';
-import { Item } from '../../../shared/models/item.model';
+import { ItemDto } from '../../../shared/models/item.model';
 import { AiService } from '../services/ai.service';
 import { SupplierPerformanceAnalysisDto } from '../../../shared/models/ai-analysis.model';
 
@@ -20,7 +20,7 @@ export class ItemDetailComponent implements OnInit {
     private router = inject(Router);
 
     // Signals
-    item = signal<Item | null>(null);
+    item = signal<ItemDto | null>(null);
     loading = signal(false);
     error = signal<string | null>(null);
 
@@ -43,7 +43,7 @@ export class ItemDetailComponent implements OnInit {
         this.error.set(null);
 
         this.itemService.getItemById(+id).subscribe({
-            next: (item: Item) => {
+            next: (item: ItemDto) => {
                 this.item.set(item);
                 this.loading.set(false);
                 this.loadAnalysis(item.itemId);

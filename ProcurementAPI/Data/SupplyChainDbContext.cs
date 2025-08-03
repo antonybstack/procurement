@@ -17,6 +17,8 @@ public class ProcurementDbContext : DbContext
     public DbSet<Quote> Quotes { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderLine> PurchaseOrderLines { get; set; }
+    public DbSet<SupplierCapability> SupplierCapabilities { get; set; }
+    public DbSet<ItemSpecification> ItemSpecifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -135,7 +137,7 @@ public class ProcurementDbContext : DbContext
             .HasOne(pol => pol.Item)
             .WithMany(i => i.PurchaseOrderLines)
             .HasForeignKey(pol => pol.ItemId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Configure triggers for updated_at columns
         modelBuilder.Entity<Supplier>()
@@ -165,5 +167,27 @@ public class ProcurementDbContext : DbContext
         modelBuilder.Entity<PurchaseOrderLine>()
             .Property(pol => pol.UpdatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        // Configure relationships for AI-related entities
+        modelBuilder.Entity<SupplierCapability>()
+            .HasOne(sc => sc.Supplier)
+            .WithMany(s => s.SupplierCapabilities)
+            .HasForeignKey(sc => sc.SupplierId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ItemSpecification>()
+            .HasOne(ispec => ispec.Item)
+            .WithMany(i => i.ItemSpecifications)
+            .HasForeignKey(ispec => ispec.ItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure unique constraints for AI-related entities
+        modelBuilder.Entity<SupplierCapability>()
+            .HasIndex(sc => new { sc.SupplierId, sc.CapabilityType, sc.CapabilityValue })
+            .IsUnique();
+
+        modelBuilder.Entity<ItemSpecification>()
+            .HasIndex(ispec => new { ispec.ItemId, ispec.SpecName, ispec.SpecValue })
+            .IsUnique();
     }
 }

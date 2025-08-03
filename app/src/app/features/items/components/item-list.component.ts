@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { ItemService, ItemFilters } from '../services/item.service';
-import { Item } from '../../../shared/models/item.model';
+import { ItemDto } from '../../../shared/models/item.model';
 import { PaginatedResult } from '../../../shared/models/rfq.model';
 
 @Component({
@@ -20,7 +20,7 @@ export class ItemListComponent implements OnInit {
     private router = inject(Router);
 
     // Signals
-    items = signal<Item[]>([]);
+    items = signal<ItemDto[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
     totalCount = signal(0);
@@ -137,7 +137,7 @@ export class ItemListComponent implements OnInit {
         this.error.set(null);
 
         this.itemService.getItems(this.filters()).subscribe({
-            next: (result: PaginatedResult<Item>) => {
+            next: (result: PaginatedResult<ItemDto>) => {
                 this.items.set(result.data);
                 this.totalCount.set(result.totalCount);
                 this.currentPage.set(result.page);
@@ -212,4 +212,4 @@ export class ItemListComponent implements OnInit {
     }
 
     protected readonly Math = Math;
-} 
+}
