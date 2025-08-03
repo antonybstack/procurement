@@ -58,10 +58,6 @@ public class ProcurementDbContext : DbContext
             .HasIndex(rfq => rfq.RfqNumber)
             .IsUnique();
 
-        // modelBuilder.Entity<Quote>()
-        //     .HasIndex(q => new { q.RfqId, q.SupplierId, q.LineItemId })
-        //     .IsUnique();
-
         modelBuilder.Entity<PurchaseOrder>()
             .HasIndex(po => po.PoNumber)
             .IsUnique();

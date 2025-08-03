@@ -9,16 +9,6 @@ export type {
   AiRecommendationResponseDto,
   SupplierCapabilityAnalysisDto,
 } from './ai-analysis.model';
-export type {
-  SupplierCapabilityDto,
-  ItemSpecificationDto,
-  SupplierCapabilityCreateDto,
-  ItemSpecificationCreateDto,
-  SupplierCapabilityUpdateDto,
-  ItemSpecificationUpdateDto,
-  SupplierWithCapabilitiesDto,
-  ItemWithSpecificationsDto,
-} from './ai-capabilities.model';
 
 // Core entity models
 export type { ItemDto, ItemCreateDto, ItemUpdateDto, ItemSummary, ItemSummaryResponse } from './item.model';

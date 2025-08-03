@@ -144,6 +144,32 @@ CREATE TABLE purchase_order_lines (
     UNIQUE(po_id, line_number)
 );
 
+-- AI-related table creation
+-- These tables support the AI recommendation features by storing vector embeddings and detailed attributes.
+
+-- Enable pgvector extension for vector operations
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Supplier capabilities table for detailed AI matching
+CREATE TABLE IF NOT EXISTS supplier_capabilities (
+    capability_id SERIAL PRIMARY KEY,
+    supplier_id INTEGER NOT NULL REFERENCES suppliers(supplier_id) ON DELETE CASCADE,
+    capability_type VARCHAR(100) NOT NULL,
+    capability_value TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(supplier_id, capability_type, capability_value)
+);
+
+-- Item specifications table for detailed item matching
+CREATE TABLE IF NOT EXISTS item_specifications (
+    spec_id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(item_id) ON DELETE CASCADE,
+    spec_name VARCHAR(100) NOT NULL,
+    spec_value TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(item_id, spec_name, spec_value)
+);
+
 -- Create indexes for performance
 CREATE INDEX idx_suppliers_company_name ON suppliers(company_name);
 CREATE INDEX idx_suppliers_country ON suppliers(country);
@@ -240,6 +266,96 @@ SELECT
     (s.id % 1000000 + 50000)::decimal(15,2) as credit_limit,
     (s.id % 5 + 1) as rating
 FROM generate_series(1, 1000) s(id);
+
+-- Generate meaningful supplier capabilities
+-- This section populates the supplier_capabilities table with realistic data
+-- to enable effective AI-driven supplier recommendations.
+
+-- Clear existing capabilities to ensure a fresh start
+DELETE FROM supplier_capabilities;
+
+-- Define capability clusters for different supplier types
+-- Each cluster includes a set of certifications, processes, and materials.
+
+-- Cluster 1: Aerospace & Defense Specialists (Suppliers 1-200)
+-- High-precision, certified for aerospace standards.
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Certification',
+    (ARRAY['AS9100', 'ISO 9001', 'NADCAP'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(1, 200) s(id);
+
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Process',
+    (ARRAY['CNC Machining (5-axis)', 'Titanium Alloying', 'Composites Manufacturing'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(1, 200) s(id);
+
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Material',
+    (ARRAY['Aluminum 7075', 'Titanium Grade 5', 'Carbon Fiber Pre-preg'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(1, 200) s(id);
+
+-- Cluster 2: Electronics & Components (Suppliers 201-400)
+-- Specialized in electronics manufacturing and assembly.
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Certification',
+    (ARRAY['ISO 13485 (Medical)', 'IPC-A-610', 'RoHS Compliant'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(201, 400) s(id);
+
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Process',
+    (ARRAY['PCB Assembly', 'Surface Mount Technology (SMT)', 'Automated Optical Inspection'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(201, 400) s(id);
+
+-- Cluster 3: Raw Materials & Metals (Suppliers 401-600)
+-- Bulk suppliers of raw materials and standardized metals.
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Certification',
+    (ARRAY['ISO 14001', 'Conflict-Free Minerals'])[ ((s.id + FLOOR(random() * 2))::integer) % 2 + 1 ]
+FROM generate_series(401, 600) s(id);
+
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Material',
+    (ARRAY['Stainless Steel 316', 'Aluminum 6061', 'Cold Rolled Steel'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(401, 600) s(id);
+
+-- Cluster 4: General Purpose Machining & Fabrication (Suppliers 601-800)
+-- Standard machining and fabrication services.
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Certification',
+    'ISO 9001'
+FROM generate_series(601, 800) s(id);
+
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Process',
+    (ARRAY['CNC Machining (3-axis)', 'Welding', 'Sheet Metal Fabrication'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(601, 800) s(id);
+
+-- Cluster 5: Specialized Services (Suppliers 801-1000)
+-- Suppliers offering specialized services like finishing, testing, etc.
+INSERT INTO supplier_capabilities (supplier_id, capability_type, capability_value)
+SELECT
+    s.id,
+    'Service',
+    (ARRAY['Anodizing', 'Heat Treatment', 'Non-Destructive Testing'])[ ((s.id + FLOOR(random() * 3))::integer) % 3 + 1 ]
+FROM generate_series(801, 1000) s(id);
 
 -- Insert 100 items
 INSERT INTO items (item_code, description, category, unit_of_measure, standard_cost, min_order_quantity, lead_time_days)

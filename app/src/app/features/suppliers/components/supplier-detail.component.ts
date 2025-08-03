@@ -2,77 +2,77 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupplierService } from '../services/supplier.service';
-import { SupplierWithCapabilitiesDto } from '../../../shared/models';
+import { SupplierDto } from '../../../shared/models';
 
 @Component({
-    selector: 'app-supplier-detail',
-    standalone: true,
-    imports: [CommonModule],
-    templateUrl: './supplier-detail.component.html',
-    styleUrl: './supplier-detail.component.css'
+  selector: 'app-supplier-detail',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './supplier-detail.component.html',
+  styleUrl: './supplier-detail.component.css'
 })
 export class SupplierDetailComponent implements OnInit {
-    private supplierService = inject(SupplierService);
-    private route = inject(ActivatedRoute);
-    private router = inject(Router);
+  private supplierService = inject(SupplierService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
-    // Signals
-    supplier = signal<SupplierWithCapabilitiesDto | null>(null);
-    loading = signal(false);
-    error = signal<string | null>(null);
+  // Signals
+  supplier = signal<SupplierDto | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
 
-    ngOnInit() {
-        this.loadSupplier();
+  ngOnInit() {
+    this.loadSupplier();
+  }
+
+  loadSupplier() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error.set('Invalid Supplier ID');
+      return;
     }
 
-    loadSupplier() {
-        const id = this.route.snapshot.paramMap.get('id');
-        if (!id) {
-            this.error.set('Invalid Supplier ID');
-            return;
-        }
+    this.loading.set(true);
+    this.error.set(null);
 
-        this.loading.set(true);
-        this.error.set(null);
+    this.supplierService.getSupplierById(+id).subscribe({
+      next: (supplier: SupplierDto) => {
+        this.supplier.set(supplier);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to load supplier details. Please try again.');
+        this.loading.set(false);
+        console.error('Error loading supplier:', err);
+      }
+    });
+  }
 
-        this.supplierService.getSupplierById(+id).subscribe({
-            next: (supplier: SupplierWithCapabilitiesDto) => {
-                this.supplier.set(supplier);
-                this.loading.set(false);
-            },
-            error: (err) => {
-                this.error.set('Failed to load supplier details. Please try again.');
-                this.loading.set(false);
-                console.error('Error loading supplier:', err);
-            }
-        });
+  goBack() {
+    this.router.navigate(['/suppliers']);
+  }
+
+  editSupplier() {
+    const supplierId = this.supplier()?.supplierId;
+    if (supplierId) {
+      this.router.navigate(['/suppliers', supplierId, 'edit']);
     }
+  }
 
-    goBack() {
-        this.router.navigate(['/suppliers']);
-    }
+  getStatusClass(isActive: boolean): string {
+    return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  }
 
-    editSupplier() {
-        const supplierId = this.supplier()?.supplierId;
-        if (supplierId) {
-            this.router.navigate(['/suppliers', supplierId, 'edit']);
-        }
-    }
+  getStatusText(isActive: boolean): string {
+    return isActive ? 'Active' : 'Inactive';
+  }
 
-    getStatusClass(isActive: boolean): string {
-        return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-    }
+  getRatingStars(rating?: number): string {
+    if (!rating) return 'No rating';
+    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  }
 
-    getStatusText(isActive: boolean): string {
-        return isActive ? 'Active' : 'Inactive';
-    }
-
-    getRatingStars(rating?: number): string {
-        if (!rating) return 'No rating';
-        return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-    }
-
-    getCreatedAtDisplay(createdAt: string): string {
-        return new Date(createdAt).toLocaleString();
-    }
+  getCreatedAtDisplay(createdAt: string): string {
+    return new Date(createdAt).toLocaleString();
+  }
 }

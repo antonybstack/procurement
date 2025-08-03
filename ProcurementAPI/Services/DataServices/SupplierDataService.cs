@@ -140,6 +140,7 @@ public class SupplierDataService : ISupplierDataService
 
             var result = await _context.Suppliers
                 .AsNoTracking()
+                .Include(s => s.SupplierCapabilities) // Eagerly load capabilities
                 .Where(s => s.SupplierId == id)
                 .Select(s => new SupplierDto
                 {
@@ -159,7 +160,15 @@ public class SupplierDataService : ISupplierDataService
                     CreditLimit = s.CreditLimit,
                     Rating = s.Rating,
                     IsActive = s.IsActive,
-                    CreatedAt = s.CreatedAt
+                    CreatedAt = s.CreatedAt,
+                    Capabilities = s.SupplierCapabilities.Select(sc => new SupplierCapabilityDto
+                    {
+                        CapabilityId = sc.CapabilityId,
+                        SupplierId = sc.SupplierId,
+                        CapabilityType = sc.CapabilityType,
+                        CapabilityValue = sc.CapabilityValue,
+                        CreatedAt = sc.CreatedAt
+                    }).ToList()
                 })
                 .FirstOrDefaultAsync();
 

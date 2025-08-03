@@ -19,6 +19,7 @@ public class SupplierDto
     public int? Rating { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<SupplierCapabilityDto> Capabilities { get; set; } = new List<SupplierCapabilityDto>();
 }
 
 public class SupplierUpdateDto
