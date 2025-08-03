@@ -128,7 +128,7 @@ public class SupplierDataService : ISupplierDataService
         }
     }
 
-    public async Task<SupplierDto?> GetSupplierByIdAsync(int id)
+    public async Task<SupplierDetailDto?> GetSupplierByIdAsync(int id)
     {
         var stopwatch = Stopwatch.StartNew();
         var correlationId = Activity.Current?.Id ?? "unknown";
@@ -138,11 +138,12 @@ public class SupplierDataService : ISupplierDataService
             _logger.LogInformation("Database operation - Get supplier by ID started - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
                 correlationId, id);
 
-            var result = await _context.Suppliers
+            // 1. Get the core supplier details and capabilities
+            var supplier = await _context.Suppliers
                 .AsNoTracking()
                 .Include(s => s.SupplierCapabilities) // Eagerly load capabilities
                 .Where(s => s.SupplierId == id)
-                .Select(s => new SupplierDto
+                .Select(s => new SupplierDetailDto
                 {
                     SupplierId = s.SupplierId,
                     SupplierCode = s.SupplierCode,
@@ -172,22 +173,33 @@ public class SupplierDataService : ISupplierDataService
                 })
                 .FirstOrDefaultAsync();
 
-            stopwatch.Stop();
-            _logger.LogInformation("Performance metric - Database get supplier by ID completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Found: {Found}",
-                stopwatch.ElapsedMilliseconds, correlationId, id, result != null);
-
-            if (result != null)
-            {
-                _logger.LogInformation("Database operation - Get supplier by ID completed - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
-                    correlationId, id);
-            }
-            else
+            if (supplier == null)
             {
                 _logger.LogWarning("Database operation - Get supplier by ID not found - EntityType: supplier, CorrelationId: {CorrelationId}, SupplierId: {SupplierId}",
                     correlationId, id);
+                return null;
             }
 
-            return result;
+            // 2. Get the performance data from the view
+            var performanceData = await _context.SupplierPerformance
+                 .FromSqlRaw("SELECT * FROM supplier_performance WHERE supplier_id = {0}", id)
+                 .Select(sp => new SupplierPerformanceDataDto
+                 {
+                     TotalQuotes = sp.TotalQuotes,
+                     AwardedQuotes = sp.AwardedQuotes,
+                     AvgQuotePrice = sp.AvgQuotePrice,
+                     TotalPurchaseOrders = sp.TotalPurchaseOrders
+                 })
+                 .FirstOrDefaultAsync();
+
+            // 3. Combine the data
+            supplier.Performance = performanceData;
+
+            stopwatch.Stop();
+            _logger.LogInformation("Performance metric - Database get supplier by ID completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, SupplierId: {SupplierId}, Found: {Found}",
+                stopwatch.ElapsedMilliseconds, correlationId, id, true);
+
+            return supplier;
         }
         catch (Exception ex)
         {

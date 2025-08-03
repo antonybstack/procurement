@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupplierService } from '../services/supplier.service';
-import { SupplierDto } from '../../../shared/models';
+import { SupplierDetailDto } from '../../../shared/models';
 
 @Component({
   selector: 'app-supplier-detail',
@@ -17,7 +17,7 @@ export class SupplierDetailComponent implements OnInit {
   private router = inject(Router);
 
   // Signals
-  supplier = signal<SupplierDto | null>(null);
+  supplier = signal<SupplierDetailDto | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
 
@@ -36,7 +36,7 @@ export class SupplierDetailComponent implements OnInit {
     this.error.set(null);
 
     this.supplierService.getSupplierById(+id).subscribe({
-      next: (supplier: SupplierDto) => {
+      next: (supplier: SupplierDetailDto) => {
         this.supplier.set(supplier);
         this.loading.set(false);
       },

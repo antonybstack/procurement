@@ -13,7 +13,7 @@ public interface ISupplierDataService
         int? minRating,
         bool? isActive);
 
-    Task<SupplierDto?> GetSupplierByIdAsync(int id);
+    Task<SupplierDetailDto?> GetSupplierByIdAsync(int id);
     Task<Supplier?> GetSupplierEntityByIdAsync(int id);
     Task<Supplier> CreateSupplierAsync(Supplier supplier);
     Task<Supplier> UpdateSupplierAsync(Supplier supplier);

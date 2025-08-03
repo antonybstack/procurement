@@ -132,7 +132,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-500">Total Quotes</p>
-            <p class="text-2xl font-semibold text-gray-900">-</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ supplier()?.performance?.totalQuotes ?? '-' }}</p>
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-500">Awarded Quotes</p>
-            <p class="text-2xl font-semibold text-gray-900">-</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ supplier()?.performance?.awardedQuotes ?? '-' }}</p>
           </div>
         </div>
       </div>
@@ -163,7 +163,9 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-500">Avg Quote Price</p>
-            <p class="text-2xl font-semibold text-gray-900">-</p>
+            <p class="text-2xl font-semibold text-gray-900">{{
+              supplier()?.performance?.avgQuotePrice?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) ??
+              '-' }}</p>
           </div>
         </div>
       </div>
@@ -178,7 +180,8 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-500">Purchase Orders</p>
-            <p class="text-2xl font-semibold text-gray-900">-</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ supplier()?.performance?.totalPurchaseOrders ?? '-' }}
+            </p>
           </div>
         </div>
       </div>

@@ -19,10 +19,17 @@ public class ProcurementDbContext : DbContext
     public DbSet<PurchaseOrderLine> PurchaseOrderLines { get; set; }
     public DbSet<SupplierCapability> SupplierCapabilities { get; set; }
     public DbSet<ItemSpecification> ItemSpecifications { get; set; }
+    public DbSet<SupplierPerformance> SupplierPerformance { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<SupplierPerformance>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToView("supplier_performance");
+        });
 
         // Configure enum mappings
         modelBuilder.Entity<Item>()

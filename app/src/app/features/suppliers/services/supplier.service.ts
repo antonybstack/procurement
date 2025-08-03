@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../shared/services/api.service';
-import { SupplierDto } from '../../../shared/models';
+import { SupplierDto, SupplierDetailDto } from '../../../shared/models';
 import { PaginatedResult } from '../../../shared/models';
 
 export interface SupplierFilters {
@@ -41,8 +41,8 @@ export class SupplierService {
     return this.apiService.get<PaginatedResult<SupplierDto>>('suppliers', filters);
   }
 
-  getSupplierById(id: number): Observable<SupplierDto> {
-    return this.apiService.getById<SupplierDto>('suppliers', id);
+  getSupplierById(id: number): Observable<SupplierDetailDto> {
+    return this.apiService.getById<SupplierDetailDto>('suppliers', id);
   }
 
   updateSupplier(id: number, updateData: SupplierUpdateDto): Observable<SupplierDto> {

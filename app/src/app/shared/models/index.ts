@@ -22,4 +22,6 @@ export type {
   PurchaseOrderSummaryDto,
 } from './purchase-order.model';
 export type { RfqDto, RfqLineItemDto, RfqDetailDto, PaginatedResult } from './rfq.model';
-export type { SupplierDto, SupplierSummaryDto } from './supplier.model';
+export type { SupplierDto, SupplierSummaryDto, SupplierCapabilityDto } from './supplier.model';
+export type { SupplierDetailDto, SupplierPerformanceDataDto } from './supplier-performance.model';
+
