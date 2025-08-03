@@ -179,6 +179,8 @@ CREATE INDEX idx_rfq_due_date ON request_for_quotes(due_date);
 CREATE INDEX idx_quotes_status ON quotes(status);
 CREATE INDEX idx_quotes_supplier ON quotes(supplier_id);
 CREATE INDEX idx_quotes_rfq ON quotes(rfq_id);
+CREATE INDEX idx_quotes_line_item ON quotes(line_item_id);
+CREATE INDEX idx_rfq_line_items_rfq ON rfq_line_items(rfq_id);
 CREATE INDEX idx_po_supplier ON purchase_orders(supplier_id);
 CREATE INDEX idx_po_status ON purchase_orders(status);
 

@@ -32,13 +32,12 @@ builder.Services.AddDbContext<ProcurementDbContext>(options =>
 // Register services
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
-builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
 // Add HttpClient for AI service
-builder.Services.AddHttpClient<IAiRecommendationService, AiRecommendationService>(client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
+// builder.Services.AddHttpClient<IAiRecommendationService, AiRecommendationService>(client =>
+// {
+//     client.Timeout = TimeSpan.FromSeconds(30);
+// });
 
 // Add Health Checks
 builder.Services.AddHealthChecks()

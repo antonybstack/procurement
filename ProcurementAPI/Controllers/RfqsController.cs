@@ -118,6 +118,8 @@ public class RfqsController : ControllerBase
         try
         {
             var rfq = await _context.RequestForQuotes
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Where(rfq => rfq.RfqId == id)
                 .Select(rfq => new RfqDetailDto
                 {

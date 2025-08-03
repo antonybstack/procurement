@@ -1,16 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef } from 'ag-grid-community';
 import { RfqService } from '../services/rfq.service';
-import { RfqDetailDto, RfqLineItemDto } from '../../../shared/models/rfq.model';
-import { QuoteDto } from '../../../shared/models/quote.model';
+import { RfqDetailDto } from '../../../shared/models/rfq.model';
 
 @Component({
   selector: 'app-rfq-detail',
   standalone: true,
-  imports: [CommonModule, AgGridAngular],
+  imports: [CommonModule, AgGridAngular, RouterLink],
   templateUrl: './rfq-detail.component.html',
   styleUrls: ['./rfq-detail.component.css']
 })
@@ -28,34 +27,42 @@ export class RfqDetailComponent implements OnInit {
   // AG Grid for Line Items
   lineItemColumnDefs: ColDef[] = [
     { field: 'lineNumber', headerName: 'Line #', width: 80 },
-    { field: 'item.itemCode', headerName: 'Item Code', width: 120 },
+    {
+      field: 'item.itemCode',
+      headerName: 'Item Code',
+      width: 120,
+      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      onCellClicked: (params) => this.navigateToItem(params.data.item.itemId)
+    },
     { field: 'item.description', headerName: 'Description', flex: 1 },
     { field: 'quantityRequired', headerName: 'Qty Required', width: 120 },
     { field: 'unitOfMeasure', headerName: 'UOM', width: 100 },
     {
       field: 'estimatedUnitCost', headerName: 'Est. Unit Cost', width: 130,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return params.value.toLocaleString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? params.value.toLocaleString() : '-'
     },
     {
       field: 'deliveryDate', headerName: 'Delivery Date', width: 130,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return new Date(params.value).toLocaleDateString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleDateString() : '-'
     }
   ];
 
   // AG Grid for Quotes
   quoteColumnDefs: ColDef[] = [
-    { field: 'quoteNumber', headerName: 'Quote #', width: 120 },
-    { field: 'supplier.companyName', headerName: 'Supplier', flex: 1 },
+    {
+      field: 'quoteNumber',
+      headerName: 'Quote #',
+      width: 120,
+      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      onCellClicked: (params) => this.navigateToQuote(params.data.quoteId)
+    },
+    {
+      field: 'supplier.companyName',
+      headerName: 'Supplier',
+      flex: 1,
+      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      onCellClicked: (params) => this.navigateToSupplier(params.data.supplier.supplierId)
+    },
     {
       field: 'status', headerName: 'Status', width: 100,
       cellRenderer: (params: any) => {
@@ -66,39 +73,19 @@ export class RfqDetailComponent implements OnInit {
     },
     {
       field: 'unitPrice', headerName: 'Unit Price', width: 120,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return params.value.toLocaleString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? params.value.toLocaleString() : '-'
     },
     {
       field: 'totalPrice', headerName: 'Total Price', width: 120,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return params.value.toLocaleString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? params.value.toLocaleString() : '-'
     },
     {
       field: 'deliveryDate', headerName: 'Delivery Date', width: 130,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return new Date(params.value).toLocaleDateString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleDateString() : '-'
     },
     {
       field: 'submittedDate', headerName: 'Submitted', width: 130,
-      valueFormatter: (params: any) => {
-        if (params.value) {
-          return new Date(params.value).toLocaleDateString();
-        }
-        return '-';
-      }
+      valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleDateString() : '-'
     }
   ];
 
@@ -133,6 +120,18 @@ export class RfqDetailComponent implements OnInit {
         console.error('Error loading RFQ:', err);
       }
     });
+  }
+
+  navigateToItem(id: number) {
+    if (id) this.router.navigate(['/items', id]);
+  }
+
+  navigateToQuote(id: number) {
+    if (id) this.router.navigate(['/quotes', id]);
+  }
+
+  navigateToSupplier(id: number) {
+    if (id) this.router.navigate(['/suppliers', id]);
   }
 
   goBack() {

@@ -172,7 +172,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           @for (supplier of rfq()!.invitedSuppliers; track supplier.supplierId) {
           <div class="border border-gray-200 rounded-lg p-4">
-            <h4 class="font-medium text-gray-900">{{ supplier.companyName }}</h4>
+            <h4 class="font-medium text-gray-900">
+              <a [routerLink]="['/suppliers', supplier.supplierId]" class="text-blue-600 hover:underline">{{
+                supplier.companyName }}</a>
+            </h4>
             <p class="text-sm text-gray-600">{{ supplier.supplierCode }}</p>
             @if (supplier.contactName) {
             <p class="text-sm text-gray-600">{{ supplier.contactName }}</p>
