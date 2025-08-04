@@ -54,7 +54,7 @@ curl -X POST http://localhost:5000/api/ai/vectorize/items
 
 # Step 5: Test the system
 echo "🧪 Step 5: Testing the AI system..."
-echo "Testing AI service status..."
+echo "Testing vectorization service status..."
 curl http://localhost:5000/api/ai/status
 
 echo ""
@@ -67,7 +67,7 @@ echo "  - GET  /api/ai/search/suppliers       - Search suppliers by query"
 echo "  - GET  /api/ai/search/items           - Search items by query"
 echo "  - GET  /api/ai/search/semantic        - Semantic search across all entities"
 echo "  - GET  /api/ai/suggest/suppliers      - Suggest suppliers for requirements"
-echo "  - GET  /api/ai/status                 - Check AI service status"
+echo "  - GET  /api/ai/status                 - Check vectorization service status"
 echo ""
 echo "🔍 Example queries:"
 echo "  - http://localhost:5000/api/ai/search/suppliers?query=aluminum+supplier"

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Test AI Recommendation Service
-# This script tests the AI service functionality
+# Test Ollama Vectorization Service
+# This script tests the Ollama-based AI vectorization functionality
 
 set -e
 
-echo "🧪 Testing AI Recommendation Service..."
+echo "🧪 Testing Ollama Vectorization Service..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -26,117 +26,113 @@ print_status() {
     fi
 }
 
-# Test 1: Check if AI service is running
+# Test 1: Check if Ollama is running
 echo ""
-echo "1. Testing AI service health..."
-if curl -f http://localhost:8000/health > /dev/null 2>&1; then
-    print_status "PASS" "AI service is healthy"
+echo "1. Testing Ollama service health..."
+if curl -f http://localhost:11434/api/tags > /dev/null 2>&1; then
+    print_status "PASS" "Ollama service is healthy"
 else
-    print_status "FAIL" "AI service is not responding"
-    echo "   Make sure to run: ./start-ai.sh"
+    print_status "FAIL" "Ollama service is not responding"
+    echo "   Make sure to run: ./start-ollama.sh"
     exit 1
 fi
 
-# Test 2: Test SQL generation
+# Test 2: Test Ollama model availability
 echo ""
-echo "2. Testing SQL generation..."
-response=$(curl -s -X POST http://localhost:8000/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "Find suppliers for electronic components with good ratings"
-  }')
+echo "2. Testing Ollama model availability..."
+response=$(curl -s http://localhost:11434/api/tags)
 
-if echo "$response" | grep -q "sql"; then
-    print_status "PASS" "SQL generation is working"
-    # Try to extract SQL with jq, fallback to grep if jq not available
+if echo "$response" | grep -q "models"; then
+    print_status "PASS" "Ollama models are available"
+    # Try to list models with jq, fallback to grep if jq not available
     if command -v jq >/dev/null 2>&1; then
-        echo "   Generated SQL: $(echo "$response" | jq -r '.sql' | head -c 100)..."
+        echo "   Available models: $(echo "$response" | jq -r '.models[].name' | tr '\n' ' ')"
     else
-        echo "   Generated SQL: $(echo "$response" | grep -o '"sql":"[^"]*"' | head -c 100)..."
+        echo "   Models are available (list not available without jq)"
     fi
 else
-    print_status "FAIL" "SQL generation failed"
+    print_status "FAIL" "No models found"
     echo "   Response: $response"
 fi
 
-# Test 3: Test .NET API health check
+# Test 3: Test .NET API vectorization endpoints
 echo ""
-echo "3. Testing .NET API AI health check..."
-if curl -f http://localhost:5001/api/airecommendations/health > /dev/null 2>&1; then
-    print_status "PASS" ".NET API AI health check is working"
+echo "3. Testing .NET API vectorization endpoints..."
+if curl -f http://localhost:5001/api/ai/status > /dev/null 2>&1; then
+    print_status "PASS" ".NET API vectorization endpoints are working"
 else
-    print_status "FAIL" ".NET API AI health check failed"
+    print_status "FAIL" ".NET API vectorization endpoints failed"
     echo "   Make sure the .NET API is running: ./start-api.sh"
 fi
 
-# Test 4: Test supplier recommendations endpoint
+# Test 4: Test supplier vectorization
 echo ""
-echo "4. Testing supplier recommendations..."
-response=$(curl -s "http://localhost:5001/api/airecommendations/suppliers/ITEM001?quantity=100&maxResults=3")
+echo "4. Testing supplier vectorization..."
+response=$(curl -s -X POST "http://localhost:5001/api/ai/vectorize/suppliers")
 
-if echo "$response" | grep -q "supplierId"; then
-    print_status "PASS" "Supplier recommendations endpoint is working"
-    # Try to count with jq, fallback to grep if jq not available
+if echo "$response" | grep -q "count"; then
+    print_status "PASS" "Supplier vectorization is working"
+    # Try to extract count with jq, fallback to grep if jq not available
     if command -v jq >/dev/null 2>&1; then
-        echo "   Found $(echo "$response" | jq 'length') recommendations"
+        echo "   Vectorized $(echo "$response" | jq -r '.count') suppliers"
     else
-        echo "   Found recommendations (count not available without jq)"
+        echo "   Vectorization completed successfully"
     fi
 else
-    print_status "FAIL" "Supplier recommendations endpoint failed"
+    print_status "FAIL" "Supplier vectorization failed"
     echo "   Response: $response"
 fi
 
-# Test 5: Test recommendations by description
+# Test 5: Test semantic search
 echo ""
-echo "5. Testing recommendations by description..."
-response=$(curl -s "http://localhost:5001/api/airecommendations/suppliers/by-description?description=electronic%20component&category=electronics&maxResults=3")
+echo "5. Testing semantic search..."
+response=$(curl -s "http://localhost:5001/api/ai/search/suppliers?query=electronic%20components&limit=3")
 
 if echo "$response" | grep -q "supplierId"; then
-    print_status "PASS" "Description-based recommendations are working"
+    print_status "PASS" "Semantic search is working"
     # Try to count with jq, fallback to grep if jq not available
     if command -v jq >/dev/null 2>&1; then
-        echo "   Found $(echo "$response" | jq 'length') recommendations"
+        echo "   Found $(echo "$response" | jq 'length') suppliers"
     else
-        echo "   Found recommendations (count not available without jq)"
+        echo "   Found suppliers via semantic search"
     fi
 else
-    print_status "FAIL" "Description-based recommendations failed"
+    print_status "FAIL" "Semantic search failed"
     echo "   Response: $response"
 fi
 
-# Test 6: Test performance analysis
+# Test 6: Test item vectorization
 echo ""
-echo "6. Testing performance analysis..."
-response=$(curl -s "http://localhost:5001/api/airecommendations/analysis/ITEM001")
+echo "6. Testing item vectorization..."
+response=$(curl -s -X POST "http://localhost:5001/api/ai/vectorize/items")
 
-if echo "$response" | grep -q "itemCode"; then
-    print_status "PASS" "Performance analysis is working"
-    # Try to extract itemCode with jq, fallback to grep if jq not available
+if echo "$response" | grep -q "count"; then
+    print_status "PASS" "Item vectorization is working"
+    # Try to extract count with jq, fallback to grep if jq not available
     if command -v jq >/dev/null 2>&1; then
-        echo "   Analysis completed for item: $(echo "$response" | jq -r '.itemCode')"
+        echo "   Vectorized $(echo "$response" | jq -r '.count') items"
     else
-        echo "   Analysis completed for item: $(echo "$response" | grep -o '"itemCode":"[^"]*"' | head -c 50)..."
+        echo "   Vectorization completed successfully"
     fi
 else
-    print_status "FAIL" "Performance analysis failed"
+    print_status "FAIL" "Item vectorization failed"
     echo "   Response: $response"
 fi
 
 # Summary
 echo ""
-echo "🎉 AI Recommendation Service Test Summary"
-echo "=========================================="
+echo "🎉 Ollama Vectorization Service Test Summary"
+echo "============================================="
 echo ""
 echo "✅ All tests completed successfully!"
 echo ""
 echo "📋 Available endpoints:"
-echo "   - AI Service: http://localhost:8000"
+echo "   - Ollama: http://localhost:11434"
 echo "   - .NET API: http://localhost:5001"
 echo ""
 echo "🔧 Test the endpoints manually:"
-echo "   curl http://localhost:8000/health"
-echo "   curl \"http://localhost:5001/api/airecommendations/suppliers/ITEM001\""
-echo "   curl \"http://localhost:5001/api/airecommendations/analysis/ITEM001\""
+echo "   curl http://localhost:11434/api/tags"
+echo "   curl \"http://localhost:5001/api/ai/search/suppliers?query=electronics\""
+echo "   curl -X POST \"http://localhost:5001/api/ai/vectorize/suppliers\""
 echo ""
 echo "🚀 Ready to integrate with your frontend!" 

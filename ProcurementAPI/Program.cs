@@ -45,11 +45,7 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IAiVectorizationService, AiVectorizationService>();
 builder.Services.AddScoped<IVectorStoreService, VectorStoreService>();
 
-// Add HttpClient for AI service
-// builder.Services.AddHttpClient<IAiRecommendationService, AiRecommendationService>(client =>
-// {
-//     client.Timeout = TimeSpan.FromSeconds(30);
-// });
+
 
 // Add Health Checks
 builder.Services.AddHealthChecks()

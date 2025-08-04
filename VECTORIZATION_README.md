@@ -74,7 +74,7 @@ The following tables now include vector embeddings:
 - `GET /api/ai/suggest/suppliers?requirement={requirement}&limit={limit}` - Suggest suppliers for requirements
 
 ### Health Check
-- `GET /api/ai/status` - Check AI service status
+- `GET /api/ai/status` - Check vectorization service status
 
 ## 🧪 Example Queries
 

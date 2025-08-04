@@ -183,8 +183,6 @@ docker volume rm postgres_data pgadmin_data ollama_data
 ```bash
 ./start-ollama.sh          # Start Ollama with model pulling
 ./restart-ollama.sh        # Restart Ollama (preserves models)
-./start-ai.sh              # Start AI recommendation service
-./restart-ai.sh            # Restart AI services (preserves data)
 ```
 
 ### Reset Operations (Data Removed)
