@@ -87,6 +87,7 @@ public static class Utilities
         db.Suppliers.RemoveRange(db.Suppliers);
         db.Items.RemoveRange(db.Items);
         db.RequestForQuotes.RemoveRange(db.RequestForQuotes);
+        db.SupplierPerformance.RemoveRange(db.SupplierPerformance);
         InitializeDbForTests(db);
     }
 
@@ -96,6 +97,7 @@ public static class Utilities
         {
             new Supplier
             {
+                SupplierId = 1,
                 SupplierCode = "SUP001",
                 CompanyName = "Tech Solutions Inc.",
                 ContactName = "John Smith",
@@ -116,6 +118,7 @@ public static class Utilities
             },
             new Supplier
             {
+                SupplierId = 2,
                 SupplierCode = "SUP002",
                 CompanyName = "Global Manufacturing Ltd.",
                 ContactName = "Sarah Johnson",
@@ -136,6 +139,7 @@ public static class Utilities
             },
             new Supplier
             {
+                SupplierId = 3,
                 SupplierCode = "SUP003",
                 CompanyName = "Quality Parts Co.",
                 ContactName = "Mike Wilson",
@@ -156,6 +160,7 @@ public static class Utilities
             },
             new Supplier
             {
+                SupplierId = 4,
                 SupplierCode = "SUP004",
                 CompanyName = "European Electronics GmbH",
                 ContactName = "Hans Mueller",
@@ -176,6 +181,7 @@ public static class Utilities
             },
             new Supplier
             {
+                SupplierId = 5,
                 SupplierCode = "SUP005",
                 CompanyName = "Asian Components Ltd.",
                 ContactName = "Li Wei",
@@ -203,6 +209,7 @@ public static class Utilities
         {
             new Item
             {
+                ItemId = 1,
                 ItemCode = "ITEM001",
                 Description = "High-performance laptop",
                 Category = ItemCategory.Electronics,
@@ -215,6 +222,7 @@ public static class Utilities
             },
             new Item
             {
+                ItemId = 2,
                 ItemCode = "ITEM002",
                 Description = "Office chair ergonomic",
                 Category = ItemCategory.Services,
@@ -227,6 +235,7 @@ public static class Utilities
             },
             new Item
             {
+                ItemId = 3,
                 ItemCode = "ITEM003",
                 Description = "Network switch 24-port",
                 Category = ItemCategory.Electronics,
@@ -246,6 +255,7 @@ public static class Utilities
         {
             new RequestForQuote
             {
+                RfqId = 1,
                 RfqNumber = "RFQ-2024-001",
                 Title = "Electronics Procurement",
                 Description = "Procurement of electronic equipment for office upgrade",
@@ -259,6 +269,7 @@ public static class Utilities
             },
             new RequestForQuote
             {
+                RfqId = 2,
                 RfqNumber = "RFQ-2024-002",
                 Title = "Furniture Supply",
                 Description = "Office furniture and seating solutions",
@@ -272,6 +283,7 @@ public static class Utilities
             },
             new RequestForQuote
             {
+                RfqId = 3,
                 RfqNumber = "RFQ-2024-003",
                 Title = "Network Infrastructure",
                 Description = "Network equipment and cabling",
@@ -292,6 +304,7 @@ public static class Utilities
         {
             new RfqLineItem
             {
+                LineItemId = 1,
                 RfqId = 1,
                 ItemId = 1,
                 LineNumber = 1,
@@ -305,6 +318,7 @@ public static class Utilities
             },
             new RfqLineItem
             {
+                LineItemId = 2,
                 RfqId = 1,
                 ItemId = 3,
                 LineNumber = 2,
@@ -318,6 +332,7 @@ public static class Utilities
             },
             new RfqLineItem
             {
+                LineItemId = 3,
                 RfqId = 2,
                 ItemId = 2,
                 LineNumber = 1,
@@ -331,6 +346,7 @@ public static class Utilities
             },
             new RfqLineItem
             {
+                LineItemId = 4,
                 RfqId = 3,
                 ItemId = 1,
                 LineNumber = 1,
@@ -406,6 +422,7 @@ public static class Utilities
         {
             new Quote
             {
+                QuoteId = 1,
                 RfqId = 1,
                 SupplierId = 1,
                 LineItemId = 1,
@@ -424,6 +441,7 @@ public static class Utilities
             },
             new Quote
             {
+                QuoteId = 2,
                 RfqId = 1,
                 SupplierId = 2,
                 LineItemId = 1,
@@ -442,6 +460,7 @@ public static class Utilities
             },
             new Quote
             {
+                QuoteId = 3,
                 RfqId = 1,
                 SupplierId = 1,
                 LineItemId = 2,
@@ -460,6 +479,7 @@ public static class Utilities
             },
             new Quote
             {
+                QuoteId = 4,
                 RfqId = 2,
                 SupplierId = 1,
                 LineItemId = 3,
@@ -478,6 +498,7 @@ public static class Utilities
             },
             new Quote
             {
+                QuoteId = 5,
                 RfqId = 3,
                 SupplierId = 2,
                 LineItemId = 4,
@@ -493,6 +514,58 @@ public static class Utilities
                 SubmittedDate = DateTime.UtcNow.AddDays(-2),
                 ValidUntilDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
                 CreatedAt = DateTime.UtcNow.AddDays(-2)
+            }
+        };
+    }
+
+    public static List<SupplierPerformance> GetSeedingSupplierPerformances()
+    {
+        return new List<SupplierPerformance>()
+        {
+            new SupplierPerformance
+            {
+                SupplierId = 1,
+                TotalQuotes = 3,
+                AwardedQuotes = 1,
+                AvgQuotePrice = 1200.00m,
+                TotalPurchaseOrders = 1,
+                TotalPoValue = 1200.00m
+            },
+            new SupplierPerformance
+            {
+                SupplierId = 2,
+                TotalQuotes = 2,
+                AwardedQuotes = 1,
+                AvgQuotePrice = 1200.00m,
+                TotalPurchaseOrders = 1,
+                TotalPoValue = 1200.00m
+            },
+            new SupplierPerformance
+            {
+                SupplierId = 3,
+                TotalQuotes = 1,
+                AwardedQuotes = 0,
+                AvgQuotePrice = 1200.00m,
+                TotalPurchaseOrders = 0,
+                TotalPoValue = 0.00m
+            },
+            new SupplierPerformance
+            {
+                SupplierId = 4,
+                TotalQuotes = 1,
+                AwardedQuotes = 1,
+                AvgQuotePrice = 1200.00m,
+                TotalPurchaseOrders = 1,
+                TotalPoValue = 1200.00m
+            },
+            new SupplierPerformance
+            {
+                SupplierId = 5,
+                TotalQuotes = 1,
+                AwardedQuotes = 0,
+                AvgQuotePrice = 1200.00m,
+                TotalPurchaseOrders = 0,
+                TotalPoValue = 0.00m
             }
         };
     }

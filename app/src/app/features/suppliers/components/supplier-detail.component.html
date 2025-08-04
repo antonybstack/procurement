@@ -205,7 +205,7 @@
         <div *ngIf="supplier()?.capabilities?.length; else noCapabilities">
           <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <li *ngFor="let cap of supplier()!.capabilities" class="bg-blue-50 p-4 rounded-lg shadow-sm">
-              <p class="font-bold text-blue-800">{{ cap.capabilityType }}</p>
+              <p class="font-bold text-gray-800">{{ cap.capabilityType }}</p>
               <p class="text-gray-700">{{ cap.capabilityValue }}</p>
             </li>
           </ul>
