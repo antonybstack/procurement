@@ -18,6 +18,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.7" />
     
+    <!-- AI/ML Packages -->
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Core" Version="1.61.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.61.0-preview" />
+    <PackageReference Include="OllamaSharp" Version="5.3.4" />
+    
     <!-- OpenTelemetry Packages -->
     <PackageReference Include="OpenTelemetry" Version="1.12.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />

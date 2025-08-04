@@ -96,7 +96,7 @@ Host=localhost;Port=5432;Database=myapp;Username=postgres;Password=postgres_pass
 The local API runs with these environment variables:
 - `ASPNETCORE_ENVIRONMENT=Development`
 - `ASPNETCORE_URLS=http://localhost:5001`
-- `ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=myapp;Username=postgres;Password=postgres_password`
+- `ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=myapp;Username=postgres;Password=postgres_password;Include Error Detail=true`
 
 ## Services Available
 

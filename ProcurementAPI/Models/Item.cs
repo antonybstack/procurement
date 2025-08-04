@@ -46,8 +46,39 @@ public class Item
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Vector embedding for semantic search
+    /// </summary>
+    [NotMapped]
+    public float[]? Embedding { get; set; }
+
     // Navigation properties
     public virtual ICollection<RfqLineItem> RfqLineItems { get; set; } = new List<RfqLineItem>();
     public virtual ICollection<PurchaseOrderLine> PurchaseOrderLines { get; set; } = new List<PurchaseOrderLine>();
     public virtual ICollection<ItemSpecification> ItemSpecifications { get; set; } = new List<ItemSpecification>();
+
+    /// <summary>
+    /// Gets the text content for embedding generation
+    /// </summary>
+    public string GetEmbeddingText()
+    {
+        var parts = new List<string>
+        {
+            ItemCode,
+            Description,
+            Category.ToString(),
+            UnitOfMeasure,
+            StandardCost?.ToString() ?? "",
+            MinOrderQuantity.ToString(),
+            LeadTimeDays.ToString()
+        };
+
+        // Add specifications
+        if (ItemSpecifications?.Any() == true)
+        {
+            parts.AddRange(ItemSpecifications.Select(ispec => $"{ispec.SpecName}: {ispec.SpecValue}"));
+        }
+
+        return string.Join(" ", parts.Where(p => !string.IsNullOrEmpty(p)));
+    }
 }

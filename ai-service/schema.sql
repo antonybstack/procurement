@@ -1,3 +1,0 @@
--- This file is intentionally blank.
--- The core schema initialization, including AI-related tables, is handled by the main init-script at /init-scripts/01-init.sql.
--- This script may be used in the future for AI-specific functions, views, or manual data operations that are not part of the automatic database setup.

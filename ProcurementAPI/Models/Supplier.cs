@@ -74,9 +74,43 @@ public class Supplier
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Vector embedding for semantic search
+    /// </summary>
+    [NotMapped]
+    public float[]? Embedding { get; set; }
+
     // Navigation properties
     public virtual ICollection<RfqSupplier> RfqSuppliers { get; set; } = new List<RfqSupplier>();
     public virtual ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
     public virtual ICollection<SupplierCapability> SupplierCapabilities { get; set; } = new List<SupplierCapability>();
+
+    /// <summary>
+    /// Gets the text content for embedding generation
+    /// </summary>
+    public string GetEmbeddingText()
+    {
+        var parts = new List<string>
+        {
+            CompanyName,
+            ContactName ?? "",
+            Email ?? "",
+            Phone ?? "",
+            Address ?? "",
+            City ?? "",
+            State ?? "",
+            Country ?? "",
+            PaymentTerms ?? "",
+            TaxId ?? ""
+        };
+
+        // Add capabilities
+        if (SupplierCapabilities?.Any() == true)
+        {
+            parts.AddRange(SupplierCapabilities.Select(sc => $"{sc.CapabilityType}: {sc.CapabilityValue}"));
+        }
+
+        return string.Join(" ", parts.Where(p => !string.IsNullOrEmpty(p)));
+    }
 }

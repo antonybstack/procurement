@@ -57,9 +57,36 @@ public class RequestForQuote
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    // AI Vectorization
+    [NotMapped]
+    public float[]? Embedding { get; set; }
+
     // Navigation properties
     public virtual ICollection<RfqLineItem> RfqLineItems { get; set; } = new List<RfqLineItem>();
     public virtual ICollection<RfqSupplier> RfqSuppliers { get; set; } = new List<RfqSupplier>();
     public virtual ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+
+    /// <summary>
+    /// Generates text for embedding generation
+    /// </summary>
+    public string GetEmbeddingText()
+    {
+        var parts = new List<string>
+        {
+            RfqNumber,
+            Title,
+            Description ?? "",
+            Status.ToString(),
+            IssueDate.ToString(),
+            DueDate.ToString(),
+            AwardDate?.ToString() ?? "",
+            TotalEstimatedValue?.ToString() ?? "",
+            Currency,
+            TermsAndConditions ?? "",
+            CreatedBy ?? ""
+        };
+
+        return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+    }
 }

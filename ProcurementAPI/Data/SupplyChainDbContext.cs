@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProcurementAPI.Models;
 
 namespace ProcurementAPI.Data;
@@ -192,5 +193,8 @@ public class ProcurementDbContext : DbContext
         modelBuilder.Entity<ItemSpecification>()
             .HasIndex(ispec => new { ispec.ItemId, ispec.SpecName, ispec.SpecValue })
             .IsUnique();
+
+        // Vector embedding properties are excluded from EF Core mapping using [NotMapped]
+        // These will be handled by raw SQL queries for vector operations
     }
 }

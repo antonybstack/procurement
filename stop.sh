@@ -23,4 +23,12 @@ docker-compose -f docker-compose.db.yml down
 echo "📊 Stopping Grafana services..."
 docker-compose -f docker-compose.grafana.yml down
 
+# Stop Ollama services
+echo "🤖 Stopping Ollama services..."
+docker-compose -f docker-compose.ollama.yml down
+
+# Stop AI services
+echo "🧠 Stopping AI services..."
+docker-compose -f docker-compose.ai.mini.yml down
+
 echo "✅ All services stopped!" 

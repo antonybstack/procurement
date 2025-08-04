@@ -62,6 +62,10 @@ public class PurchaseOrder
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    // AI Vectorization
+    [NotMapped]
+    public float[]? Embedding { get; set; }
+
     // Navigation properties
     [ForeignKey("SupplierId")]
     public virtual Supplier? Supplier { get; set; }
@@ -70,4 +74,29 @@ public class PurchaseOrder
     public virtual RequestForQuote? RequestForQuote { get; set; }
 
     public virtual ICollection<PurchaseOrderLine> PurchaseOrderLines { get; set; } = new List<PurchaseOrderLine>();
+
+    /// <summary>
+    /// Generates text for embedding generation
+    /// </summary>
+    public string GetEmbeddingText()
+    {
+        var parts = new List<string>
+        {
+            PoNumber,
+            Status.ToString(),
+            OrderDate.ToString(),
+            ExpectedDeliveryDate?.ToString() ?? "",
+            TotalAmount.ToString(),
+            Currency,
+            PaymentTerms ?? "",
+            ShippingAddress ?? "",
+            BillingAddress ?? "",
+            Notes ?? "",
+            CreatedBy ?? "",
+            Supplier?.CompanyName ?? "",
+            Supplier?.Country ?? ""
+        };
+
+        return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+    }
 }

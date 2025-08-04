@@ -150,9 +150,58 @@ To backup volumes:
 docker run --rm -v postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres_data.tar.gz -C /data .
 ```
 
-## Remove data
+## Reset Database (Development Only)
+
+⚠️ **WARNING**: This will delete ALL database data!
+
+If you need to reset the database for development/testing:
+
 ```bash
-docker volume rm cursor-test_postgres_data cursor-test_pgadmin_data
+./reset-db.sh
+```
+
+This script will:
+1. Stop all database containers
+2. Remove all data volumes
+3. Start fresh with initial schema and sample data
+
+## Manual Volume Management
+
+For advanced users, you can manually manage volumes:
+
+```bash
+# List volumes
+docker volume ls
+
+# Remove specific volumes (WARNING: This deletes data!)
+docker volume rm postgres_data pgadmin_data ollama_data
+```
+
+## Ollama Management
+
+### Normal Operations (Data Preserved)
+```bash
+./start-ollama.sh          # Start Ollama with model pulling
+./restart-ollama.sh        # Restart Ollama (preserves models)
+./start-ai.sh              # Start AI recommendation service
+./restart-ai.sh            # Restart AI services (preserves data)
+```
+
+### Reset Operations (Data Removed)
+```bash
+./reset-ollama.sh          # Reset Ollama (removes all models)
+```
+
+### Troubleshooting Ollama
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
+
+# Check Ollama logs
+docker-compose -f docker-compose.ollama.yml logs ollama
+
+# Pull a specific model
+curl -X POST http://localhost:11434/api/pull -d '{"name": "llama3.1:1b"}'
 ```
 
 ## Health Checks
@@ -235,7 +284,7 @@ docker-compose exec pgadmin ping -c 1 postgres
 ## Customization
 
 ### Adding Custom Extensions
-Edit `init-scripts/01-init.sql` to add PostgreSQL extensions:
+Edit `database-schema.sql` to add PostgreSQL extensions:
 ```sql
 CREATE EXTENSION IF NOT EXISTS "your_extension_name";
 ```

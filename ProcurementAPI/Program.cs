@@ -13,7 +13,12 @@ builder.RegisterOpenTelemetry()
        .RegisterSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.MaxDepth = 64;
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -29,9 +34,16 @@ builder.Services.AddDbContext<ProcurementDbContext>(options =>
            .EnableSensitiveDataLogging()
            .EnableDetailedErrors());
 
+// Add Postgres Vector Store with Semantic Kernel
+builder.Services.AddPostgresVectorStore(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
 // Register services
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+
+// Register AI services
+builder.Services.AddScoped<IAiVectorizationService, AiVectorizationService>();
+builder.Services.AddScoped<IVectorStoreService, VectorStoreService>();
 
 // Add HttpClient for AI service
 // builder.Services.AddHttpClient<IAiRecommendationService, AiRecommendationService>(client =>

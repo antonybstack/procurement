@@ -67,6 +67,10 @@ public class Quote
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    // AI Vectorization
+    [NotMapped]
+    public float[]? Embedding { get; set; }
+
     // Navigation properties
     [ForeignKey("RfqId")]
     public virtual RequestForQuote RequestForQuote { get; set; } = null!;
@@ -78,4 +82,24 @@ public class Quote
     public virtual RfqLineItem RfqLineItem { get; set; } = null!;
 
     public virtual ICollection<PurchaseOrderLine> PurchaseOrderLines { get; set; } = new List<PurchaseOrderLine>();
+
+    /// <summary>
+    /// Generates text for embedding generation
+    /// </summary>
+    public string GetEmbeddingText()
+    {
+        var parts = new List<string>
+        {
+            QuoteNumber,
+            Status.ToString(),
+            UnitPrice.ToString(),
+            TotalPrice.ToString(),
+            QuantityOffered.ToString(),
+            PaymentTerms ?? "",
+            TechnicalComplianceNotes ?? "",
+            DeliveryDate?.ToString() ?? ""
+        };
+
+        return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+    }
 }
