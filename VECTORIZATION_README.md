@@ -9,7 +9,7 @@ The AI stack uses a **Retrieval-Augmented Generation (RAG)** pattern with the fo
 - **PostgreSQL with pgvector**: Stores both structured data and vector embeddings
 - **Ollama**: Local LLM service for generating embeddings and text completions
 - **C#/.NET API**: Orchestrates the entire AI workflow
-- **Llama 3.2 3B**: Efficient local model for embedding generation
+- **Llama 3 8B (tool/function calling)**: Advanced local model for embedding generation and tool/function calling
 
 ## 🚀 Quick Start
 
@@ -78,7 +78,9 @@ The following tables now include vector embeddings:
 
 ## 🧪 Example Queries
 
+
 ### Supplier Search
+
 ```bash
 # Find aluminum suppliers
 curl "http://localhost:5000/api/ai/search/suppliers?query=aluminum+supplier&limit=5"
@@ -87,7 +89,9 @@ curl "http://localhost:5000/api/ai/search/suppliers?query=aluminum+supplier&limi
 curl "http://localhost:5000/api/ai/search/suppliers?query=AS9100+certified+supplier&limit=10"
 ```
 
+
 ### Item Search
+
 ```bash
 # Find electronic components
 curl "http://localhost:5000/api/ai/search/items?query=electronic+components&limit=5"
@@ -96,13 +100,17 @@ curl "http://localhost:5000/api/ai/search/items?query=electronic+components&limi
 curl "http://localhost:5000/api/ai/search/items?query=aluminum+7075+bracket&limit=10"
 ```
 
+
 ### Semantic Search
+
 ```bash
 # Search across all entities
 curl "http://localhost:5000/api/ai/search/semantic?query=high+quality+suppliers&limit=20"
 ```
 
+
 ### Supplier Recommendations
+
 ```bash
 # Get supplier suggestions for specific requirements
 curl "http://localhost:5000/api/ai/suggest/suppliers?requirement=AS9100+certified+supplier+for+aluminum+parts&limit=5"
@@ -110,23 +118,25 @@ curl "http://localhost:5000/api/ai/suggest/suppliers?requirement=AS9100+certifie
 
 ## 🔧 Configuration
 
+
 ### Ollama Configuration
 
 The system uses Ollama with the following configuration:
 
-- **Model**: `llama3.2:3b` (efficient for local deployment)
-- **Embedding Dimension**: 1536
+- **Chat/Tools Model**: `llama3.1:8b-instruct-q4_K_M` (supports tool/function calling; good performance on Apple Silicon)
+- **Embedding Model**: `nomic-embed-text` (768-dimensional)
 - **URL**: `http://localhost:11434` (default)
 
-You can modify the model in `ProcurementAPI/Services/AiVectorizationService.cs`:
+You can modify the embedding model in `ProcurementAPI/Services/AiVectorizationService.cs`:
 
 ```csharp
-private const string ModelName = "llama3.2:3b"; // Change this to use different models
+private const string ModelName = "nomic-embed-text"; // Embedding model
+private const int EmbeddingDimension = 768; // Matches the embedding model
 ```
 
 ### Database Configuration
 
-Vector embeddings are stored as `vector(1536)` columns in PostgreSQL with pgvector extension.
+Vector embeddings are stored as `vector(768)` columns in PostgreSQL with pgvector extension.
 
 ## 📈 Performance Considerations
 
@@ -188,13 +198,17 @@ For large datasets, consider:
 
 ## 🔄 Updating Vectorizations
 
+
 ### Re-vectorize All Data
+
 ```bash
 curl -X POST http://localhost:5000/api/ai/vectorize/suppliers
 curl -X POST http://localhost:5000/api/ai/vectorize/items
 ```
 
+
 ### Re-vectorize Specific Entity
+
 The system automatically generates embeddings when entities are created/updated through the API.
 
 ## 🎯 Integration with Frontend
@@ -230,4 +244,5 @@ getSupplierRecommendations(requirement: string): Observable<Supplier[]> {
 - [Database Schema](database-schema.sql)
 - [API Documentation](http://localhost:5000/swagger)
 - [Ollama Documentation](https://ollama.ai/docs)
-- [pgvector Documentation](https://github.com/pgvector/pgvector) 
+
+- [pgvector Documentation](https://github.com/pgvector/pgvector)
