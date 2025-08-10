@@ -15,7 +15,6 @@ public class AiVectorizationService : IAiVectorizationService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AiVectorizationService> _logger;
-    private readonly OllamaApiClient _ollamaClient;
     private readonly IConfiguration _configuration;
     private const string ModelName = "nomic-embed-text"; // Using specialized embedding model
     private const int EmbeddingDimension = 768; // nomic-embed-text uses 768 dimensions
@@ -33,10 +32,6 @@ public class AiVectorizationService : IAiVectorizationService
         _serviceProvider = serviceProvider;
         _logger = logger;
         _configuration = configuration;
-
-        // Initialize Ollama client - use environment-based configuration
-        var ollamaUrl = GetOllamaUrl(configuration);
-        _ollamaClient = new OllamaApiClient(ollamaUrl);
     }
 
     private string GetOllamaUrl(IConfiguration configuration)
@@ -64,11 +59,51 @@ public class AiVectorizationService : IAiVectorizationService
             .Include(s => s.SupplierCapabilities)
             .Where(s => s.IsActive)
             .Take(300)
+            .ToListAsync(ct);
+
+        var count = 0;
+
+        var embeddings = await GenerateSupplierEmbeddingsAsync(suppliersToProcess.ToArray());
+
+        var supplierEmbeddings = suppliersToProcess
+            .Select((s, i) => new { Supplier = s, Embedding = embeddings[i] })
+            .ToList();
+
+        using var scope = _serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ProcurementDbContext>();
+
+        foreach (var supplierEmbedding in supplierEmbeddings)
+        {
+            supplierEmbedding.Supplier.Embedding = supplierEmbedding.Embedding;
+            context.Entry(supplierEmbedding.Supplier).State = EntityState.Modified;
+            count++;
+            _logger.LogInformation("Completed vectorization of supplier {SupplierId} {SupplierCode}",
+                supplierEmbedding.Supplier.SupplierId, supplierEmbedding.Supplier.SupplierCode);
+
+        }
+
+        await context.SaveChangesAsync(ct);
+
+        return count;
+    }
+
+    public async Task<int> VectorizeAllSuppliersAsync_OLD(CancellationToken ct)
+    {
+        _logger.LogInformation("Starting vectorization of all suppliers");
+
+        // Get initial list of suppliers that need vectorization
+        using var initialScope = _serviceProvider.CreateScope();
+        var initialContext = initialScope.ServiceProvider.GetRequiredService<ProcurementDbContext>();
+
+        var suppliersToProcess = await initialContext.Suppliers
+            .Include(s => s.SupplierCapabilities)
+            .Where(s => s.IsActive)
+            .Take(300)
             .Select(s => new { s.SupplierId, s.SupplierCode })
             .ToListAsync(ct);
 
         var count = 0;
-        var semaphore = new SemaphoreSlim(100); // Limit to 100 concurrent tasks
+        var semaphore = new SemaphoreSlim(1); // Limit to 100 concurrent tasks
         var tasks = new List<Task>();
 
         foreach (var supplierInfo in suppliersToProcess)
@@ -165,6 +200,13 @@ public class AiVectorizationService : IAiVectorizationService
         return await GenerateEmbeddingAsync(text);
     }
 
+    public async Task<List<float[]>> GenerateSupplierEmbeddingsAsync(Supplier[] suppliers)
+    {
+        var texts = suppliers.Select(s => s.GetEmbeddingText()).ToArray();
+        var embeddings = await GenerateEmbeddingsAsync(texts);
+        return embeddings ?? new List<float[]>();
+    }
+
     public async Task<float[]?> GenerateItemEmbeddingAsync(Item item)
     {
         var text = item.GetEmbeddingText();
@@ -255,7 +297,7 @@ public class AiVectorizationService : IAiVectorizationService
                 WHERE embedding IS NOT NULL 
                 ORDER BY distance 
                 LIMIT {1}",
-                FormatVectorForPostgres(queryEmbedding), limit / 4)
+                FormatVectorForPostgres(queryEmbedding), limit)
             .Include(s => s.SupplierCapabilities)
             .ToListAsync();
 
@@ -267,7 +309,7 @@ public class AiVectorizationService : IAiVectorizationService
                 WHERE embedding IS NOT NULL 
                 ORDER BY distance 
                 LIMIT {1}",
-                FormatVectorForPostgres(queryEmbedding), limit / 4)
+                FormatVectorForPostgres(queryEmbedding), limit)
             .Include(i => i.ItemSpecifications)
             .ToListAsync();
 
@@ -279,7 +321,7 @@ public class AiVectorizationService : IAiVectorizationService
                 WHERE embedding IS NOT NULL 
                 ORDER BY distance 
                 LIMIT {1}",
-                FormatVectorForPostgres(queryEmbedding), limit / 4)
+                FormatVectorForPostgres(queryEmbedding), limit)
             .ToListAsync();
 
         // Search quotes
@@ -290,10 +332,39 @@ public class AiVectorizationService : IAiVectorizationService
                 WHERE embedding IS NOT NULL 
                 ORDER BY distance 
                 LIMIT {1}",
-                FormatVectorForPostgres(queryEmbedding), limit / 4)
+                FormatVectorForPostgres(queryEmbedding), limit)
             .ToListAsync();
 
         return result;
+    }
+
+    private async Task<List<float[]>> GenerateEmbeddingsAsync(string[] texts)
+    {
+        try
+        {
+            if (texts == null || texts.Length == 0)
+            {
+                _logger.LogWarning("No texts provided for embedding generation");
+                return null;
+            }
+
+            var ollama = new OllamaApiClient(GetOllamaUrl(_configuration)); // Adjust port if needed
+
+
+            var embeddings = await ollama.EmbedAsync(new EmbedRequest { Model = ModelName, Input = [.. texts] }, CancellationToken.None);
+
+            if (!embeddings.Embeddings.Any())
+            {
+                _logger.LogWarning("No embeddings generated for texts: {Texts}", string.Join(", ", texts));
+            }
+
+            return embeddings.Embeddings.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate embedding for text: {Texts}", texts);
+            return [];
+        }
     }
 
     private async Task<float[]?> GenerateEmbeddingAsync(string text)
@@ -312,6 +383,15 @@ public class AiVectorizationService : IAiVectorizationService
 
             var json = System.Text.Json.JsonSerializer.Serialize(request);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var ollama = new OllamaApiClient(GetOllamaUrl(_configuration)); // Adjust port if needed
+
+            // Ensure the model is available locally
+            // await ollama.PullModel("mxbai-embed-large"); 
+
+            var embeddings = await ollama.EmbedAsync(new EmbedRequest { Model = ModelName, Input = [text] }, CancellationToken.None);
+
+            // 'emb
 
             // Use the same URL logic as the constructor
             var ollamaUrl = GetOllamaUrl(_configuration);

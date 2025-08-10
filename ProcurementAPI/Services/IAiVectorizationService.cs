@@ -23,6 +23,11 @@ public interface IAiVectorizationService
     Task<float[]?> GenerateSupplierEmbeddingAsync(Supplier supplier);
 
     /// <summary>
+    /// Generates embedding for a single supplier
+    /// </summary>
+    Task<List<float[]>> GenerateSupplierEmbeddingsAsync(Supplier[] suppliers);
+
+    /// <summary>
     /// Generates embedding for a single item
     /// </summary>
     Task<float[]?> GenerateItemEmbeddingAsync(Item item);
