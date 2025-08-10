@@ -22,6 +22,22 @@ export type {
   PurchaseOrderSummaryDto,
 } from './purchase-order.model';
 export type { RfqDto, RfqLineItemDto, RfqDetailDto, PaginatedResult } from './rfq.model';
+
+// Search and chat models
+export type {
+  ChatRequest,
+  ChatResponse,
+  StreamingChatChunk,
+  ChatMessage,
+  SemanticSearchRequest,
+  SearchResult,
+  SemanticSearchResponse,
+  DocumentMetadata,
+  SearchState,
+  ChatState,
+  SearchPageState
+} from './search.model';
+
 export type { SupplierDto, SupplierSummaryDto, SupplierCapabilityDto } from './supplier.model';
 export type { SupplierDetailDto, SupplierPerformanceDataDto } from './supplier-performance.model';
 

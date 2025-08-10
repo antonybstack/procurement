@@ -1,0 +1,174 @@
+<!-- Chat Interface Container -->
+<div class="flex flex-col h-full">
+
+  <!-- Messages Area -->
+  <div #messagesContainer (scroll)="onScroll()" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+
+    <!-- Empty State -->
+    @if (messages().length === 0) {
+    <div class="flex flex-col items-center justify-center h-full text-center">
+      <div class="bg-white rounded-lg p-6 shadow-sm max-w-md">
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+          </path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
+        <p class="text-sm text-gray-600 mb-4">Ask questions about your procurement data or try one of these suggestions:
+        </p>
+
+        <!-- Suggestions -->
+        <div class="space-y-2">
+          @for (suggestion of suggestions; track suggestion) {
+          <button (click)="useSuggestion(suggestion)"
+            class="w-full text-left p-3 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg border transition-colors">
+            {{ suggestion }}
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Chat Messages -->
+    @for (message of messages(); track message.id) {
+    <div class="flex" [class.justify-end]="message.role === 'user'">
+
+      <!-- Message Bubble -->
+      <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm" [class]="message.role === 'user'
+               ? 'bg-blue-500 text-white'
+               : 'bg-white text-gray-800 border border-gray-200'">
+
+        <!-- Message Content -->
+        <div class="whitespace-pre-wrap">{{ message.content }}</div>
+
+        <!-- Streaming Indicator -->
+        @if (isMessageStreaming(message)) {
+        <div class="flex items-center mt-2">
+          <div class="flex space-x-1">
+            <div class="w-2 h-2 bg-current rounded-full animate-bounce" style="animation-delay: 0s"></div>
+            <div class="w-2 h-2 bg-current rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-current rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+          </div>
+          <span class="ml-2 text-xs opacity-75">AI is typing...</span>
+        </div>
+        }
+
+        <!-- Message Meta -->
+        <div class="flex items-center justify-between mt-2 text-xs opacity-75">
+          <span>{{ formatTimestamp(message.timestamp) }}</span>
+
+          <!-- Copy Button -->
+          @if (message.content && !isMessageStreaming(message)) {
+          <button (click)="copyMessage(message)" class="hover:opacity-100 transition-opacity" title="Copy message">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+              </path>
+            </svg>
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Auto-scroll button -->
+    @if (!autoScroll() && messages().length > 0) {
+    <div class="fixed bottom-24 right-4">
+      <button (click)="toggleAutoScroll()"
+        class="bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      </button>
+    </div>
+    }
+  </div>
+
+  <!-- Input Area -->
+  <div class="border-t border-gray-200 bg-white p-4">
+
+    <!-- Controls Row -->
+    @if (messages().length > 0) {
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex space-x-2">
+        <button (click)="clearChat()" class="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+          title="Clear conversation">
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+            </path>
+          </svg>
+          Clear
+        </button>
+
+        @if (chatError()) {
+        <button (click)="retryLastMessage()" class="text-xs text-red-500 hover:text-red-700 transition-colors"
+          title="Retry last message">
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
+          Retry
+        </button>
+        }
+      </div>
+
+      <!-- Streaming Controls -->
+      @if (isStreaming()) {
+      <button (click)="cancelStream()" class="text-xs text-red-500 hover:text-red-700 transition-colors"
+        title="Stop streaming">
+        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+          </path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"></path>
+        </svg>
+        Stop
+      </button>
+      }
+    </div>
+    }
+
+    <!-- Input Form -->
+    <form (ngSubmit)="sendMessage()" class="flex space-x-2">
+      <div class="flex-1 relative">
+        <textarea #messageInput [(ngModel)]="currentMessage" (keydown)="handleKeyDown($event)"
+          (compositionstart)="handleCompositionStart()" (compositionend)="handleCompositionEnd()" name="message"
+          placeholder="Type your message... (Enter to send, Shift+Enter for new line)" rows="1"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          [disabled]="!canSendMessage() || isComposing()" style="min-height: 2.5rem; max-height: 8rem;"></textarea>
+
+        <!-- Character counter -->
+        @if (currentMessage().length > 500) {
+        <div class="absolute bottom-1 right-2 text-xs text-gray-400">
+          {{ currentMessage().length }}/2000
+        </div>
+        }
+      </div>
+
+      <!-- Send Button -->
+      <button type="submit" [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+
+        @if (isStreaming()) {
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        } @else {
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+          </path>
+        </svg>
+        }
+      </button>
+    </form>
+
+    <!-- Error Display -->
+    @if (chatError()) {
+    <div class="mt-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">
+      <strong>Error:</strong> {{ chatError() }}
+    </div>
+    }
+  </div>
+
+</div>

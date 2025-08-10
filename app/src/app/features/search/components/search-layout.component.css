@@ -1,0 +1,33 @@
+/* Search Layout Component Styles */
+
+.search-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+.search-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .search-header {
+    padding: 1rem;
+  }
+
+  .search-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .search-header p {
+    display: none;
+  }
+}

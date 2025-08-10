@@ -1,0 +1,228 @@
+<!-- Document Browser Panel -->
+<div class="flex flex-col h-full bg-gray-50">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-medium text-gray-900">Documents</h3>
+      <button (click)="refreshDocuments()" [disabled]="isLoadingDocuments()"
+        class="text-sm text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+        title="Refresh documents">
+        <svg class="w-4 h-4 inline mr-1" [class.animate-spin]="isLoadingDocuments()" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+          </path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="space-y-3">
+      <div class="relative">
+        <input [(ngModel)]="filterText" type="text" placeholder="Filter documents..."
+          class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        @if (filterText()) {
+        <button (click)="clearFilter()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <svg class="w-4 h-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+            </path>
+          </svg>
+        </button>
+        }
+      </div>
+
+      <!-- Stats -->
+      <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
+        <div class="flex items-center justify-between">
+          <span>{{ documentStats().total }} documents</span>
+          <span>{{ documentStats().totalChunks.toLocaleString() }} total chunks</span>
+        </div>
+        @if (Object.keys(documentStats().statusCounts).length > 1) {
+        <div class="flex items-center space-x-3 mt-2 text-xs">
+          @for (status of Object.keys(documentStats().statusCounts); track status) {
+          <span class="flex items-center">
+            <div [class]="getStatusColor(status)" class="w-2 h-2 rounded-full mr-1"></div>
+            {{ status }}: {{ documentStats().statusCounts[status] }}
+          </span>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Document List -->
+  <div class="flex-1 overflow-y-auto">
+
+    <!-- Loading State -->
+    @if (isLoadingDocuments()) {
+    <div class="flex items-center justify-center h-32">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+        <p class="text-sm text-gray-600">Loading documents...</p>
+      </div>
+    </div>
+    }
+
+    <!-- Empty State -->
+    @else if (documents().length === 0) {
+    <div class="flex items-center justify-center h-full">
+      <div class="text-center">
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+          </path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No Documents</h3>
+        <p class="text-sm text-gray-600">No documents have been uploaded yet.</p>
+      </div>
+    </div>
+    }
+
+    <!-- No Results -->
+    @else if (filteredDocuments().length === 0) {
+    <div class="flex items-center justify-center h-32">
+      <div class="text-center">
+        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <p class="text-sm text-gray-600">No documents match your filter</p>
+      </div>
+    </div>
+    }
+
+    <!-- Documents Table -->
+    @else {
+    <div class="bg-white">
+
+      <!-- Table Header -->
+      <div
+        class="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <div class="col-span-5">
+          <button (click)="setSortBy('name')" class="flex items-center space-x-1 hover:text-gray-700 transition-colors">
+            <span>Document</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSortIcon('name')">
+              </path>
+            </svg>
+          </button>
+        </div>
+        <div class="col-span-2">
+          <button (click)="setSortBy('status')"
+            class="flex items-center space-x-1 hover:text-gray-700 transition-colors">
+            <span>Status</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSortIcon('status')">
+              </path>
+            </svg>
+          </button>
+        </div>
+        <div class="col-span-2">
+          <button (click)="setSortBy('size')" class="flex items-center space-x-1 hover:text-gray-700 transition-colors">
+            <span>Size</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSortIcon('size')">
+              </path>
+            </svg>
+          </button>
+        </div>
+        <div class="col-span-3">
+          <button (click)="setSortBy('date')" class="flex items-center space-x-1 hover:text-gray-700 transition-colors">
+            <span>Uploaded</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSortIcon('date')">
+              </path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="divide-y divide-gray-200">
+        @for (doc of filteredDocuments(); track doc.id) {
+        <div (click)="selectDocument(doc.id)" [class]="isDocumentSelected(doc.id)
+                ? 'bg-blue-50 border-l-4 border-l-blue-500'
+                : 'hover:bg-gray-50'" class="grid grid-cols-12 gap-4 px-4 py-3 cursor-pointer transition-colors">
+
+          <!-- Document Info -->
+          <div class="col-span-5 flex items-center space-x-3">
+            <div [class]="getFileIcon(doc.fileName)" class="flex-shrink-0">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-gray-900 truncate">
+                {{ doc.fileName }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ getFileExtension(doc.fileName) }} file
+              </p>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="col-span-2 flex items-center">
+            <span [class]="getStatusColor(doc.status)"
+              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  [attr.d]="getStatusIcon(doc.status)"></path>
+              </svg>
+              {{ doc.status }}
+            </span>
+          </div>
+
+          <!-- Size -->
+          <div class="col-span-2 flex items-center">
+            <span class="text-sm text-gray-900">
+              {{ formatFileSize(doc.chunkCount) }}
+            </span>
+          </div>
+
+          <!-- Upload Date -->
+          <div class="col-span-3 flex items-center">
+            <span class="text-sm text-gray-500">
+              {{ formatDate(doc.uploadedAt) }}
+            </span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Selected Document Info -->
+  @if (selectedDocument()) {
+  <div class="bg-blue-50 border-t border-blue-200 p-4">
+    <div class="flex items-center space-x-2 text-sm">
+      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span class="text-blue-700">
+        Selected: {{ getSelectedDocumentName() }}
+      </span>
+      <button (click)="selectDocument('')" class="text-blue-500 hover:text-blue-700 transition-colors">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+          </path>
+        </svg>
+      </button>
+    </div>
+    <p class="text-xs text-blue-600 mt-1">
+      Search results will be filtered to this document only. Chat queries will also focus on this document.
+    </p>
+  </div>
+  }
+</div>

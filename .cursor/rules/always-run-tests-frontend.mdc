@@ -1,0 +1,5 @@
+---
+description: always run `ng test` after making frontend related changes and validate all are passing.
+globs:
+alwaysApply: true
+---

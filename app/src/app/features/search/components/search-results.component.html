@@ -1,0 +1,223 @@
+<!-- Search Results Panel -->
+<div class="flex flex-col h-full">
+
+  <!-- Search Header -->
+  <div class="border-b border-gray-200 p-4 bg-white">
+    <h2 class="text-lg font-semibold text-gray-900 mb-3">Document Search</h2>
+
+    <!-- Search Form -->
+    <div class="space-y-3">
+      <div class="flex space-x-2">
+        <input [(ngModel)]="searchQuery" (keydown)="handleKeyDown($event)" type="text"
+          placeholder="Enter search query..."
+          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          [disabled]="isSearching()">
+
+        <button (click)="performSearch()" [disabled]="!searchQuery().trim() || isSearching()"
+          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+
+          @if (isSearching()) {
+          <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          } @else {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          }
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex space-x-3">
+        <div class="flex-1">
+          <select [(ngModel)]="selectedDocument" (ngModelChange)="setDocumentFilter($event)"
+            class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <option value="">All Documents</option>
+            @for (doc of availableDocuments(); track doc.id) {
+            <option [value]="doc.id">{{ doc.fileName }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <select [(ngModel)]="maxResults"
+            class="px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <option [value]="5">5 results</option>
+            <option [value]="10">10 results</option>
+            <option [value]="20">20 results</option>
+            <option [value]="50">50 results</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Clear button -->
+      @if (hasSearchResults() || currentQuery()) {
+      <button (click)="clearSearch()" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Clear Search
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Results Content -->
+  <div class="flex-1 overflow-y-auto">
+
+    <!-- Loading State -->
+    @if (isSearching()) {
+    <div class="flex items-center justify-center h-32">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+        <p class="text-sm text-gray-600">Searching documents...</p>
+      </div>
+    </div>
+    }
+
+    <!-- Error State -->
+    @else if (searchError()) {
+    <div class="p-4">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Search Error</h3>
+            <p class="mt-1 text-sm text-red-700">{{ searchError() }}</p>
+            <div class="mt-2">
+              <button (click)="performSearch()" class="text-sm font-medium text-red-800 hover:text-red-600">
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Empty State -->
+    @else if (!hasSearchResults() && !currentQuery()) {
+    <div class="flex items-center justify-center h-full">
+      <div class="text-center">
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Search Documents</h3>
+        <p class="text-sm text-gray-600">Enter a search query to find relevant information in your documents.</p>
+      </div>
+    </div>
+    }
+
+    <!-- No Results -->
+    @else if (!hasSearchResults() && currentQuery()) {
+    <div class="flex items-center justify-center h-32">
+      <div class="text-center">
+        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+          </path>
+        </svg>
+        <p class="text-sm text-gray-600">No results found for "{{ currentQuery() }}"</p>
+      </div>
+    </div>
+    }
+
+    <!-- Results -->
+    @else {
+    <div class="p-4">
+
+      <!-- Results Stats -->
+      <div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm text-gray-600">
+        <div class="flex items-center justify-between">
+          <span>
+            Found <strong>{{ resultStats().totalResults }}</strong> results
+            in <strong>{{ resultStats().documentCount }}</strong> documents
+          </span>
+          <span>
+            Avg. relevance:
+            <span class="font-medium">{{ formatSimilarity(resultStats().averageSimilarity) }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Results List -->
+      <div class="space-y-4">
+        @for (result of filteredResults(); track generateResultId(result, $index)) {
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+
+          <!-- Result Header -->
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-medium text-gray-900">
+                {{ getDocumentName(result.documentId) }}
+              </span>
+              <span class="text-xs text-gray-500">Page {{ result.pageNumber }}</span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <!-- Similarity Badge -->
+              <span [class]="getSimilarityColor(result.similarity)" class="text-xs font-medium px-2 py-1 rounded-full">
+                {{ formatSimilarity(result.similarity) }}
+              </span>
+
+              <!-- Actions -->
+              <div class="flex space-x-1">
+                <button (click)="copyResult(result)" class="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Copy result">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </button>
+
+                <button (click)="toggleResultExpansion(generateResultId(result, $index))"
+                  class="text-gray-400 hover:text-gray-600 transition-colors"
+                  [title]="isResultExpanded(generateResultId(result, $index)) ? 'Collapse' : 'Expand'">
+                  <svg class="w-4 h-4 transition-transform"
+                    [class.rotate-180]="isResultExpanded(generateResultId(result, $index))" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result Content -->
+          <div class="text-sm text-gray-700">
+            @if (isResultExpanded(generateResultId(result, $index))) {
+            <div [innerHTML]="highlightText(result.text, currentQuery())"></div>
+            } @else {
+            <div [innerHTML]="highlightText(truncateText(result.text), currentQuery())"></div>
+            @if (result.text.length > 200) {
+            <button (click)="toggleResultExpansion(generateResultId(result, $index))"
+              class="text-blue-500 hover:text-blue-700 text-xs mt-1 transition-colors">
+              Show more
+            </button>
+            }
+            }
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Load More (placeholder for pagination) -->
+      @if (filteredResults().length >= maxResults()) {
+      <div class="text-center mt-6">
+        <p class="text-sm text-gray-500">
+          Showing first {{ maxResults() }} results.
+          Increase the result limit or refine your search for more specific results.
+        </p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

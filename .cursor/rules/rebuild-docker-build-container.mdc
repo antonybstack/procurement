@@ -1,5 +1,0 @@
----
-description: anytime you update the API or frontend related code, you need to rebuild the docker build container
-globs:
-alwaysApply: true
----

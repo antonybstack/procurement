@@ -1,0 +1,5 @@
+---
+description: never use zone.js and use signals when possible before relying on rxjs in the angular frontend project.
+globs:
+alwaysApply: true
+---
