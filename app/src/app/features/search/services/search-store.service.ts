@@ -1,11 +1,13 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, inject, signal, computed, effect, DestroyRef } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
 import { SearchService } from './search.service';
 import {
   ChatMessage,
   DocumentMetadata,
   SearchResult,
-  SearchPageState
+  SearchPageState,
+  SemanticSearchResponse
 } from '../../../shared/models';
 
 /**
@@ -17,6 +19,7 @@ import {
 })
 export class SearchStoreService {
   private searchService = inject(SearchService);
+  private destroyRef = inject(DestroyRef);
 
   // Direct access to search service signals
   readonly chatState = this.searchService.chatState;
@@ -73,6 +76,13 @@ export class SearchStoreService {
     });
   }
 
+  /**
+   * Helper method to provide takeUntilDestroyed with proper injection context
+   */
+  private takeUntilDestroyed() {
+    return takeUntilDestroyed(this.destroyRef);
+  }
+
   // Chat operations
 
   /**
@@ -85,19 +95,19 @@ export class SearchStoreService {
     }
 
     this.searchService.streamChatCompletion(message)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (chatMessage) => {
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(
+        (chatMessage: any) => {
           // Message updates are handled by the service
           console.log('Streaming message update:', chatMessage.id);
         },
-        error: (error) => {
+        (error: any) => {
           console.error('Chat streaming error:', error);
         },
-        complete: () => {
+        () => {
           console.log('Chat streaming completed');
         }
-      });
+      );
   }
 
   /**
@@ -126,15 +136,15 @@ export class SearchStoreService {
     }
 
     this.searchService.searchDocuments(query, documentFilter, maxResults)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (response) => {
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(
+        (response: any) => {
           console.log('Search completed:', response.results.length, 'results');
         },
-        error: (error) => {
+        (error: any) => {
           console.error('Search error:', error);
         }
-      });
+      );
   }
 
   /**
@@ -158,15 +168,15 @@ export class SearchStoreService {
    */
   loadDocuments(): void {
     this.searchService.loadDocuments()
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (documents) => {
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(
+        (documents: any) => {
           console.log('Loaded documents:', documents.length);
         },
-        error: (error) => {
+        (error: any) => {
           console.error('Error loading documents:', error);
         }
-      });
+      );
   }
 
   // Utility methods for components

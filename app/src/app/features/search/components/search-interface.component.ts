@@ -16,61 +16,116 @@ import { SearchStoreService } from '../services/search-store.service';
 export class SearchInterfaceComponent {
   private searchStore = inject(SearchStoreService);
 
-  // Local UI state
-  protected activeTab = signal<'chat' | 'search' | 'documents'>('chat');
-  protected isMobile = signal<boolean>(false);
-  protected sidebarCollapsed = signal<boolean>(false);
+  // Chat interface state
+  protected currentMessage = signal<string>('');
+  protected autoScroll = signal<boolean>(true);
+  protected isComposing = signal<boolean>(false);
 
-  // Computed state from store
-  protected isActive = this.searchStore.isActive;
-  protected hasErrors = this.searchStore.hasErrors;
+  // Store state
+  protected messages = this.searchStore.messages;
+  protected isStreaming = this.searchStore.isStreaming;
+  protected canSendMessage = this.searchStore.canSendMessage;
   protected chatError = this.searchStore.chatError;
-  protected searchError = this.searchStore.searchError;
+
+  // Sample suggestions for empty state
+  protected suggestions = [
+    "What products are available in our catalog?",
+    "Find suppliers for electronic components",
+    "Show me recent RFQ activity",
+    "What are the top performing suppliers?",
+    "Help me find procurement best practices"
+  ];
 
   constructor() {
-    // Check for mobile viewport
-    this.checkMobile();
-    window.addEventListener('resize', () => this.checkMobile());
-
-    // Effect to handle errors
+    // Auto-scroll effect when new messages arrive
     effect(() => {
-      const chatErr = this.chatError();
-      const searchErr = this.searchError();
-
-      if (chatErr) {
-        console.error('Chat error:', chatErr);
-      }
-
-      if (searchErr) {
-        console.error('Search error:', searchErr);
+      const messages = this.messages();
+      if (messages.length > 0 && this.autoScroll()) {
+        // Scroll will be handled in ngAfterViewChecked
       }
     });
   }
 
-  protected setActiveTab(tab: 'chat' | 'search' | 'documents'): void {
-    this.activeTab.set(tab);
+  protected sendMessage(): void {
+    const message = this.currentMessage().trim();
+    if (!message || !this.canSendMessage()) {
+      return;
+    }
 
-    // Auto-collapse sidebar on mobile when switching tabs
-    if (this.isMobile()) {
-      this.sidebarCollapsed.set(true);
+    // Send message via store
+    this.searchStore.sendMessage(message);
+
+    // Clear input
+    this.currentMessage.set('');
+
+    // Enable auto-scroll for new message
+    this.autoScroll.set(true);
+  }
+
+  protected useSuggestion(suggestion: string): void {
+    this.currentMessage.set(suggestion);
+    this.sendMessage();
+  }
+
+  protected handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
     }
   }
 
-  protected toggleSidebar(): void {
-    this.sidebarCollapsed.update(collapsed => !collapsed);
+  protected handleCompositionStart(): void {
+    this.isComposing.set(true);
   }
 
-  protected clearErrors(): void {
-    // Trigger a new search/chat to clear error states
-    // This will be handled by individual components
+  protected handleCompositionEnd(): void {
+    this.isComposing.set(false);
   }
 
-  private checkMobile(): void {
-    this.isMobile.set(window.innerWidth < 768);
+  protected copyMessage(message: any): void {
+    navigator.clipboard.writeText(message.content).then(() => {
+      console.log('Message copied to clipboard');
+    });
+  }
 
-    // Auto-collapse sidebar on mobile
-    if (window.innerWidth < 768) {
-      this.sidebarCollapsed.set(true);
+  protected cancelStream(): void {
+    this.searchStore.cancelStream();
+  }
+
+  protected clearChat(): void {
+    this.searchStore.clearChat();
+    this.currentMessage.set('');
+    this.autoScroll.set(true);
+  }
+
+  protected retryLastMessage(): void {
+    const messages = this.messages();
+    const lastUserMessage = messages
+      .slice()
+      .reverse()
+      .find(msg => msg.role === 'user');
+
+    if (lastUserMessage) {
+      this.searchStore.sendMessage(lastUserMessage.content);
     }
+  }
+
+  protected toggleAutoScroll(): void {
+    this.autoScroll.update(auto => !auto);
+  }
+
+  protected isMessageStreaming(message: any): boolean {
+    return this.searchStore.isMessageStreaming(message.id);
+  }
+
+  protected onScroll(): void {
+    // Handle scroll for auto-scroll detection
+  }
+
+  protected formatTimestamp(timestamp: Date): string {
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 }

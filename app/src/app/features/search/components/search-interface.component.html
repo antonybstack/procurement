@@ -1,176 +1,268 @@
-<!-- Main Search Interface with Split Layout -->
-<div class="flex h-full bg-gray-50">
+<!-- Grok-Inspired Chat Interface -->
+<div class="flex flex-col h-full bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900">
 
-  <!-- Left Panel - Chat Interface -->
-  <div class="flex flex-col w-1/2 bg-white border-r border-gray-200">
+  <!-- Chat Container -->
+  <div class="flex-1 flex flex-col max-w-4xl mx-auto w-full">
 
-    <!-- Tab Navigation -->
-    <div class="flex border-b border-gray-200">
-      <button (click)="setActiveTab('chat')" [class]="activeTab() === 'chat'
-          ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
-          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-        class="px-4 py-2 text-sm font-medium transition-colors">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-          </path>
-        </svg>
-        AI Chat
-      </button>
+    <!-- Header Area with Logo -->
+    <div class="flex flex-col items-center pt-16 pb-8">
+      <!-- Procurement AI Logo -->
+      <div class="flex items-center space-x-3 mb-6">
+        <div class="relative">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+              </path>
+            </svg>
+          </div>
+          <div
+            class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse">
+          </div>
+        </div>
+        <h1 class="text-3xl font-bold text-white">Procurement AI</h1>
+      </div>
 
-      <button (click)="setActiveTab('search')" [class]="activeTab() === 'search'
-          ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
-          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-        class="px-4 py-2 text-sm font-medium transition-colors">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-        Document Search
-      </button>
-
-      <button (click)="setActiveTab('documents')" [class]="activeTab() === 'documents'
-          ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
-          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-        class="px-4 py-2 text-sm font-medium transition-colors">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-          </path>
-        </svg>
-        Documents
-      </button>
+      <!-- Subtitle -->
+      <p class="text-gray-400 text-lg text-center max-w-md">
+        Your intelligent procurement assistant
+      </p>
     </div>
 
-    <!-- Tab Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Chat Area -->
+    <div class="flex-1 flex flex-col px-6 pb-6">
 
-      <!-- Chat Tab -->
-      @if (activeTab() === 'chat') {
-      <div class="flex-1 flex flex-col p-4">
-        <div class="text-center text-gray-500">
-          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-            </path>
-          </svg>
-          <p class="text-lg font-medium mb-2">AI Chat Interface</p>
-          <p class="text-sm">Real-time streaming chat with AI assistant. Components ready for integration.</p>
+      <!-- Messages Container -->
+      <div class="flex-1 mb-6">
+
+        <!-- Welcome State -->
+        @if (messages().length === 0) {
+        <div class="text-center space-y-8">
+
+          <!-- Conversation Starters -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            @for (suggestion of suggestions; track suggestion) {
+            <button (click)="useSuggestion(suggestion)"
+              class="group p-4 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-xl text-left transition-all duration-200 hover:scale-105">
+              <div class="flex items-start space-x-3">
+                <div
+                  class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
+                  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-white text-sm font-medium leading-relaxed">{{ suggestion }}</p>
+                </div>
+              </div>
+            </button>
+            }
+          </div>
         </div>
-      </div>
-      }
+        }
 
-      <!-- Search Tab -->
-      @if (activeTab() === 'search') {
-      <div class="flex-1 p-4">
-        <div class="text-center text-gray-500">
-          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <p class="text-lg font-medium mb-2">Document Search</p>
-          <p class="text-sm">Use the chat interface to search through your documents with natural language queries.</p>
+        <!-- Chat Messages -->
+        @else {
+        <div #messagesContainer (scroll)="onScroll()"
+          class="space-y-6 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+
+          @for (message of messages(); track message.id) {
+          <div class="flex" [class.justify-end]="message.role === 'user'">
+
+            <!-- Message Bubble -->
+            <div class="max-w-xs md:max-w-2xl">
+
+              <!-- User Message -->
+              @if (message.role === 'user') {
+              <div class="bg-blue-600 text-white px-6 py-3 rounded-2xl rounded-br-md">
+                <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.content }}</p>
+                <p class="text-xs text-blue-100 mt-2 opacity-75">{{ formatTimestamp(message.timestamp) }}</p>
+              </div>
+              }
+
+              <!-- Assistant Message -->
+              @else {
+              <div class="bg-gray-800 text-gray-100 px-6 py-4 rounded-2xl rounded-bl-md border border-gray-700">
+                <div class="flex items-center space-x-2 mb-3">
+                  <div
+                    class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                  </div>
+                  <span class="text-xs font-medium text-gray-400">Procurement AI</span>
+
+                  @if (isMessageStreaming(message)) {
+                  <div class="flex space-x-1">
+                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                  </div>
+                  }
+                </div>
+
+                <div class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.content }}</div>
+
+                @if (!isMessageStreaming(message) && message.content) {
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-700">
+                  <span class="text-xs text-gray-500">{{ formatTimestamp(message.timestamp) }}</span>
+                  <button (click)="copyMessage(message)"
+                    class="text-gray-400 hover:text-white transition-colors p-1 rounded">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                  </button>
+                </div>
+                }
+              </div>
+              }
+
+            </div>
+          </div>
+          }
         </div>
-      </div>
-      }
+        }
 
-      <!-- Documents Tab -->
-      @if (activeTab() === 'documents') {
-      <div class="flex-1 p-4">
-        <div class="text-center text-gray-500">
-          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-            </path>
-          </svg>
-          <p class="text-lg font-medium mb-2">Document Browser</p>
-          <p class="text-sm">Browse and filter available documents. Components ready for integration.</p>
+      </div>
+
+      <!-- Input Area -->
+      <div class="relative max-w-4xl mx-auto w-full">
+
+        <!-- Main Input -->
+        <div class="relative">
+          <textarea #messageInput [(ngModel)]="currentMessage" (keydown)="handleKeyDown($event)"
+            (compositionstart)="handleCompositionStart()" (compositionend)="handleCompositionEnd()" name="message"
+            placeholder="What do you want to know about procurement?" rows="1"
+            class="w-full px-6 py-4 pr-16 bg-gray-800/50 backdrop-blur-sm border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all duration-200"
+            [disabled]="!canSendMessage() || isComposing()" style="min-height: 3.5rem; max-height: 8rem;"></textarea>
+
+          <!-- Send Button -->
+          <button type="button" (click)="sendMessage()"
+            [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-50">
+
+            @if (isStreaming()) {
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            } @else {
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            }
+          </button>
         </div>
-      </div>
-      }
 
-    </div>
-  </div>
+        <!-- Controls Row -->
+        @if (messages().length > 0) {
+        <div class="flex items-center justify-between mt-3 px-2">
+          <div class="flex items-center space-x-4">
+            <button (click)="clearChat()"
+              class="text-xs text-gray-400 hover:text-gray-300 transition-colors flex items-center space-x-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
+              </svg>
+              <span>Clear</span>
+            </button>
 
-  <!-- Right Panel - Search Results -->
-  <div class="flex flex-col w-1/2 bg-white p-4">
-    <div class="text-center text-gray-500">
-      <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
-      <p class="text-lg font-medium mb-2">Search Results</p>
-      <p class="text-sm">Search results will appear here when you perform queries. Components ready for integration.</p>
-    </div>
-  </div>
+            @if (isStreaming()) {
+            <button (click)="cancelStream()"
+              class="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center space-x-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"></path>
+              </svg>
+              <span>Stop</span>
+            </button>
+            }
+          </div>
 
-  <!-- Error Toast -->
-  @if (hasErrors()) {
-  <div
-    class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg max-w-sm">
-    <div class="flex items-start">
-      <div class="flex-shrink-0">
-        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-      </div>
-      <div class="ml-3 flex-1">
-        <p class="text-sm font-medium">Error occurred</p>
+          <div class="text-xs text-gray-500">
+            {{ messages().length }} message{{ messages().length !== 1 ? 's' : '' }}
+          </div>
+        </div>
+        }
+
+        <!-- Error Display -->
         @if (chatError()) {
-        <p class="text-xs mt-1">Chat: {{ chatError() }}</p>
-        }
-        @if (searchError()) {
-        <p class="text-xs mt-1">Search: {{ searchError() }}</p>
+        <div class="mt-3 text-xs text-red-400 bg-red-900/20 border border-red-800/30 rounded-lg p-3">
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ chatError() }}</span>
+            <button (click)="retryLastMessage()" class="ml-auto text-red-300 hover:text-red-200 underline">
+              Retry
+            </button>
+          </div>
+        </div>
         }
       </div>
-      <div class="ml-3">
-        <button (click)="clearErrors()" class="text-red-400 hover:text-red-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
+
     </div>
   </div>
-  }
 
-  <!-- Loading Indicator -->
-  @if (isActive()) {
-  <div class="fixed top-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded shadow-lg">
-    <div class="flex items-center">
-      <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-3"></div>
-      <span class="text-sm">Processing...</span>
-    </div>
+  <!-- Auto-scroll button -->
+  @if (!autoScroll() && messages().length > 0) {
+  <div class="fixed bottom-32 right-6">
+    <button (click)="toggleAutoScroll()"
+      class="bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-full shadow-lg border border-gray-600 transition-all duration-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+      </svg>
+    </button>
   </div>
   }
 
 </div>
 
-<!-- Mobile Responsive Adjustments -->
+<!-- Custom Scrollbar Styles -->
 <style>
-  @media (max-width: 768px) {
-    .flex.h-full>div {
-      width: 100% !important;
-    }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
 
-    .flex.h-full>div:nth-child(2) {
-      display: none;
-    }
+  .scrollbar-thumb-gray-600 {
+    scrollbar-color: #4b5563 transparent;
+  }
 
-    .search-interface-mobile .right-panel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      height: 100vh;
-      width: 100%;
-      z-index: 50;
-      transform: translateX(100%);
-      transition: transform 0.3s ease-in-out;
-    }
+  .scrollbar-track-transparent {
+    scrollbar-track-color: transparent;
+  }
 
-    .search-interface-mobile .right-panel.open {
-      transform: translateX(0);
-    }
+  /* Webkit scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
+
+  /* Smooth animations */
+  textarea {
+    transition: all 0.2s ease-in-out;
+  }
+
+  textarea:focus {
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5),
+      0 0 20px rgba(59, 130, 246, 0.2);
   }
 </style>
