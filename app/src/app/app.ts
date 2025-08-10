@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +9,10 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class App {
   protected title = 'Procurement Management System';
+
+  constructor(private router: Router) { }
+
+  isSearchRoute(): boolean {
+    return this.router.url.startsWith('/search');
+  }
 }
