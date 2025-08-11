@@ -7,3 +7,16 @@
     background-color: #fee2e2;
     color: #991b1b;
 }
+
+/* Ensure grid handles overflow with transparent theme */
+.ag-theme-alpine {
+    /* allow grid viewport to scroll internally */
+    overflow: hidden;
+    /* grid manages its own scrolling */
+}
+
+/* Wrapper to provide a scrolling container when needed */
+.grid-container-fixed-height {
+    height: 500px;
+    overflow: hidden;
+}

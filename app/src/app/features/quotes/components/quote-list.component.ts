@@ -162,7 +162,12 @@ export class QuoteListComponent implements OnInit {
     };
 
     // AG Grid theme configured to respond to data-ag-theme-mode
-    gridTheme = themeQuartz.withPart(colorSchemeVariable);
+    gridTheme = themeQuartz
+        .withPart(colorSchemeVariable)
+        .withParams({
+            backgroundColor: 'rgba(0,0,0,0)',
+            chromeBackgroundColor: 'rgba(0,0,0,0)'
+        });
 
     ngOnInit() {
         this.loadQuotes();

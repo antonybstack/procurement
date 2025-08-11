@@ -80,7 +80,7 @@
     <div
         class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
         <ag-grid-angular [rowData]="items()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
-            [theme]="gridTheme" [rowSelection]="'single'" [animateRows]="true" [domLayout]="'autoHeight'"
+            [theme]="gridTheme" [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'"
             (gridReady)="onGridReady($event)" (rowClicked)="onRowClicked($event)" class="ag-theme-alpine w-full"
             style="height: 500px;">
         </ag-grid-angular>
