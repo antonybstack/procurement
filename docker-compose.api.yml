@@ -10,6 +10,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=myapp;Username=postgres;Password=postgres_password;Include Error Detail=true
+      - OpenAIKey=${OpenAIKey}
+      - ModelName=${ModelName}
+      - EmbeddingModelName=${EmbeddingModelName}
     ports:
       - "5001:8080"
     healthcheck:

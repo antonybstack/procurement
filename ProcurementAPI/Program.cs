@@ -30,15 +30,9 @@ Alternatives:
 */
 string chatModel = "openai/gpt-5-nano" ?? builder.Configuration.GetRequiredSection("ModelName").Value!;
 chatModel = "gpt-5-nano";
-string openRouterKey = builder.Configuration.GetRequiredSection("OpenRouterKey").Value!;
+//string openRouterKey = builder.Configuration.GetRequiredSection("OpenRouterKey").Value!;
 string openAIKey = builder.Configuration.GetRequiredSection("OpenAIKey").Value!;
 string embeddingModelName = builder.Configuration.GetRequiredSection("EmbeddingModelName").Value!;
-Debug.WriteLine($"""
-    Model: {chatModel}
-    OpenRouterKey: {openRouterKey}
-    OpenAIKey: {openAIKey}
-    EmbeddingModelName: {embeddingModelName}
-""");
 
 // Register OpenTelemetry and Serilog
 builder.RegisterOpenTelemetry()
