@@ -1,12 +1,13 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div class="flex items-center space-x-4">
-      <button (click)="goBack()" class="text-gray-600 hover:text-gray-800 transition-colors duration-200">
+      <button (click)="goBack()"
+        class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text transition-colors duration-200">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h1 class="text-2xl font-bold text-gray-900">RFQ Details</h1>
+      <h1 class="text-2xl font-bold text-light-text dark:text-grok-text">RFQ Details</h1>
     </div>
     <div class="flex space-x-3">
       <button
@@ -23,12 +24,12 @@
   @if (loading()) {
   <div class="flex justify-center items-center py-12">
     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <span class="ml-2 text-gray-600">Loading RFQ details...</span>
+    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading RFQ details...</span>
   </div>
   }
 
   @if (error()) {
-  <div class="bg-red-50 border border-red-200 rounded-md p-4">
+  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
     <div class="flex">
       <div class="flex-shrink-0">
         <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -38,7 +39,7 @@
         </svg>
       </div>
       <div class="ml-3">
-        <p class="text-sm text-red-800">{{ error() }}</p>
+        <p class="text-sm text-red-800 dark:text-red-300">{{ error() }}</p>
       </div>
     </div>
   </div>
@@ -47,62 +48,65 @@
   @let dto = rfq();
   @if (dto && !loading() && !error()) {
   <div class="space-y-6">
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+    <div
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Basic Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">RFQ Number</label>
-          <p class="mt-1 text-sm text-gray-900">{{ rfq()!.rfqNumber }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">RFQ Number</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.rfqNumber }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Title</label>
-          <p class="mt-1 text-sm text-gray-900">{{ rfq()!.title }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Title</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.title }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Status</label>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Status</label>
           <span class="mt-1 inline-flex px-2 py-1 text-xs font-medium rounded-full {{ getStatusClass(rfq()!.status) }}">
             {{ rfq()!.status }}
           </span>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Issue Date</label>
-          <p class="mt-1 text-sm text-gray-900">{{ rfq()!.issueDate }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Issue Date</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.issueDate }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Due Date</label>
-          <p class="mt-1 text-sm text-gray-900">{{ rfq()!.dueDate }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Due Date</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.dueDate }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Award Date</label>
-          <p class="mt-1 text-sm text-gray-900">
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Award Date</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             {{ getAwardDateDisplay(rfq()!.awardDate) }}
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Estimated Value</label>
-          <p class="mt-1 text-sm text-gray-900">
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Estimated
+            Value</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             {{ getEstimatedValueDisplay(rfq()!.totalEstimatedValue, rfq()!.currency) }}
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Created By</label>
-          <p class="mt-1 text-sm text-gray-900">{{ rfq()!.createdBy || 'Not specified' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Created By</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.createdBy || 'Not specified' }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Created At</label>
-          <p class="mt-1 text-sm text-gray-900">{{ getCreatedAtDisplay(rfq()!.createdAt) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Created At</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ getCreatedAtDisplay(rfq()!.createdAt) }}</p>
         </div>
       </div>
       @if (rfq()!.description) {
       <div class="mt-6">
-        <label class="block text-sm font-medium text-gray-700">Description</label>
-        <p class="mt-1 text-sm text-gray-900">{{ rfq()!.description }}</p>
+        <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Description</label>
+        <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ rfq()!.description }}</p>
       </div>
       }
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,13 +116,14 @@
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Line Items</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ rfq()!.lineItemsCount }}</p>
+            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Line Items</p>
+            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{ rfq()!.lineItemsCount }}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,13 +133,14 @@
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Suppliers Invited</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ rfq()!.suppliersInvited }}</p>
+            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Suppliers Invited</p>
+            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{ rfq()!.suppliersInvited }}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,16 +150,17 @@
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Quotes Received</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ rfq()!.quotesReceived }}</p>
+            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Quotes Received</p>
+            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{ rfq()!.quotesReceived }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Line Items</h3>
+    <div
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Line Items</h3>
       </div>
       <div class="p-6">
         <ag-grid-angular [rowData]="rfq()!.lineItems" [columnDefs]="lineItemColumnDefs" [defaultColDef]="defaultColDef"
@@ -163,28 +170,29 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Invited Suppliers</h3>
+    <div
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Invited Suppliers</h3>
       </div>
       <div class="p-6">
         @if (rfq()!.invitedSuppliers.length > 0) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           @for (supplier of rfq()!.invitedSuppliers; track supplier.supplierId) {
-          <div class="border border-gray-200 rounded-lg p-4">
-            <h4 class="font-medium text-gray-900">
+          <div class="border border-light-border dark:border-grok-border rounded-lg p-4 bg-light-bg dark:bg-grok-bg">
+            <h4 class="font-medium text-light-text dark:text-grok-text">
               <a [routerLink]="['/suppliers', supplier.supplierId]" class="text-blue-600 hover:underline">{{
                 supplier.companyName }}</a>
             </h4>
-            <p class="text-sm text-gray-600">{{ supplier.supplierCode }}</p>
+            <p class="text-sm text-light-text-muted dark:text-grok-text-muted">{{ supplier.supplierCode }}</p>
             @if (supplier.contactName) {
-            <p class="text-sm text-gray-600">{{ supplier.contactName }}</p>
+            <p class="text-sm text-light-text-muted dark:text-grok-text-muted">{{ supplier.contactName }}</p>
             }
             @if (supplier.email) {
-            <p class="text-sm text-gray-600">{{ supplier.email }}</p>
+            <p class="text-sm text-light-text-muted dark:text-grok-text-muted">{{ supplier.email }}</p>
             }
             @if (supplier.city || supplier.state || supplier.country) {
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-light-text-muted dark:text-grok-text-muted">
               {{ getSupplierLocationDisplay(supplier.city, supplier.state, supplier.country) }}
             </p>
             }
@@ -192,14 +200,15 @@
           }
         </div>
         } @else {
-        <p class="text-gray-500 text-center py-4">No suppliers invited yet.</p>
+        <p class="text-light-text-muted dark:text-grok-text-muted text-center py-4">No suppliers invited yet.</p>
         }
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Quotes Received</h3>
+    <div
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Quotes Received</h3>
       </div>
       <div class="p-6">
         @if (rfq()!.quotes.length > 0) {
@@ -208,7 +217,7 @@
           style="height: 400px; min-height: 400px;">
         </ag-grid-angular>
         } @else {
-        <p class="text-gray-500 text-center py-4">No quotes received yet.</p>
+        <p class="text-light-text-muted dark:text-grok-text-muted text-center py-4">No quotes received yet.</p>
         }
       </div>
     </div>

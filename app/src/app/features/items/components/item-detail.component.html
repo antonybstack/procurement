@@ -10,7 +10,7 @@
           </svg>
           Back to Items
         </button>
-        <h1 class="text-3xl font-bold text-gray-900">Item Details</h1>
+        <h1 class="text-3xl font-bold text-light-text dark:text-grok-text">Item Details</h1>
       </div>
       <button (click)="onEdit()"
         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -41,19 +41,19 @@
   @if (loading()) {
   <div class="flex justify-center items-center py-8">
     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <span class="ml-2 text-gray-600">Loading item details...</span>
+    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading item details...</span>
   </div>
   }
 
   <!-- Item Details -->
   @if (item() && !loading()) {
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+  <div class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border overflow-hidden">
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <div class="px-6 py-4 border-b border-light-border dark:border-grok-border bg-light-bg-alt dark:bg-grok-bg-light">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-gray-900">{{ item()!.description }}</h2>
-          <p class="text-sm text-gray-600">Item Code: {{ item()!.itemCode }}</p>
+          <h2 class="text-xl font-semibold text-light-text dark:text-grok-text">{{ item()!.description }}</h2>
+          <p class="text-sm text-light-text-muted dark:text-grok-text-muted">Item Code: {{ item()!.itemCode }}</p>
         </div>
         <span class="px-3 py-1 text-sm font-medium rounded-full {{ getStatusClass(item()!.isActive) }}">
           {{ getStatusText(item()!.isActive) }}
@@ -66,46 +66,46 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Basic Information -->
         <div>
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+          <h3 class="text-lg font-medium text-light-text dark:text-grok-text mb-4">Basic Information</h3>
           <dl class="space-y-3">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Item Code</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.itemCode }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Item Code</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.itemCode }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Description</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.description }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Description</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.description }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Category</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.category }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Category</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.category }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Unit of Measure</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.unitOfMeasure }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Unit of Measure</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.unitOfMeasure }}</dd>
             </div>
           </dl>
         </div>
 
         <!-- Pricing & Lead Time -->
         <div>
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Pricing & Lead Time</h3>
+          <h3 class="text-lg font-medium text-light-text dark:text-grok-text mb-4">Pricing & Lead Time</h3>
           <dl class="space-y-3">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Standard Cost</dt>
-              <dd class="text-sm text-gray-900">{{ formatCurrency(item()!.standardCost) }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Standard Cost</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ formatCurrency(item()!.standardCost) }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Minimum Order Quantity</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.minOrderQuantity }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Minimum Order Quantity</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.minOrderQuantity }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Lead Time (Days)</dt>
-              <dd class="text-sm text-gray-900">{{ item()!.leadTimeDays }}</dd>
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Lead Time (Days)</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.leadTimeDays }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Status</dt>
-              <dd class="text-sm text-gray-900">
+              <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Status</dt>
+              <dd class="text-sm text-light-text dark:text-grok-text">
                 <span class="px-2 py-1 text-xs font-medium rounded-full {{ getStatusClass(item()!.isActive) }}">
                   {{ getStatusText(item()!.isActive) }}
                 </span>
@@ -116,16 +116,16 @@
       </div>
 
       <!-- Metadata -->
-      <div class="mt-8 pt-6 border-t border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Metadata</h3>
+      <div class="mt-8 pt-6 border-t border-light-border dark:border-grok-border">
+        <h3 class="text-lg font-medium text-light-text dark:text-grok-text mb-4">Metadata</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <dt class="text-sm font-medium text-gray-500">Created At</dt>
-            <dd class="text-sm text-gray-900">{{ getCreatedAtDisplay(item()!.createdAt) }}</dd>
+            <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Created At</dt>
+            <dd class="text-sm text-light-text dark:text-grok-text">{{ getCreatedAtDisplay(item()!.createdAt) }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500">Item ID</dt>
-            <dd class="text-sm text-gray-900">{{ item()!.itemId }}</dd>
+            <dt class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Item ID</dt>
+            <dd class="text-sm text-light-text dark:text-grok-text">{{ item()!.itemId }}</dd>
           </div>
         </dl>
       </div>
@@ -141,8 +141,8 @@
         d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
       </path>
     </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900">No item found</h3>
-    <p class="mt-1 text-sm text-gray-500">The item you're looking for doesn't exist or has been removed.</p>
+    <h3 class="mt-2 text-sm font-medium text-light-text dark:text-grok-text">No item found</h3>
+    <p class="mt-1 text-sm text-light-text-muted dark:text-grok-text-muted">The item you're looking for doesn't exist or has been removed.</p>
     <div class="mt-6">
       <button (click)="goBack()"
         class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">

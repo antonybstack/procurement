@@ -1,12 +1,13 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div class="flex items-center space-x-4">
-      <button (click)="goBack()" class="text-gray-600 hover:text-gray-800 transition-colors duration-200">
+      <button (click)="goBack()"
+        class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text transition-colors duration-200">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h1 class="text-2xl font-bold text-gray-900">Quote Details</h1>
+      <h1 class="text-2xl font-bold text-light-text dark:text-grok-text">Quote Details</h1>
     </div>
     <div class="flex space-x-3">
       <button (click)="editQuote()"
@@ -19,12 +20,12 @@
   @if (loading()) {
   <div class="flex justify-center items-center py-12">
     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <span class="ml-2 text-gray-600">Loading quote details...</span>
+    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading quote details...</span>
   </div>
   }
 
   @if (error()) {
-  <div class="bg-red-50 border border-red-200 rounded-md p-4">
+  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
     <div class="flex">
       <div class="flex-shrink-0">
         <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -34,7 +35,7 @@
         </svg>
       </div>
       <div class="ml-3">
-        <p class="text-sm text-red-800">{{ error() }}</p>
+        <p class="text-sm text-red-800 dark:text-red-300">{{ error() }}</p>
       </div>
     </div>
   </div>
@@ -42,43 +43,47 @@
 
   @if (quote() && !loading() && !error()) {
   <div class="space-y-6">
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Quote Information</h2>
+    <div
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Quote Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Quote Number</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.quoteNumber }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Quote Number</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.quoteNumber }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Status</label>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Status</label>
           <span
             class="mt-1 inline-flex px-2 py-1 text-xs font-medium rounded-full {{ getStatusClass(quote()!.status) }}">
             {{ getStatusText(quote()!.status) }}
           </span>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Unit Price</label>
-          <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(quote()!.unitPrice) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Unit Price</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ formatCurrency(quote()!.unitPrice) }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Total Price</label>
-          <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(quote()!.totalPrice) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Total Price</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ formatCurrency(quote()!.totalPrice) }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Quantity Offered</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.quantityOffered }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Quantity
+            Offered</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.quantityOffered }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Delivery Date</label>
-          <p class="mt-1 text-sm text-gray-900">{{ getDeliveryDateDisplay(quote()!.deliveryDate) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Delivery Date</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ getDeliveryDateDisplay(quote()!.deliveryDate)
+            }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Payment Terms</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.paymentTerms || 'Not specified' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Payment Terms</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.paymentTerms || 'Not specified' }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Warranty Period</label>
-          <p class="mt-1 text-sm text-gray-900">
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Warranty
+            Period</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             @if (quote()!.warrantyPeriodMonths) {
             {{ quote()!.warrantyPeriodMonths }} months
             } @else {
@@ -87,40 +92,45 @@
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Valid Until</label>
-          <p class="mt-1 text-sm text-gray-900">{{ getValidUntilDateDisplay(quote()!.validUntilDate) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Valid Until</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{
+            getValidUntilDateDisplay(quote()!.validUntilDate) }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Submitted Date</label>
-          <p class="mt-1 text-sm text-gray-900">{{ getSubmittedDateDisplay(quote()!.submittedDate) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Submitted
+            Date</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ getSubmittedDateDisplay(quote()!.submittedDate)
+            }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Created At</label>
-          <p class="mt-1 text-sm text-gray-900">{{ getCreatedAtDisplay(quote()!.createdAt) }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Created At</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ getCreatedAtDisplay(quote()!.createdAt) }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">RFQ</label>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">RFQ</label>
           <a [routerLink]="['/rfqs', quote()!.rfqId]" class="mt-1 text-sm text-blue-600 hover:underline">{{
             quote()!.rfqId }}</a>
         </div>
       </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Supplier Information</h2>
+    <div
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Supplier Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Company Name</label>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Company Name</label>
           <a [routerLink]="['/suppliers', quote()!.supplier.supplierId]"
             class="mt-1 text-sm text-blue-600 hover:underline">{{ quote()!.supplier.companyName }}</a>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Contact Name</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.supplier.contactName || 'Not specified' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Contact Name</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.supplier.contactName || 'Not
+            specified' }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <p class="mt-1 text-sm text-gray-900">
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Email</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             @if (quote()!.supplier.email) {
             <a href="mailto:{{ quote()!.supplier.email }}" class="text-blue-600 hover:text-blue-800">
               {{ quote()!.supplier.email }}
@@ -131,8 +141,8 @@
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Phone</label>
-          <p class="mt-1 text-sm text-gray-900">
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Phone</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             @if (quote()!.supplier.phone) {
             <a href="tel:{{ quote()!.supplier.phone }}" class="text-blue-600 hover:text-blue-800">
               {{ quote()!.supplier.phone }}
@@ -143,54 +153,62 @@
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">City</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.supplier.city || 'Not specified' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">City</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.supplier.city || 'Not specified' }}
+          </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Country</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.supplier.country || 'Not specified' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Country</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.supplier.country || 'Not specified' }}
+          </p>
         </div>
       </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Item Information</h2>
+    <div
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Item Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @if (quote()!.rfqLineItem.item) {
         <div>
-          <label class="block text-sm font-medium text-gray-700">Item Code</label>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Item Code</label>
           <a [routerLink]="['/items', quote()!.rfqLineItem.item!.itemId]"
             class="mt-1 text-sm text-blue-600 hover:underline">{{
             quote()!.rfqLineItem.item?.itemCode }}</a>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Item Category</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.rfqLineItem.item?.category }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Item Category</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.rfqLineItem.item?.category }}</p>
         </div>
         }
         <div>
-          <label class="block text-sm font-medium text-gray-700">Description</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.rfqLineItem.description || 'No description' }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Description</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.rfqLineItem.description || 'No
+            description' }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Quantity Required</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.rfqLineItem.quantityRequired }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Quantity
+            Required</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.rfqLineItem.quantityRequired }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Unit of Measure</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.rfqLineItem.unitOfMeasure }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Unit of
+            Measure</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.rfqLineItem.unitOfMeasure }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Line Number</label>
-          <p class="mt-1 text-sm text-gray-900">{{ quote()!.rfqLineItem.lineNumber }}</p>
+          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Line Number</label>
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ quote()!.rfqLineItem.lineNumber }}</p>
         </div>
       </div>
     </div>
 
     @if (quote()!.technicalComplianceNotes) {
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Technical Compliance Notes</h2>
-      <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ quote()!.technicalComplianceNotes }}</p>
+    <div
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Technical Compliance Notes</h2>
+      <p class="text-sm text-light-text dark:text-grok-text whitespace-pre-wrap">{{ quote()!.technicalComplianceNotes }}
+      </p>
     </div>
     }
   </div>
