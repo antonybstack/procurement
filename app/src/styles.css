@@ -207,6 +207,29 @@
     0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.chat-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.input-frame:focus-within {
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Darker, crisper placeholder */
+::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+:root :where(textarea)::placeholder {
+  color: rgba(31, 41, 55, 0.55);
+}
+
+.dark :where(textarea)::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
 /* Button hover effects */
 .btn-grok {
   @apply transition-all duration-200 ease-out;
@@ -425,6 +448,21 @@
   }
 }
 
+/* Animated gradient shimmer for gradient borders */
+.gradient-border-shimmer {
+  background-size: 200% 200% !important;
+  animation: gradientShimmer 8s linear infinite;
+}
+
+@keyframes gradientShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
 
 .stars-wrapper {
   position: fixed;

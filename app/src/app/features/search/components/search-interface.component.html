@@ -5,7 +5,7 @@
   <div class="flex-1 flex flex-col max-w-4xl mx-auto w-full min-h-0">
 
     <!-- Header Area with Logo - Fixed Size -->
-    <div class="flex flex-col items-center pt-12 pb-8 flex-shrink-0">
+    <div class="flex flex-col items-center pt-12 pb-6 flex-shrink-0">
       <!-- Procurement AI Logo -->
       <div class="flex items-center space-x-4 mb-8">
         <div class="relative">
@@ -19,26 +19,20 @@
                 </symbol>
               </defs>
 
-              <use href="#sparkle" x="70" y="17" width="55" height="55"></use>
-              <use href="#sparkle" x="250" y="50" width="20" height="20"></use>
-              <use href="#sparkle" x="100" y="150" width="40" height="60"></use>
-              <use href="#sparkle" x="180" y="65" width="65" height="75"></use>
+              <use href="#sparkle" x="65" y="10" width="50" height="50"></use>
+              <use href="#sparkle" x="85" y="125" width="60" height="80"></use>
+              <use href="#sparkle" x="150" y="45" width="100" height="110"></use>
 
-              <use href="#sparkle" x="40" y="40" width="10" height="10"></use>
-              <use href="#sparkle" x="200" y="160" width="8" height="8"></use>
-              <use href="#sparkle" x="50" y="100" width="12" height="12"></use>
+              <!-- <use href="#sparkle" x="40" y="40" width="10" height="10"></use> -->
+              <!-- <use href="#sparkle" x="200" y="160" width="8" height="8"></use> -->
+              <!-- <use href="#sparkle" x="50" y="100" width="12" height="12"></use>
               <use href="#sparkle" x="270" y="130" width="9" height="9"></use>
-              <use href="#sparkle" x="140" y="20" width="7" height="7"></use>
+              <use href="#sparkle" x="140" y="20" width="7" height="7"></use> -->
             </svg>
           </div>
         </div>
-        <h1 class="text-4xl font-bold text-light-text dark:text-grok-text tracking-tight">AI Chat</h1>
+        <h1 class="text-4xl font-bold text-light-text dark:text-grok-text tracking-tight">AI Assistant</h1>
       </div>
-
-      <!-- Subtitle -->
-      <p class="text-light-text-muted dark:text-grok-text-muted text-lg text-center max-w-md">
-        Ask me anything about your procurement data
-      </p>
     </div>
 
     <!-- Chat Area - Flexible with proper height -->
@@ -52,22 +46,25 @@
         <div class="text-center space-y-10 animate-fade-in">
 
           <!-- Conversation Starters -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 place-items-center max-w-3xl mx-auto">
             @for (suggestion of suggestions; track suggestion) {
             <button (click)="useSuggestion(suggestion)"
-              class="group p-5 bg-light-surface/80 dark:bg-grok-bg-light/80 backdrop-blur-sm hover:bg-light-surface dark:hover:bg-grok-bg-lighter border border-light-border dark:border-grok-border hover:border-light-accent/30 dark:hover:border-grok-accent/30 rounded-2xl text-left transition-all duration-300 btn-grok glass-effect">
-              <div class="flex items-start space-x-4">
+              class="group relative p-5 w-full rounded-2xl text-center transition-all duration-300 glass-effect backdrop-blur-xl bg-white/5 dark:bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 ring-1 ring-inset ring-white/5 hover:ring-light-accent/40 dark:hover:ring-grok-accent/40 shadow-lg hover:shadow-xl">
+              <span
+                class="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></span>
+              <div class="flex items-center gap-3">
                 <div
-                  class="w-10 h-10 bg-light-accent/10 dark:bg-grok-accent/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-light-accent/20 dark:group-hover:bg-grok-accent/30 transition-all duration-200">
+                  class="w-10 h-10 rounded-xl flex items-center flex-shrink-0 transition-all duration-200 bg-light-accent/15 dark:bg-grok-accent/25 group-hover:bg-light-accent/25 dark:group-hover:bg-grok-accent/35 shadow-sm">
+                  <!-- Electric bolt icon -->
                   <svg class="w-5 h-5 text-light-accent dark:text-grok-accent" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 26">
+                    viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <div class="flex-1">
-                  <p class="text-light-text dark:text-grok-text text-sm font-medium leading-relaxed">{{ suggestion }}
-                  </p>
+                <div>
+                  <p class="text-light-text dark:text-grok-text text-sm font-medium text-left">{{
+                    suggestion }}</p>
                 </div>
               </div>
             </button>
@@ -90,28 +87,20 @@
               <!-- User Message -->
               @if (message.role === 'user') {
               <div
-                class="bg-light-accent dark:bg-grok-accent text-white px-6 py-4 rounded-3xl rounded-br-lg shadow-lg animate-slide-up">
-                <p class="text-sm leading-relaxed whitespace-pre-wrap font-medium">{{ message.content }}</p>
-                <p class="text-xs text-white/70 mt-3 opacity-75">{{ formatTimestamp(message.timestamp) }}</p>
+                class="p-[1.5px] rounded-3xl rounded-br-lg bg-[length:200%_200%] bg-gradient-to-r from-blue-500/80 via-indigo-500/80 to-purple-500/80 gradient-border-shimmer shadow-xl animate-slide-up overflow-hidden">
+                <div class="bg-white/10 dark:bg-white/10 backdrop-blur-xl rounded-3xl rounded-br-lg px-6 py-4">
+                  <p class="text-sm leading-relaxed whitespace-pre-wrap font-medium text-white/95">{{ message.content }}
+                  </p>
+                  <p class="text-xs text-white/70 mt-3 opacity-75">{{ formatTimestamp(message.timestamp) }}</p>
+                </div>
               </div>
               }
 
               <!-- Assistant Message -->
               @else {
               <div
-                class="bg-light-surface/80 dark:bg-grok-bg-lighter/80 text-light-text dark:text-grok-text px-6 py-5 rounded-3xl rounded-bl-lg border border-light-border dark:border-grok-border shadow-lg animate-slide-up glass-effect backdrop-blur-md">
-                <div class="flex items-center space-x-3 mb-4">
-                  <div class="w-7 h-7 rounded-full flex items-center justify-center shadow-md"
-                    style="background: var(--gradient-brand);">
-                    <!-- Multiple sparkles icon small -->
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M6 4l.9 2.4L9.5 7 7 8l-1 2.6L5 8 2.5 7 5.1 6.4 6 4z" />
-                      <path d="M12 3l1.1 3.1L16 7l-2.9 1.2L12 11l-1.1-2.8L8 7l2.9-1.2L12 3z" />
-                    </svg>
-                  </div>
-                  <span class="text-sm font-semibold text-light-text-muted dark:text-grok-text-muted">Procurement
-                    AI</span>
-
+                class="text-light-text dark:text-grok-text px-6 py-5 rounded-3xl rounded-bl-lg border border-white/20 ring-1 ring-white/10 shadow-2xl shadow-black/30 animate-slide-up glass-effect backdrop-blur-xl bg-white/10 dark:bg-white/10">
+                <div class="flex items-center space-x-3 mb-2">
                   @if (isMessageStreaming(message)) {
                   <div class="flex space-x-1 ml-auto">
                     <div class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
@@ -124,8 +113,22 @@
                   }
                 </div>
 
+                @if (message.content) {
                 <div class="text-sm leading-relaxed whitespace-pre-wrap text-light-text dark:text-grok-text">{{
                   message.content }}</div>
+                } @else {
+                <div class="flex items-center space-x-1 py-1">
+                  <div
+                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
+                    style="animation-delay: 0s"></div>
+                  <div
+                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
+                    style="animation-delay: 0.2s"></div>
+                  <div
+                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
+                    style="animation-delay: 0.3s"></div>
+                </div>
+                }
 
                 @if (!isMessageStreaming(message) && message.content) {
                 <div
@@ -157,27 +160,29 @@
       <div class="relative max-w-4xl mx-auto w-full flex-shrink-0">
 
         <!-- Main Input -->
-        <div class="relative">
-          <textarea #messageInput [(ngModel)]="currentMessage" (keydown)="handleKeyDown($event)"
-            (compositionstart)="handleCompositionStart()" (compositionend)="handleCompositionEnd()" name="message"
-            placeholder="What do you want to know about procurement?" rows="1"
-            class="w-full px-6 py-4 pr-16 bg-light-surface/90 dark:bg-grok-bg-lighter/90 backdrop-blur-sm border border-light-border dark:border-grok-border rounded-3xl text-light-text dark:text-grok-text placeholder-light-text-muted dark:placeholder-grok-text-muted input-grok resize-none transition-all duration-300 shadow-lg"
-            [disabled]="!canSendMessage() || isComposing()" style="min-height: 3.5rem; max-height: 8rem;"></textarea>
+        <div (click)="messageInput.focus()" style="cursor: text;">
+          <div
+            class="input-frame relative flex items-center rounded-3xl bg-white/8 dark:bg-white/8 backdrop-blur-xl border border-white/10 transition-all duration-200">
+            <textarea #messageInput [(ngModel)]="currentMessage" (keydown)="handleKeyDown($event)"
+              (compositionstart)="handleCompositionStart()" (compositionend)="handleCompositionEnd()" name="message"
+              placeholder="What do you want to know about?" rows="1"
+              class="chat-input flex-1 px-6 py-3 bg-transparent border-0 rounded-3xl text-light-text dark:text-grok-text placeholder-light-text-muted/80 dark:placeholder-grok-text-muted/80 resize-none transition-all duration-300 focus:outline-none focus:ring-0"
+              [disabled]="!canSendMessage() || isComposing()" style="min-height: 3.25rem; max-height: 8rem;"></textarea>
 
-          <!-- Send Button -->
-          <button type="button" (click)="sendMessage()"
-            [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-light-accent dark:bg-grok-accent hover:bg-light-accent-hover dark:hover:bg-grok-accent-hover disabled:bg-light-text-muted dark:disabled:bg-grok-text-muted disabled:cursor-not-allowed rounded-2xl flex items-center justify-center transition-all duration-200 disabled:opacity-50 shadow-lg btn-grok">
-
-            @if (isStreaming()) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            } @else {
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-            </svg>
-            }
-          </button>
+            <!-- Send Button -->
+            <button type="button" (click)="sendMessage()"
+              [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
+              class="m-2 w-10 h-10 bg-light-accent dark:bg-grok-accent hover:bg-light-accent-hover dark:hover:bg-grok-accent-hover disabled:bg-light-text-muted dark:disabled:bg-grok-text-muted disabled:cursor-not-allowed rounded-2xl flex items-center justify-center transition-all duration-200 disabled:opacity-50 shadow-lg btn-grok">
+              @if (isStreaming()) {
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              } @else {
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              }
+            </button>
+          </div>
         </div>
 
         <!-- Controls Row -->
@@ -288,7 +293,7 @@
   }
 
   textarea:focus {
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5),
-      0 0 20px rgba(59, 130, 246, 0.2);
+    outline: none;
+    box-shadow: none;
   }
 </style>
