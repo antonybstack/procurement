@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
 import { RfqService, RfqFilters } from '../services/rfq.service';
 import { RfqDto, PaginatedResult } from '../../../shared/models/rfq.model';
 
@@ -128,6 +128,9 @@ export class RfqListComponent implements OnInit {
         resizable: true
     };
 
+    // AG Grid theme configured to respond to data-ag-theme-mode
+    gridTheme = themeQuartz.withPart(colorSchemeVariable);
+
     ngOnInit() {
         this.loadRfqs();
     }
@@ -236,4 +239,4 @@ export class RfqListComponent implements OnInit {
     }
 
     protected readonly Math = Math;
-} 
+}

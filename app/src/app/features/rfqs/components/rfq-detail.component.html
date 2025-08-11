@@ -164,7 +164,7 @@
       </div>
       <div class="p-6">
         <ag-grid-angular [rowData]="rfq()!.lineItems" [columnDefs]="lineItemColumnDefs" [defaultColDef]="defaultColDef"
-          [animateRows]="true" [domLayout]="'normal'" class="ag-theme-alpine w-full"
+          [theme]="gridTheme" [animateRows]="true" [domLayout]="'normal'" class="ag-theme-alpine w-full"
           style="height: 400px; min-height: 400px;">
         </ag-grid-angular>
       </div>
@@ -213,7 +213,7 @@
       <div class="p-6">
         @if (rfq()!.quotes.length > 0) {
         <ag-grid-angular [rowData]="rfq()!.quotes" [columnDefs]="quoteColumnDefs" [defaultColDef]="defaultColDef"
-          [animateRows]="true" [domLayout]="'normal'" class="ag-theme-alpine w-full"
+          [theme]="gridTheme" [animateRows]="true" [domLayout]="'normal'" class="ag-theme-alpine w-full"
           style="height: 400px; min-height: 400px;">
         </ag-grid-angular>
         } @else {

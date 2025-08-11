@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent } from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
 import { QuoteService, QuoteFilters } from '../services/quote.service';
 import { QuoteSummaryDto, QuoteUpdateDto } from '../../../shared/models/quote.model';
 import { PaginatedResult } from '../../../shared/models/rfq.model';
@@ -161,6 +161,9 @@ export class QuoteListComponent implements OnInit {
         resizable: true
     };
 
+    // AG Grid theme configured to respond to data-ag-theme-mode
+    gridTheme = themeQuartz.withPart(colorSchemeVariable);
+
     ngOnInit() {
         this.loadQuotes();
         this.loadStatuses();
@@ -313,4 +316,4 @@ export class QuoteListComponent implements OnInit {
     }
 
     protected readonly Math = Math;
-} 
+}

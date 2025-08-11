@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent } from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
 import { SupplierService, SupplierFilters, SupplierUpdateDto } from '../services/supplier.service';
 import { SupplierDto } from '../../../shared/models/supplier.model';
 import { PaginatedResult } from '../../../shared/models/rfq.model';
@@ -173,6 +173,9 @@ export class SupplierListComponent implements OnInit {
         filter: true,
         resizable: true
     };
+
+    // AG Grid theme configured to respond to data-ag-theme-mode
+    gridTheme = themeQuartz.withPart(colorSchemeVariable);
 
     ngOnInit() {
         this.loadSuppliers();
@@ -347,4 +350,4 @@ export class SupplierListComponent implements OnInit {
     }
 
     protected readonly Math = Math;
-} 
+}

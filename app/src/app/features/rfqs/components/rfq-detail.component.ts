@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef } from 'ag-grid-community';
+import { ColDef, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
 import { RfqService } from '../services/rfq.service';
 import { RfqDetailDto } from '../../../shared/models/rfq.model';
 
@@ -94,6 +94,9 @@ export class RfqDetailComponent implements OnInit {
     filter: true,
     resizable: true
   };
+
+  // AG Grid theme configured to respond to data-ag-theme-mode
+  gridTheme = themeQuartz.withPart(colorSchemeVariable);
 
   ngOnInit() {
     this.loadRfq();

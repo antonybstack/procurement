@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
 import { ItemService, ItemFilters } from '../services/item.service';
 import { ItemDto } from '../../../shared/models/item.model';
 import { PaginatedResult } from '../../../shared/models/rfq.model';
@@ -118,6 +118,9 @@ export class ItemListComponent implements OnInit {
         filter: true,
         resizable: true
     };
+
+    // AG Grid theme configured to respond to data-ag-theme-mode
+    gridTheme = themeQuartz.withPart(colorSchemeVariable);
 
     ngOnInit() {
         this.loadItems();

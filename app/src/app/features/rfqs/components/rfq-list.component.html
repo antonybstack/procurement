@@ -77,7 +77,7 @@
   @if (!loading() && !error()) {
   <div
     class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-    <ag-grid-angular [rowData]="rfqs()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+    <ag-grid-angular [rowData]="rfqs()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [theme]="gridTheme"
       [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'" (gridReady)="onGridReady($event)"
       (rowClicked)="onRowClicked($event)" class="ag-theme-alpine w-full" style="height: 600px;">
     </ag-grid-angular>
