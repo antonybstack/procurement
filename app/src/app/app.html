@@ -1,24 +1,19 @@
-<div class="h-screen flex flex-col bg-light-bg dark:bg-grok-bg transition-all duration-300">
+<div class="h-screen flex flex-col bg-light-bg dark:bg-grok-bg aurora-bg transition-all duration-300">
   <!-- Navigation Header -->
   <nav
-    class="bg-light-surface dark:bg-grok-bg-light backdrop-blur-sm border-b border-light-border dark:border-grok-border flex-shrink-0 transition-all duration-300">
+    class="bg-light-surface/70 dark:bg-grok-bg-light/50 backdrop-blur-md flex-shrink-0 transition-all duration-300 shadow-sm app-content-layer">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center space-x-3">
-          <!-- AI Chat Logo -->
-          <div class="relative">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+          <!-- App Icon: Magnifying Glass linking to Search -->
+          <a routerLink="/search" aria-label="Search" class="relative">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md"
               style="background: var(--gradient-brand);">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 26" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
-                </path>
+                  d="M21 21l-4.35-4.35m2.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
               </svg>
             </div>
-          </div>
-          <a routerLink="/search"
-            class="text-xl font-semibold text-light-text dark:text-grok-text hover:text-light-accent dark:hover:text-grok-accent transition-colors duration-200">
-            Procurement AI
           </a>
         </div>
         <div class="flex items-center space-x-6">
@@ -79,7 +74,8 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="flex-1 min-h-0" [class]="isSearchRoute() ? '' : 'max-w-7xl mx-auto py-6 sm:px-6 lg:px-8'">
+  <main class="flex-1 min-h-0 app-content-layer"
+    [class]="isSearchRoute() ? '' : 'max-w-7xl mx-auto py-6 sm:px-6 lg:px-8'">
     <router-outlet />
   </main>
 </div>
