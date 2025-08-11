@@ -1,16 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { ThemeService } from './shared/services/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected title = 'Procurement Management System';
+  private router = inject(Router);
+  private themeService = inject(ThemeService);
 
-  constructor(private router: Router) { }
+  // Public getters for template
+  isDarkMode = () => this.themeService.isDark();
+  getTheme = () => this.themeService.theme();
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   isSearchRoute(): boolean {
     return this.router.url.startsWith('/search');

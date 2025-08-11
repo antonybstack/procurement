@@ -1,32 +1,78 @@
-<div class="h-screen flex flex-col bg-gray-50">
+<div class="h-screen flex flex-col bg-light-bg dark:bg-grok-bg transition-all duration-300">
   <!-- Navigation Header -->
-  <nav class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+  <nav
+    class="bg-light-surface dark:bg-grok-bg-light backdrop-blur-sm border-b border-light-border dark:border-grok-border flex-shrink-0 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
-        <div class="flex items-center">
-          <h1 class="text-xl font-semibold text-gray-900">{{ title }}</h1>
+        <div class="flex items-center space-x-3">
+          <!-- AI Chat Logo -->
+          <div class="relative">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+              style="background: var(--gradient-brand);">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                </path>
+              </svg>
+            </div>
+          </div>
+          <a routerLink="/search"
+            class="text-xl font-semibold text-light-text dark:text-grok-text hover:text-light-accent dark:hover:text-grok-accent transition-colors duration-200">
+            Procurement AI
+          </a>
         </div>
-        <div class="flex items-center space-x-8">
-          <a routerLink="/rfqs" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
-            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
-            RFQs
-          </a>
-          <a routerLink="/suppliers" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
-            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
-            Suppliers
-          </a>
-          <a routerLink="/quotes" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
-            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
-            Quotes
-          </a>
-          <a routerLink="/items" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
-            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
-            Items
-          </a>
-          <a routerLink="/search" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
-            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
-            AI Chat
-          </a>
+        <div class="flex items-center space-x-6">
+          <!-- Navigation Links -->
+          <div class="hidden md:flex items-center space-x-6">
+            <a routerLink="/rfqs"
+              routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              RFQs
+            </a>
+            <a routerLink="/suppliers"
+              routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              Suppliers
+            </a>
+            <a routerLink="/quotes"
+              routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              Quotes
+            </a>
+            <a routerLink="/items"
+              routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              Items
+            </a>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button (click)="toggleTheme()"
+            class="p-2.5 rounded-xl bg-light-bg-surface dark:bg-grok-surface hover:bg-light-border-light dark:hover:bg-grok-bg-lighter btn-grok"
+            [title]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
+            <!-- Sun Icon (Light Mode) -->
+            <svg *ngIf="!isDarkMode()" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+              </path>
+            </svg>
+            <!-- Moon Icon (Dark Mode) -->
+            <svg *ngIf="isDarkMode()" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+          </button>
+
+          <!-- Mobile Menu Button -->
+          <button
+            class="md:hidden p-2 rounded-lg hover:bg-light-bg-surface dark:hover:bg-grok-surface transition-colors duration-200">
+            <svg class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

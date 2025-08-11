@@ -1,30 +1,30 @@
 <!-- Grok-Inspired Chat Interface -->
-<div class="h-full flex flex-col bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 overflow-hidden">
+<div class="h-full flex flex-col bg-light-bg dark:bg-grok-bg overflow-hidden">
 
   <!-- Chat Container -->
   <div class="flex-1 flex flex-col max-w-4xl mx-auto w-full min-h-0">
 
     <!-- Header Area with Logo - Fixed Size -->
-    <div class="flex flex-col items-center pt-8 pb-6 flex-shrink-0">
+    <div class="flex flex-col items-center pt-12 pb-8 flex-shrink-0">
       <!-- Procurement AI Logo -->
-      <div class="flex items-center space-x-3 mb-6">
+      <div class="flex items-center space-x-4 mb-8">
         <div class="relative">
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+            style="background: var(--gradient-brand);">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
               </path>
             </svg>
           </div>
-          <div
-            class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse">
-          </div>
         </div>
-        <h1 class="text-3xl font-bold text-white">Procurement AI</h1>
+        <h1 class="text-4xl font-bold text-light-text dark:text-grok-text tracking-tight">AI Chat</h1>
       </div>
 
       <!-- Subtitle -->
+      <p class="text-light-text-muted dark:text-grok-text-muted text-lg text-center max-w-md">
+        Ask me anything about your procurement data
+      </p>
     </div>
 
     <!-- Chat Area - Flexible with proper height -->
@@ -35,23 +35,25 @@
 
         <!-- Welcome State -->
         @if (messages().length === 0) {
-        <div class="text-center space-y-8">
+        <div class="text-center space-y-10 animate-fade-in">
 
           <!-- Conversation Starters -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             @for (suggestion of suggestions; track suggestion) {
             <button (click)="useSuggestion(suggestion)"
-              class="group p-4 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-xl text-left transition-all duration-200 hover:scale-105">
-              <div class="flex items-start space-x-3">
+              class="group p-5 bg-light-surface/80 dark:bg-grok-bg-light/80 backdrop-blur-sm hover:bg-light-surface dark:hover:bg-grok-bg-lighter border border-light-border dark:border-grok-border hover:border-light-accent/30 dark:hover:border-grok-accent/30 rounded-2xl text-left transition-all duration-300 btn-grok glass-effect">
+              <div class="flex items-start space-x-4">
                 <div
-                  class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
-                  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="w-10 h-10 bg-light-accent/10 dark:bg-grok-accent/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-light-accent/20 dark:group-hover:bg-grok-accent/30 transition-all duration-200">
+                  <svg class="w-5 h-5 text-light-accent dark:text-grok-accent" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                   </svg>
                 </div>
                 <div class="flex-1">
-                  <p class="text-white text-sm font-medium leading-relaxed">{{ suggestion }}</p>
+                  <p class="text-light-text dark:text-grok-text text-sm font-medium leading-relaxed">{{ suggestion }}
+                  </p>
                 </div>
               </div>
             </button>
@@ -73,42 +75,51 @@
 
               <!-- User Message -->
               @if (message.role === 'user') {
-              <div class="bg-blue-600 text-white px-6 py-3 rounded-2xl rounded-br-md">
-                <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.content }}</p>
-                <p class="text-xs text-blue-100 mt-2 opacity-75">{{ formatTimestamp(message.timestamp) }}</p>
+              <div
+                class="bg-light-accent dark:bg-grok-accent text-white px-6 py-4 rounded-3xl rounded-br-lg shadow-lg animate-slide-up">
+                <p class="text-sm leading-relaxed whitespace-pre-wrap font-medium">{{ message.content }}</p>
+                <p class="text-xs text-white/70 mt-3 opacity-75">{{ formatTimestamp(message.timestamp) }}</p>
               </div>
               }
 
               <!-- Assistant Message -->
               @else {
-              <div class="bg-gray-800 text-gray-100 px-6 py-4 rounded-2xl rounded-bl-md border border-gray-700">
-                <div class="flex items-center space-x-2 mb-3">
-                  <div
-                    class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div
+                class="bg-light-surface dark:bg-grok-bg-lighter text-light-text dark:text-grok-text px-6 py-5 rounded-3xl rounded-bl-lg border border-light-border dark:border-grok-border shadow-lg animate-slide-up glass-effect">
+                <div class="flex items-center space-x-3 mb-4">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center shadow-md"
+                    style="background: var(--gradient-brand);">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                   </div>
-                  <span class="text-xs font-medium text-gray-400">Procurement AI</span>
+                  <span class="text-sm font-semibold text-light-text-muted dark:text-grok-text-muted">Procurement
+                    AI</span>
 
                   @if (isMessageStreaming(message)) {
-                  <div class="flex space-x-1">
-                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                    <div class="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                  <div class="flex space-x-1 ml-auto">
+                    <div class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
+                      style="animation-delay: 0s"></div>
+                    <div class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
+                      style="animation-delay: 0.1s"></div>
+                    <div class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
+                      style="animation-delay: 0.2s"></div>
                   </div>
                   }
                 </div>
 
-                <div class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.content }}</div>
+                <div class="text-sm leading-relaxed whitespace-pre-wrap text-light-text dark:text-grok-text">{{
+                  message.content }}</div>
 
                 @if (!isMessageStreaming(message) && message.content) {
-                <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-700">
-                  <span class="text-xs text-gray-500">{{ formatTimestamp(message.timestamp) }}</span>
+                <div
+                  class="flex items-center justify-between mt-4 pt-3 border-t border-light-border dark:border-grok-border">
+                  <span class="text-xs text-light-text-muted dark:text-grok-text-muted">{{
+                    formatTimestamp(message.timestamp) }}</span>
                   <button (click)="copyMessage(message)"
-                    class="text-gray-400 hover:text-white transition-colors p-1 rounded">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="text-light-text-muted dark:text-grok-text-muted hover:text-light-accent dark:hover:text-grok-accent transition-colors p-1.5 rounded-lg hover:bg-light-bg-surface dark:hover:bg-grok-surface">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
                       </path>
@@ -135,18 +146,18 @@
           <textarea #messageInput [(ngModel)]="currentMessage" (keydown)="handleKeyDown($event)"
             (compositionstart)="handleCompositionStart()" (compositionend)="handleCompositionEnd()" name="message"
             placeholder="What do you want to know about procurement?" rows="1"
-            class="w-full px-6 py-4 pr-16 bg-gray-800/50 backdrop-blur-sm border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all duration-200"
+            class="w-full px-6 py-4 pr-16 bg-light-surface/90 dark:bg-grok-bg-lighter/90 backdrop-blur-sm border border-light-border dark:border-grok-border rounded-3xl text-light-text dark:text-grok-text placeholder-light-text-muted dark:placeholder-grok-text-muted input-grok resize-none transition-all duration-300 shadow-lg"
             [disabled]="!canSendMessage() || isComposing()" style="min-height: 3.5rem; max-height: 8rem;"></textarea>
 
           <!-- Send Button -->
           <button type="button" (click)="sendMessage()"
             [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-50">
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-light-accent dark:bg-grok-accent hover:bg-light-accent-hover dark:hover:bg-grok-accent-hover disabled:bg-light-text-muted dark:disabled:bg-grok-text-muted disabled:cursor-not-allowed rounded-2xl flex items-center justify-center transition-all duration-200 disabled:opacity-50 shadow-lg btn-grok">
 
             @if (isStreaming()) {
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             } @else {
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
             </svg>
@@ -156,11 +167,11 @@
 
         <!-- Controls Row -->
         @if (messages().length > 0) {
-        <div class="flex items-center justify-between mt-3 px-2">
+        <div class="flex items-center justify-between mt-4 px-2">
           <div class="flex items-center space-x-4">
             <button (click)="clearChat()"
-              class="text-xs text-gray-400 hover:text-gray-300 transition-colors flex items-center space-x-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="text-xs text-light-text-muted dark:text-grok-text-muted hover:text-light-accent dark:hover:text-grok-accent transition-all duration-200 flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-light-bg-surface dark:hover:bg-grok-surface">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
                 </path>
@@ -170,8 +181,8 @@
 
             @if (isStreaming()) {
             <button (click)="cancelStream()"
-              class="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center space-x-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="text-xs text-red-400 hover:text-red-300 transition-all duration-200 flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"></path>
@@ -181,7 +192,8 @@
             }
           </div>
 
-          <div class="text-xs text-gray-500">
+          <div
+            class="text-xs text-light-text-muted dark:text-grok-text-muted bg-light-bg-surface dark:bg-grok-surface px-3 py-1 rounded-full">
             {{ messages().length }} message{{ messages().length !== 1 ? 's' : '' }}
           </div>
         </div>
@@ -189,14 +201,16 @@
 
         <!-- Error Display -->
         @if (chatError()) {
-        <div class="mt-3 text-xs text-red-400 bg-red-900/20 border border-red-800/30 rounded-lg p-3">
-          <div class="flex items-center space-x-2">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div
+          class="mt-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-2xl p-4 animate-slide-up">
+          <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>{{ chatError() }}</span>
-            <button (click)="retryLastMessage()" class="ml-auto text-red-300 hover:text-red-200 underline">
+            <span class="flex-1">{{ chatError() }}</span>
+            <button (click)="retryLastMessage()"
+              class="text-red-600 dark:text-red-300 hover:text-red-700 dark:hover:text-red-200 px-3 py-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors">
               Retry
             </button>
           </div>
@@ -211,8 +225,8 @@
   @if (!autoScroll() && messages().length > 0) {
   <div class="fixed bottom-32 right-6">
     <button (click)="toggleAutoScroll()"
-      class="bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-full shadow-lg border border-gray-600 transition-all duration-200">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      class="bg-light-surface dark:bg-grok-bg-lighter hover:bg-light-bg-surface dark:hover:bg-grok-surface text-light-text dark:text-grok-text p-4 rounded-2xl shadow-xl border border-light-border dark:border-grok-border btn-grok backdrop-blur-sm">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
       </svg>
     </button>
