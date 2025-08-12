@@ -29,11 +29,9 @@ export class SearchInterfaceComponent {
 
   // Sample suggestions for empty state
   protected suggestions = [
-    "What products are available in our catalog?",
-    "Find suppliers for electronic components",
-    "Show me recent RFQ activity",
-    "What are the top performing suppliers?",
-    "Help me find procurement best practices"
+    "Give an overview of Supplier 1 Corp.",
+    "What is Supplier 113 Corp. capable of?",
+    "Provide the performance highlights of Supplier 469 Corp.",
   ];
 
   constructor() {

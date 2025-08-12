@@ -13,6 +13,9 @@ export class App {
   private router = inject(Router);
   private themeService = inject(ThemeService);
 
+  // Mobile menu state
+  isMobileMenuOpen = false;
+
   // Public getters for template
   isDarkMode = () => this.themeService.isDark();
   getTheme = () => this.themeService.theme();
@@ -22,6 +25,14 @@ export class App {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 
   isSearchRoute(): boolean {
