@@ -156,16 +156,15 @@ public class ChatController : ControllerBase
     }
 
     /// <summary>
-    /// Preserve existing search functionality for function calling
+    /// Search for information in documents (kept for future use)
     /// </summary>
-    [Description("Searches for information using a phrase or keyword")]
+    [Description("Searches for general procurement information, policies, or best practices in documents. Use this for non-supplier specific questions.")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
         [Description("If possible, specify the filename to search that file only.")] string? filenameFilter = null)
     {
         var results = await _search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
-        return results.Select(result =>
-            $"<result filename=\"{result.DocumentId}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
+        return results.Select(result => result.Text);
     }
 
     /// <summary>
@@ -269,28 +268,26 @@ public class ChatController : ControllerBase
     }
 
     /// <summary>
-    /// Get the system prompt for RAG functionality
+    /// Get the system prompt for procurement assistant
     /// </summary>
     private static string GetSystemPrompt()
     {
         return @"
-            You are an assistant who answers questions about information you retrieve and supplier data.
-            If the question is vague or ambiguous, you can assume the question is about the documents you have access to.
-            Use only simple markdown to format your responses.
+            You are a procurement assistant with access to supplier information and documents.
+            Your primary focus is helping with procurement-related questions and supplier inquiries.
+            Use clear, professional language and format responses with simple markdown.
 
             You have access to two main tools:
-            1. Search tool - for finding information in documents
-            2. Supplier information tool - for getting detailed information about specific suppliers
-
-            For document searches, use the search tool and end your reply with citations in the special XML format:
-            <citation filename='string' page_number='number'>exact quote here</citation>
+            1. Supplier information tool - for getting detailed information about specific suppliers
+            2. Document search tool - for finding general information in uploaded documents
 
             For supplier-specific questions (e.g., ""Tell me about supplier XYZ"", ""What is supplier ABC capable of?""), 
             use the supplier information tool to get comprehensive details including contact information, capabilities, 
             and performance data.
 
-            Always include citations when using document search results.
-            The quote must be max 10 words, taken word-for-word from the search result, and is the basis for why the citation is relevant.
-            Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.";
+            For general questions or when looking for best practices, policies, or other documentation, 
+            use the document search tool.
+
+            Always prioritize supplier data from the database over document search when the question is about a specific supplier.";
     }
 }
