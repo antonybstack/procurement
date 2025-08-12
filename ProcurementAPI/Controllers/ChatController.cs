@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using ProcurementAPI.Models;
 using ProcurementAPI.Services;
+using ProcurementAPI.Services.DataServices;
 
 namespace ChatApp.Controllers;
 
@@ -14,15 +15,21 @@ public class ChatController : ControllerBase
 {
     private readonly IChatClient _chatClient;
     private readonly SemanticSearch _search;
+    private readonly ISupplierService _supplierService;
+    private readonly ISupplierDataService _supplierDataService;
     private readonly ILogger<ChatController> _logger;
 
     public ChatController(
         IChatClient chatClient,
         SemanticSearch search,
+        ISupplierService supplierService,
+        ISupplierDataService supplierDataService,
         ILogger<ChatController> logger)
     {
         _chatClient = chatClient;
         _search = search;
+        _supplierService = supplierService;
+        _supplierDataService = supplierDataService;
         _logger = logger;
     }
 
@@ -48,7 +55,10 @@ public class ChatController : ControllerBase
 
             var chatOptions = new ChatOptions
             {
-                Tools = [AIFunctionFactory.Create(SearchAsync)]
+                Tools = [
+                    AIFunctionFactory.Create(SearchAsync),
+                    AIFunctionFactory.Create(GetSupplierInfoAsync)
+                ]
             };
 
             // For non-streaming, we'll collect the streaming response
@@ -98,7 +108,10 @@ public class ChatController : ControllerBase
 
             var chatOptions = new ChatOptions
             {
-                Tools = [AIFunctionFactory.Create(SearchAsync)]
+                Tools = [
+                    AIFunctionFactory.Create(SearchAsync),
+                    AIFunctionFactory.Create(GetSupplierInfoAsync)
+                ]
             };
 
             await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions, HttpContext.RequestAborted))
@@ -156,22 +169,127 @@ public class ChatController : ControllerBase
     }
 
     /// <summary>
+    /// Gets detailed information about a specific supplier
+    /// </summary>
+    [Description("Gets detailed information about a specific supplier including contact details, capabilities, and performance data")]
+    private async Task<string> GetSupplierInfoAsync(
+        [Description("The supplier name or supplier code to search for.")] string supplierNameOrCode)
+    {
+        try
+        {
+            // First search for suppliers by name/code
+            var searchResults = await _supplierService.GetSuppliersAsync(
+                page: 1,
+                pageSize: 10,
+                search: supplierNameOrCode,
+                country: null,
+                minRating: null,
+                isActive: true);
+
+            if (searchResults.Data == null || searchResults.Data.Count == 0)
+            {
+                return $"No suppliers found matching '{supplierNameOrCode}'.";
+            }
+
+            // Get the first match (keeping it simple as requested)
+            var firstMatch = searchResults.Data.First();
+
+            // Get detailed information including capabilities
+            var detailedInfo = await _supplierDataService.GetSupplierByIdAsync(firstMatch.SupplierId);
+
+            if (detailedInfo == null)
+            {
+                return $"Supplier '{supplierNameOrCode}' was found but detailed information is not available.";
+            }
+
+            // Format the response with comprehensive supplier information
+            var response = new StringBuilder();
+            response.AppendLine($"**Supplier: {detailedInfo.CompanyName}**");
+            response.AppendLine($"- Supplier Code: {detailedInfo.SupplierCode}");
+
+            if (!string.IsNullOrEmpty(detailedInfo.ContactName))
+                response.AppendLine($"- Contact: {detailedInfo.ContactName}");
+
+            if (!string.IsNullOrEmpty(detailedInfo.Email))
+                response.AppendLine($"- Email: {detailedInfo.Email}");
+
+            if (!string.IsNullOrEmpty(detailedInfo.Phone))
+                response.AppendLine($"- Phone: {detailedInfo.Phone}");
+
+            // Location information
+            var location = new List<string>();
+            if (!string.IsNullOrEmpty(detailedInfo.City)) location.Add(detailedInfo.City);
+            if (!string.IsNullOrEmpty(detailedInfo.State)) location.Add(detailedInfo.State);
+            if (!string.IsNullOrEmpty(detailedInfo.Country)) location.Add(detailedInfo.Country);
+
+            if (location.Count > 0)
+                response.AppendLine($"- Location: {string.Join(", ", location)}");
+
+            if (detailedInfo.Rating.HasValue)
+                response.AppendLine($"- Rating: {detailedInfo.Rating}/5");
+
+            if (!string.IsNullOrEmpty(detailedInfo.PaymentTerms))
+                response.AppendLine($"- Payment Terms: {detailedInfo.PaymentTerms}");
+
+            if (detailedInfo.CreditLimit.HasValue)
+                response.AppendLine($"- Credit Limit: ${detailedInfo.CreditLimit:N2}");
+
+            // Capabilities
+            if (detailedInfo.Capabilities != null && detailedInfo.Capabilities.Count > 0)
+            {
+                response.AppendLine("\n**Capabilities:**");
+                foreach (var capability in detailedInfo.Capabilities)
+                {
+                    response.AppendLine($"- {capability.CapabilityType}: {capability.CapabilityValue}");
+                }
+            }
+
+            // Performance data (if available)
+            if (detailedInfo.Performance != null)
+            {
+                response.AppendLine("\n**Performance:**");
+                response.AppendLine($"- Total Quotes: {detailedInfo.Performance.TotalQuotes}");
+                response.AppendLine($"- Awarded Quotes: {detailedInfo.Performance.AwardedQuotes}");
+
+                if (detailedInfo.Performance.AvgQuotePrice.HasValue)
+                    response.AppendLine($"- Average Quote Price: ${detailedInfo.Performance.AvgQuotePrice:N2}");
+
+                response.AppendLine($"- Total Purchase Orders: {detailedInfo.Performance.TotalPurchaseOrders}");
+            }
+
+            response.AppendLine($"- Status: {(detailedInfo.IsActive ? "Active" : "Inactive")}");
+
+            return response.ToString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting supplier information for '{SupplierNameOrCode}'", supplierNameOrCode);
+            return $"Error retrieving supplier information for '{supplierNameOrCode}': {ex.Message}";
+        }
+    }
+
+    /// <summary>
     /// Get the system prompt for RAG functionality
     /// </summary>
     private static string GetSystemPrompt()
     {
         return @"
-            You are an assistant who answers questions about information you retrieve.
+            You are an assistant who answers questions about information you retrieve and supplier data.
             If the question is vague or ambiguous, you can assume the question is about the documents you have access to.
             Use only simple markdown to format your responses.
 
-            Use the search tool to find relevant information. When you do this, end your
-            reply with citations in the special XML format:
+            You have access to two main tools:
+            1. Search tool - for finding information in documents
+            2. Supplier information tool - for getting detailed information about specific suppliers
 
+            For document searches, use the search tool and end your reply with citations in the special XML format:
             <citation filename='string' page_number='number'>exact quote here</citation>
 
-            Always include the citation in your response if there are results.
+            For supplier-specific questions (e.g., ""Tell me about supplier XYZ"", ""What is supplier ABC capable of?""), 
+            use the supplier information tool to get comprehensive details including contact information, capabilities, 
+            and performance data.
 
+            Always include citations when using document search results.
             The quote must be max 10 words, taken word-for-word from the search result, and is the basis for why the citation is relevant.
             Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.";
     }
