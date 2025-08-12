@@ -1,151 +1,151 @@
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-light-text dark:text-grok-text">Quotes</h1>
-        <button
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-            New Quote
+<div class="space-y-3 sm:space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-xl sm:text-2xl font-bold text-light-text dark:text-grok-text">Quotes</h1>
+    <button
+      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200">
+      New Quote
+    </button>
+  </div>
+
+  <div
+    class="bg-light-surface dark:bg-grok-surface p-3 sm:p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Search</label>
+        <input type="text" [ngModel]="filters().search" (ngModelChange)="onSearchInputChange($event)"
+          placeholder="Search quote number, supplier..."
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Status</label>
+        <select [ngModel]="filters().status" (ngModelChange)="onStatusInputChange($event)"
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="">All Statuses</option>
+          @for (status of statuses(); track status) {
+          <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">RFQ ID</label>
+        <input type="number" [ngModel]="filters().rfqId" (ngModelChange)="onRfqIdInputChange($event)"
+          placeholder="Filter by RFQ ID"
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Supplier ID</label>
+        <input type="number" [ngModel]="filters().supplierId" (ngModelChange)="onSupplierIdInputChange($event)"
+          placeholder="Filter by Supplier ID"
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">From Date</label>
+        <input type="date" [ngModel]="filters().fromDate" (ngModelChange)="onFromDateInputChange($event)"
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">To Date</label>
+        <input type="date" [ngModel]="filters().toDate" (ngModelChange)="onToDateInputChange($event)"
+          class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-4">
+      <button (click)="clearFilters()"
+        class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text px-3 py-1 text-sm font-medium transition-colors duration-200">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading quotes...</span>
+  </div>
+  }
+
+  @if (error()) {
+  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm text-red-800 dark:text-red-300">{{ error() }}</p>
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (!loading() && !error()) {
+  <div
+    class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+    <ag-grid-angular [rowData]="quotes()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [theme]="gridTheme"
+      [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'" (gridReady)="onGridReady($event)"
+      (rowClicked)="onRowClicked($event)" (cellValueChanged)="onCellValueChanged($event)" class="ag-theme-alpine w-full"
+      style="height: 600px;">
+    </ag-grid-angular>
+
+    @if (totalPages() > 1) {
+    <div
+      class="flex items-center justify-between px-2 py-2 sm:px-4 sm:py-3 lg:px-6 border-t border-light-border dark:border-grok-border">
+      <div class="flex-1 flex justify-between sm:hidden">
+        <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
+          class="relative inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-light-border dark:border-grok-border text-xs sm:text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+          Previous
         </button>
-    </div>
-
-    <div
-        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Search</label>
-                <input type="text" [ngModel]="filters().search" (ngModelChange)="onSearchInputChange($event)"
-                    placeholder="Search quote number, supplier..."
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Status</label>
-                <select [ngModel]="filters().status" (ngModelChange)="onStatusInputChange($event)"
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">All Statuses</option>
-                    @for (status of statuses(); track status) {
-                    <option [value]="status">{{ status }}</option>
-                    }
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">RFQ ID</label>
-                <input type="number" [ngModel]="filters().rfqId" (ngModelChange)="onRfqIdInputChange($event)"
-                    placeholder="Filter by RFQ ID"
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Supplier ID</label>
-                <input type="number" [ngModel]="filters().supplierId" (ngModelChange)="onSupplierIdInputChange($event)"
-                    placeholder="Filter by Supplier ID"
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">From Date</label>
-                <input type="date" [ngModel]="filters().fromDate" (ngModelChange)="onFromDateInputChange($event)"
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">To Date</label>
-                <input type="date" [ngModel]="filters().toDate" (ngModelChange)="onToDateInputChange($event)"
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
+        <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
+          class="ml-3 relative inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-light-border dark:border-grok-border text-xs sm:text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+        </button>
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-light-text dark:text-grok-text">
+            Showing
+            <span class="font-medium">{{ (currentPage() - 1) * pageSize() + 1 }}</span>
+            to
+            <span class="font-medium">{{ Math.min(currentPage() * pageSize(), totalCount()) }}</span>
+            of
+            <span class="font-medium">{{ totalCount() }}</span>
+            results
+          </p>
         </div>
-
-        <div class="flex justify-end mt-4">
-            <button (click)="clearFilters()"
-                class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text px-3 py-1 text-sm font-medium transition-colors duration-200">
-                Clear Filters
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+            <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
+              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
             </button>
-        </div>
-    </div>
 
-    @if (loading()) {
-    <div class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading quotes...</span>
-    </div>
-    }
-
-    @if (error()) {
-    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
-            <div class="ml-3">
-                <p class="text-sm text-red-800 dark:text-red-300">{{ error() }}</p>
-            </div>
-        </div>
-    </div>
-    }
-
-    @if (!loading() && !error()) {
-    <div
-        class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-        <ag-grid-angular [rowData]="quotes()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
-            [theme]="gridTheme" [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'"
-            (gridReady)="onGridReady($event)" (rowClicked)="onRowClicked($event)"
-            (cellValueChanged)="onCellValueChanged($event)" class="ag-theme-alpine w-full" style="height: 600px;">
-        </ag-grid-angular>
-
-        @if (totalPages() > 1) {
-        <div
-            class="flex items-center justify-between px-4 py-3 border-t border-light-border dark:border-grok-border sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-                <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
-                    class="relative inline-flex items-center px-4 py-2 border border-light-border dark:border-grok-border text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                    Previous
-                </button>
-                <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
-                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-light-border dark:border-grok-border text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                    Next
-                </button>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-light-text dark:text-grok-text">
-                        Showing
-                        <span class="font-medium">{{ (currentPage() - 1) * pageSize() + 1 }}</span>
-                        to
-                        <span class="font-medium">{{ Math.min(currentPage() * pageSize(), totalCount()) }}</span>
-                        of
-                        <span class="font-medium">{{ totalCount() }}</span>
-                        results
-                    </p>
-                </div>
-                <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                        <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
-                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                            Previous
-                        </button>
-
-                        @for (page of getPageNumbers(); track page) {
-                        <button (click)="onPageChange(page)"
-                            [class]="page === currentPage()
+            @for (page of getPageNumbers(); track page) {
+            <button (click)="onPageChange(page)"
+              [class]="page === currentPage()
                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                     : 'bg-light-bg dark:bg-grok-bg border-light-border dark:border-grok-border text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
-                            {{ page }}
-                        </button>
-                        }
+              {{ page }}
+            </button>
+            }
 
-                        <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
-                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                            Next
-                        </button>
-                    </nav>
-                </div>
-            </div>
+            <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
+              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </nav>
         </div>
-        }
+      </div>
     </div>
     }
+  </div>
+  }
 </div>
