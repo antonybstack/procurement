@@ -120,8 +120,7 @@ docker-compose logs -f
 # PostgreSQL only
 docker-compose logs -f postgres
 
-# pgAdmin only
-docker-compose logs -f pgadmin
+
 ```
 
 ### Access PostgreSQL Shell
@@ -143,7 +142,6 @@ docker-compose exec -T postgres psql -U postgres -d myapp < backup.sql
 
 Data is stored in Docker volumes:
 - `postgres_data`: PostgreSQL database files
-- `pgadmin_data`: pgAdmin configuration and data
 
 To backup volumes:
 ```bash
@@ -174,7 +172,7 @@ For advanced users, you can manually manage volumes:
 docker volume ls
 
 # Remove specific volumes (WARNING: This deletes data!)
-docker volume rm postgres_data pgadmin_data ollama_data
+docker volume rm postgres_data ollama_data
 ```
 
 ## Ollama Management
@@ -223,15 +221,7 @@ nc -zv localhost 5432
 nc -zv localhost 5432
 ```
 
-### pgAdmin logs.
-``` bash
-docker-compose logs pgadmin
-```
 
-### Test the connection from within the pgAdmin container to see what hostname it should use:
-``` bash
-docker-compose exec pgadmin ping -c 1 postgres
-```
 
 ## Troubleshooting
 

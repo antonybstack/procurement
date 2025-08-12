@@ -117,7 +117,7 @@ else
 fi
 
 # Start only the minimal services
-# Start Postgres and pgAdmin
+# Start Postgres
 if [ -f docker-compose.db.yml ]; then
   docker-compose -f docker-compose.db.yml up -d
 fi

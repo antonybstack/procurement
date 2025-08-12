@@ -50,13 +50,7 @@ else
     echo "❌ Unhealthy"
 fi
 
-# Check pgAdmin
-echo -n "pgAdmin: "
-if curl -f http://localhost:8080 > /dev/null 2>&1; then
-    echo "✅ Running"
-else
-    echo "❌ Not responding"
-fi
+
 
 # Check Elasticsearch
 echo -n "Elasticsearch: "
@@ -110,8 +104,7 @@ echo ""
 echo "🌐 Access Points:"
 echo "----------------"
 echo "📊 PostgreSQL: localhost:5432"
-echo "🗄️  pgAdmin: http://localhost:8080"
-echo "   - Email: admin@example.com"
+
 echo "   - Password: admin_password"
 echo "🔍 Elasticsearch: http://localhost:9200"
 echo "📊 Kibana: http://localhost:5601"

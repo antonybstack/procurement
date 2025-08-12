@@ -1,13 +1,13 @@
 # Local Development Setup
 
-This guide explains how to set up local development with Docker services (database, pgAdmin) and run the API locally in your debugger.
+This guide explains how to set up local development with Docker services (database) and run the API locally in your debugger.
 
 ## Quick Start
 
 ### 1. Start the Development Environment (Database Only)
 
 ```bash
-# Start PostgreSQL and pgAdmin (no API)
+# Start PostgreSQL (no API)
 docker-compose -f docker-compose.dev-local.yml up -d
 
 # Check that services are running
@@ -42,7 +42,7 @@ dotnet run
 ### Starting Development
 
 ```bash
-# Start the development environment (database + pgAdmin)
+# Start the development environment (database)
 docker-compose -f docker-compose.dev-local.yml up -d
 
 # In another terminal, run the API locally
@@ -107,8 +107,7 @@ The local API runs with these environment variables:
 - **Username**: postgres
 - **Password**: postgres_password
 
-### pgAdmin (Optional)
-- **URL**: http://localhost:8080
+
 - **Email**: admin@example.com
 - **Password**: admin_password
 
@@ -140,13 +139,12 @@ The local API runs with these environment variables:
 
 ### ✅ **Database Access**
 - PostgreSQL running in Docker
-- pgAdmin for database management
 - Persistent data across restarts
 - Same data as production environment
 
 ### ✅ **Isolated Services**
 - Only run what you need
-- Database and pgAdmin in containers
+- Database in container
 - API runs locally for debugging
 - Easy to start/stop services
 
@@ -173,7 +171,7 @@ If you get port conflicts:
 # Check what's using the ports
 lsof -i :5432  # PostgreSQL
 lsof -i :5001  # API
-lsof -i :8080  # pgAdmin
+
 
 # Stop conflicting services
 sudo lsof -ti:5432 | xargs kill -9

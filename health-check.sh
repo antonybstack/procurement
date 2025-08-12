@@ -107,13 +107,7 @@ fi
 
 echo ""
 
-# Check pgAdmin
-echo -e "${BLUE}🛠️  pgAdmin Check:${NC}"
-if curl -f -s http://localhost:8080 >/dev/null 2>&1; then
-    print_status "OK" "pgAdmin is accessible"
-else
-    print_status "WARNING" "pgAdmin is not accessible"
-fi
+
 
 # Check Grafana Observability Stack
 echo -e "${BLUE}📊 Grafana Observability Stack:${NC}"
@@ -153,7 +147,7 @@ echo -e "${BLUE}🌐 Access URLs:${NC}"
 echo -e "${GREEN}API Base:${NC} http://localhost:5001"
 echo -e "${GREEN}Swagger UI:${NC} http://localhost:5001/swagger/index.html"
 echo -e "${GREEN}Health Check:${NC} http://localhost:5001/health/ready"
-echo -e "${GREEN}pgAdmin:${NC} http://localhost:8080 (admin@example.com / admin_password)"
+
 echo -e "${GREEN}PostgreSQL:${NC} localhost:5432"
 echo -e "${GREEN}Grafana:${NC} http://localhost:3000 (admin/admin)"
 echo -e "${GREEN}Prometheus:${NC} http://localhost:9090"

@@ -22,7 +22,7 @@ docker-compose -f docker-compose.db.yml down -v
 
 # Remove the volumes manually to ensure complete cleanup
 echo "🗑️  Removing data volumes..."
-docker volume rm postgres_data pgadmin_data 2>/dev/null || true
+docker volume rm postgres_data 2>/dev/null || true
 
 # Ensure the external network exists
 if ! docker network ls --format '{{.Name}}' | grep -qw postgres_network; then
