@@ -12,7 +12,7 @@ echo ""
 echo "2. Docker disk usage:"
 docker system df 2>/dev/null || echo "Docker not available"
 echo ""
-echo "Consider running `docker system prune -f` to clean up unused images and volumes"
+echo "Consider running `docker system prune -a` to clean up unused images and build cache"
 echo "Consider running `docker volume rm $(docker volume ls -q)` to clean up unused volumes"
 echo ""
 
