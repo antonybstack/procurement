@@ -159,21 +159,33 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAiEmbeddi
     .GetEmbeddingClient(model: embeddingModelName)
     .AsIEmbeddingGenerator();
 
-// test chat client
-var testChat = Task.Run(async () => await chatClient.GetResponseAsync(
-    new[]
+// test chat client and embedding generator (optional)
+var testOpenAI = builder.Configuration.GetSection("TestOpenAIOnStartup").Get<bool?>() ?? false;
+if (testOpenAI)
+{
+    try
     {
-        new ChatMessage(ChatRole.System, "You are a helpful assistant."),
-        new ChatMessage(ChatRole.User, "Hello world")
-    },
-    options: null,
-    cancellationToken: default)).GetAwaiter().GetResult();
+        var testChat = Task.Run(async () => await chatClient.GetResponseAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.System, "You are a helpful assistant."),
+                new ChatMessage(ChatRole.User, "Hello world")
+            },
+            options: null,
+            cancellationToken: default)).GetAwaiter().GetResult();
 
-// test embedding generator
-var testEmbed = Task.Run(async () => await embeddingGenerator.GenerateAsync(
-    new[] { "Hello world" },
-    options: null,
-    cancellationToken: default)).GetAwaiter().GetResult();
+        var testEmbed = Task.Run(async () => await embeddingGenerator.GenerateAsync(
+            new[] { "Hello world" },
+            options: null,
+            cancellationToken: default)).GetAwaiter().GetResult();
+            
+        Console.WriteLine("✅ OpenAI API test successful");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ OpenAI API test failed: {ex.Message}");
+    }
+}
 
 var vectorStorePath = string.Empty;
 var resetVectorStores = builder.Configuration.GetSection("ResetVectorStores").Get<bool?>() ?? false;

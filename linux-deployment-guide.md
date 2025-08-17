@@ -36,7 +36,7 @@ git pull
 
 ### build database
 ``` bash
-./start-database.sh
+./start-db.sh
 ```
 
 ### build and start api
