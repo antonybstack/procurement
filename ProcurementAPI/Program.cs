@@ -247,11 +247,15 @@ app.MapHealthChecks("/health/live");
 // other sources by implementing IIngestionSource.
 // Important: ensure that any content you ingest is trusted, as it may be reflected back
 // to users or could be a source of prompt injection risk.
-var dataPath = Path.Combine(builder.Environment.ContentRootPath, "Documents");
-Directory.CreateDirectory(dataPath); // Ensure the directory exists
-await DataIngestor.IngestDataAsync(
-    app.Services,
-    new PDFDirectorySource(dataPath));
+var ingestDocuments = builder.Configuration.GetSection("IngestDocuments").Get<bool?>() ?? false;
+if (ingestDocuments)
+{
+    var dataPath = Path.Combine(builder.Environment.ContentRootPath, "Documents");
+    Directory.CreateDirectory(dataPath); // Ensure the directory exists
+    await DataIngestor.IngestDataAsync(
+        app.Services,
+        new PDFDirectorySource(dataPath));
+}
 
 app.Run();
 
