@@ -4,7 +4,7 @@
 
 set -e
 
-DOMAIN="sparkify.local"
+DOMAIN="sparkify.dev"
 
 echo "🔒 Enabling nginx on standard ports 80/443..."
 echo "This requires administrator privileges."

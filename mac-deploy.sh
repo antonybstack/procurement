@@ -40,7 +40,7 @@ fi
 echo ""
 echo "🌐 Step 2: Configuring local domain..."
 
-DOMAIN="sparkify.local"
+DOMAIN="sparkify.dev"
 HOSTS_ENTRY="127.0.0.1 $DOMAIN"
 
 if ! grep -q "$DOMAIN" /etc/hosts; then
