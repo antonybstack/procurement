@@ -3,6 +3,16 @@
 # This script starts the database services while preserving existing data.
 # It stops existing containers but PRESERVES the persistent data volume
 # to maintain data across restarts.
+# Now includes automatic pgai setup for TigerData migration.
+
+# Load environment variables from .env
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+    echo "📦 Loaded .env"
+else
+    echo "⚠️  .env not found"
+fi
+
 
 echo "🚀 Starting database services..."
 
@@ -34,7 +44,7 @@ docker-compose -f docker-compose.db.yml up -d
 if [ $? -eq 0 ]; then
     echo "✅ Database services started successfully!"
     echo "📊 PostgreSQL: localhost:5432"
-    echo "   - Password: admin_password"
+    echo "   - Password: postgres_password"
 else
     echo "❌ Failed to start database services"
     exit 1
@@ -62,3 +72,25 @@ if [ $counter -ge $timeout ]; then
 fi
 
 echo "🎉 Database services are ready for connections!"
+
+# Auto-setup pgai using dedicated setup script
+echo ""
+echo "🤖 Setting up database AI stack..."
+if [ -f setup-pgai.sh ]; then
+    echo "🔄 Running comprehensive pgai setup..."
+    ./setup-pgai.sh
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "🚀 Database AI stack is ready!"
+        echo "📊 PostgreSQL: localhost:5432"
+        echo "🤖 Vectorizer worker: monitoring for new data"
+        echo "🔍 Vector search: ready for queries"
+    else
+        echo "❌ pgai setup failed - please check the output above"
+        exit 1
+    fi
+else
+    echo "❌ setup-pgai.sh not found - please run it manually after database is ready"
+    echo "📊 PostgreSQL: localhost:5432 (database only)"
+fi

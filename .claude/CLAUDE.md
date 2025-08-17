@@ -261,13 +261,9 @@ The system provides advanced semantic search capabilities:
 ### Environment Variables
 
 ```bash
-# Database
-ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=myapp;Username=postgres;Password=postgres_password"
-
-# AI Services
-OpenAIKey="your-openai-key"
-ModelName="gpt-5-nano"
-EmbeddingModelName="text-embedding-ada-002"
+OpenAIKey
+ModelName
+EmbeddingModelName
 ```
 
 ## Important Development Notes
