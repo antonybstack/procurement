@@ -30,14 +30,6 @@ services:
       start_period: 40s
     networks:
       - procurement_postgres_network
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: "1.0"
-        reservations:
-          memory: 512M
-          cpus: "0.5"
 
   vectorizer-worker:
     image: timescale/pgai-vectorizer-worker:latest

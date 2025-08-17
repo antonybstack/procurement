@@ -17,14 +17,6 @@ services:
     networks:
       - procurement_observability
       - procurement_procurement_postgres_network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.25'
-        reservations:
-          memory: 128M
-          cpus: '0.1'
 
 networks:
   procurement_observability:
