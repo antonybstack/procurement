@@ -85,7 +85,7 @@ CREATE INDEX ON suppliers USING diskann (embedding vector_cosine_ops, category_l
    # docker-compose.yml
    services:
      postgres:
-       image: timescale/timescaledb:latest-pg15
+       image: timescale/timescaledb:latest-pg17
        environment:
          - POSTGRES_EXTENSION_LIST=timescaledb,vector,vectorscale
    ```

@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 90s
     networks:
-      - postgres_network
+      - procurement_procurement_postgres_network
     deploy:
       resources:
         limits:
@@ -33,5 +33,5 @@ services:
           cpus: '0.25'
 
 networks:
-  postgres_network:
+  procurement_procurement_postgres_network:
     external: true

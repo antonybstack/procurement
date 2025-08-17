@@ -22,7 +22,13 @@ CREATE TABLE suppliers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     -- Vector embedding for supplier search
-    embedding vector(768)
+    embedding vector(768),
+    -- Label fields for enhanced filtering (TigerData migration)
+    category_labels TEXT[],
+    certification_labels TEXT[],
+    process_labels TEXT[],
+    material_labels TEXT[],
+    service_labels TEXT[]
 );
 
 -- Supplier capabilities table for detailed AI matching
