@@ -1,29 +1,26 @@
 <div class="space-y-3 sm:space-y-6">
-    <div class="flex flex-col space-y-1">
-        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-light-text dark:text-grok-text">Items</h1>
-        <p class="text-sm sm:text-base text-light-text-muted dark:text-grok-text-muted">Manage your procurement items
-            and catalog</p>
+    <div class="flex justify-between items-center">
+        <h1 class="text-xl sm:text-2xl font-bold text-light-text dark:text-grok-text">Items</h1>
+        <button (click)="onCreateNew()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200">
+            New Item
+        </button>
     </div>
 
-    <!-- Filters -->
     <div
-        class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border p-3 sm:p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Search -->
+        class="bg-light-surface dark:bg-grok-surface p-3 sm:p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-                <label for="search"
-                    class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Search</label>
-                <input type="text" id="search" [value]="filters().search"
+                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Search</label>
+                <input type="text" [value]="filters().search"
                     (input)="onSearchInputChange($any($event.target).value)"
                     placeholder="Search by item code or description..."
-                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
 
-            <!-- Category Filter -->
             <div>
-                <label for="category"
-                    class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Category</label>
-                <select id="category" [value]="filters().category"
+                <label class="block text-sm font-medium text-light-text dark:text-grok-text mb-1">Category</label>
+                <select [value]="filters().category"
                     (change)="onCategoryInputChange($any($event.target).value)"
                     class="w-full px-3 py-2 border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-light-text dark:text-grok-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="">All Categories</option>
@@ -36,23 +33,28 @@
                 </select>
             </div>
 
-            <!-- Actions -->
-            <div class="flex items-end space-x-2">
-                <button (click)="clearFilters()"
-                    class="px-4 py-2 text-sm font-medium text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg border border-light-border dark:border-grok-border rounded-md hover:bg-light-bg-alt dark:hover:bg-grok-bg-light focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Clear Filters
-                </button>
-                <button (click)="onCreateNew()"
-                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Create New Item
-                </button>
+            <div>
+                <!-- Empty div for spacing -->
             </div>
+        </div>
+
+        <div class="flex justify-end mt-4">
+            <button (click)="clearFilters()"
+                class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text px-3 py-1 text-sm font-medium transition-colors duration-200">
+                Clear Filters
+            </button>
         </div>
     </div>
 
-    <!-- Error Message -->
+    @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading items...</span>
+    </div>
+    }
+
     @if (error()) {
-    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4 mb-6">
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
         <div class="flex">
             <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -68,57 +70,66 @@
     </div>
     }
 
-    <!-- Loading State -->
-    @if (loading()) {
-    <div class="flex justify-center items-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading items...</span>
-    </div>
-    }
-
-    <!-- AG Grid -->
-    @if (!loading()) {
+    @if (!loading() && !error()) {
     <div
         class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-        <ag-grid-angular [rowData]="items()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
-            [theme]="gridTheme" [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'"
-            (gridReady)="onGridReady($event)" (rowClicked)="onRowClicked($event)" class="ag-theme-alpine w-full"
-            style="height: 500px;">
-        </ag-grid-angular>
-    </div>
-
-    <!-- Pagination -->
-    @if (totalPages() > 1) {
-    <div class="mt-6 flex items-center justify-between">
-        <div class="text-sm text-light-text dark:text-grok-text">
-            Showing {{ (currentPage() - 1) * pageSize() + 1 }} to {{ Math.min(currentPage() * pageSize(), totalCount())
-            }} of {{ totalCount() }} items
+        <div class="h-80 sm:h-[500px]">
+            <ag-grid-angular [rowData]="items()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+                [theme]="gridTheme" [rowSelection]="'single'" [animateRows]="true" [domLayout]="'normal'"
+                (gridReady)="onGridReady($event)" (rowClicked)="onRowClicked($event)" class="ag-theme-alpine w-full h-full">
+            </ag-grid-angular>
         </div>
 
-        <div class="flex items-center space-x-2">
-            <!-- Previous Page -->
-            <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
-                class="px-3 py-2 text-sm font-medium text-light-text-muted dark:text-grok-text-muted bg-light-bg dark:bg-grok-bg border border-light-border dark:border-grok-border rounded-md hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                Previous
-            </button>
+        @if (totalPages() > 1) {
+        <div
+            class="flex items-center justify-between px-2 py-2 sm:px-4 sm:py-3 lg:px-6 border-t border-light-border dark:border-grok-border">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
+                    class="relative inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-light-border dark:border-grok-border text-xs sm:text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+                    Previous
+                </button>
+                <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
+                    class="ml-3 relative inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-light-border dark:border-grok-border text-xs sm:text-sm font-medium rounded-md text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-light-text dark:text-grok-text">
+                        Showing
+                        <span class="font-medium">{{ (currentPage() - 1) * pageSize() + 1 }}</span>
+                        to
+                        <span class="font-medium">{{ Math.min(currentPage() * pageSize(), totalCount()) }}</span>
+                        of
+                        <span class="font-medium">{{ totalCount() }}</span>
+                        results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
 
-            <!-- Page Numbers -->
-            @for (page of getPageNumbers(); track page) {
-            <button (click)="onPageChange(page)"
-                [class]="page === currentPage()
-                                ? 'px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md'
-                                : 'px-3 py-2 text-sm font-medium text-light-text dark:text-grok-text bg-light-bg dark:bg-grok-bg border border-light-border dark:border-grok-border rounded-md hover:bg-light-bg-alt dark:hover:bg-grok-bg-light'">
-                {{ page }}
-            </button>
-            }
+                        @for (page of getPageNumbers(); track page) {
+                        <button (click)="onPageChange(page)"
+                            [class]="page === currentPage()
+                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                    : 'bg-light-bg dark:bg-grok-bg border-light-border dark:border-grok-border text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                            {{ page }}
+                        </button>
+                        }
 
-            <!-- Next Page -->
-            <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
-                class="px-3 py-2 text-sm font-medium text-light-text-muted dark:text-grok-text-muted bg-light-bg dark:bg-grok-bg border border-light-border dark:border-grok-border rounded-md hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
-                Next
-            </button>
+                        <button (click)="onPageChange(currentPage() + 1)" [disabled]="!hasNextPage()"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-light-border dark:border-grok-border bg-light-bg dark:bg-grok-bg text-sm font-medium text-light-text-muted dark:text-grok-text-muted hover:bg-light-bg-alt dark:hover:bg-grok-bg-light disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </nav>
+                </div>
+            </div>
         </div>
+        }
     </div>
-    }
     }
 </div>
