@@ -98,17 +98,17 @@ dig +short sparkify.dev
 ### SSL Certificates
 ```bash
 # Local development certificates (mkcert)
-/Users/antbly/dev/procurement/ssl/sparkify.dev.pem
-/Users/antbly/dev/procurement/ssl/sparkify.dev-key.pem
+/etc/ssl/sparkify/sparkify.dev.pem
+/etc/ssl/sparkify/sparkify.dev-key.pem
 ```
 
 ### Service Status
 ```bash
-# Check nginx status
-ps aux | grep nginx
+# Check nginx system service status
+sudo launchctl list | grep nginx
 
-# Check tunnel status
-ps aux | grep cloudflared
+# Check tunnel system service status
+sudo launchctl list | grep cloudflare
 
 # Test endpoints
 curl -I https://sparkify.dev
@@ -119,41 +119,41 @@ curl https://sparkify.dev/api/health
 
 ### Starting Services
 ```bash
-# Start nginx
-sudo nginx
+# Start nginx system service
+sudo launchctl start dev.sparkify.nginx
 
-# Start Cloudflare tunnel
+# Start Cloudflare tunnel system service
+sudo launchctl start com.cloudflare.sparkify
+
+# Manual start (if system services not configured)
 cloudflared tunnel run sparkify
-
-# Start as background service (optional)
-brew services start nginx
-brew services start cloudflared
 ```
 
 ### Stopping Services
 ```bash
-# Stop nginx
-sudo nginx -s quit
+# Stop nginx system service
+sudo launchctl stop dev.sparkify.nginx
 
-# Stop tunnel
-pkill cloudflared
+# Stop tunnel system service
+sudo launchctl stop com.cloudflare.sparkify
 
-# Stop services
-brew services stop nginx
-brew services stop cloudflared
+# Manual stop (if needed)
+sudo pkill nginx
+sudo pkill cloudflared
 ```
 
 ### Configuration Updates
 ```bash
-# Reload nginx configuration
-sudo nginx -s reload
-
 # Validate nginx config
 sudo nginx -t
 
-# Restart tunnel after config changes
-pkill cloudflared
-cloudflared tunnel run sparkify
+# Restart nginx system service
+sudo launchctl stop dev.sparkify.nginx
+sudo launchctl start dev.sparkify.nginx
+
+# Restart tunnel system service
+sudo launchctl stop com.cloudflare.sparkify
+sudo launchctl start com.cloudflare.sparkify
 ```
 
 ### Log Monitoring
@@ -187,8 +187,9 @@ sudo nginx -t && sudo nginx -s reload
 # Check tunnel connectivity
 curl -k -I https://192.168.1.218:443
 
-# Restart tunnel
-pkill cloudflared && cloudflared tunnel run sparkify
+# Restart tunnel system service
+sudo launchctl stop com.cloudflare.sparkify
+sudo launchctl start com.cloudflare.sparkify
 ```
 
 #### 2. DNS Not Resolving

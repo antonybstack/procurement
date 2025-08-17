@@ -1,250 +1,156 @@
 #!/bin/bash
 
-# Mac Studio M1 deployment script for local development
-# Sets up Postgres, .NET API, and Angular frontend with nginx reverse proxy
+# Mac Studio M1 deployment orchestrator for Procurement Management System
+# This script coordinates system setup (requiring sudo) and app deployment (user-level)
 
 set -e
 
-echo "🍎 Starting Mac Studio M1 deployment..."
-echo "======================================"
-
-# Step 1: Install required tools via Homebrew
+echo "🍎 Mac Studio M1 Deployment Orchestrator"
+echo "========================================"
 echo ""
-echo "📦 Step 1: Installing required tools..."
 
-# Check if Homebrew is installed
-if ! command -v brew &> /dev/null; then
-    echo "❌ Homebrew is not installed. Please install it first:"
-    echo "   /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+# Check if we're running as root - we should NOT be
+if [ "$EUID" -eq 0 ]; then
+    echo "❌ This script should NOT be run with sudo"
+    echo "   It will request sudo privileges when needed"
+    echo ""
+    echo "Usage: ./mac-deploy.sh"
     exit 1
 fi
-
-# Install nginx if not already installed
-if ! command -v nginx &> /dev/null; then
-    echo "Installing nginx..."
-    brew install nginx
-else
-    echo "✅ nginx already installed"
-fi
-
-# Install mkcert for local SSL certificates
-if ! command -v mkcert &> /dev/null; then
-    echo "Installing mkcert for local SSL certificates..."
-    brew install mkcert
-    mkcert -install
-else
-    echo "✅ mkcert already installed"
-fi
-
-# Step 2: Set up local domain in /etc/hosts
-echo ""
-echo "🌐 Step 2: Configuring local domain..."
 
 DOMAIN="sparkify.dev"
-HOSTS_ENTRY="127.0.0.1 $DOMAIN"
 
-if ! grep -q "$DOMAIN" /etc/hosts; then
-    echo "Adding $DOMAIN to /etc/hosts (requires sudo)..."
-    echo "$HOSTS_ENTRY" | sudo tee -a /etc/hosts > /dev/null
-    echo "✅ Added $DOMAIN to /etc/hosts"
+echo "🔍 Running deployment for domain: $DOMAIN"
+echo "🔍 User: $(whoami)"
+echo "🔍 Working directory: $(pwd)"
+echo ""
+
+# Phase 1: System Infrastructure Setup (requires sudo)
+echo "=================="
+echo "Phase 1: System Infrastructure Setup"
+echo "=================="
+echo ""
+echo "This phase requires administrator privileges to configure:"
+echo "  - System hosts file"
+echo "  - SSL certificates in system directory"  
+echo "  - nginx and cloudflared LaunchDaemons"
+echo "  - Power management settings"
+echo ""
+
+if [ -f "./system-setup.sh" ]; then
+    echo "🔧 Running system setup (will prompt for sudo password)..."
+    sudo ./system-setup.sh
+    echo ""
+    echo "✅ System infrastructure setup complete"
 else
-    echo "✅ $DOMAIN already exists in /etc/hosts"
-fi
-
-# Step 3: Create SSL certificates for local development
-echo ""
-echo "🔒 Step 3: Creating local SSL certificates..."
-
-SSL_DIR="./ssl"
-mkdir -p "$SSL_DIR"
-
-if [ ! -f "$SSL_DIR/$DOMAIN.pem" ]; then
-    echo "Creating SSL certificate for $DOMAIN..."
-    cd "$SSL_DIR"
-    mkcert "$DOMAIN"
-    cd ..
-    echo "✅ SSL certificate created"
-else
-    echo "✅ SSL certificate already exists"
-fi
-
-# Step 4: Create Docker networks
-echo ""
-echo "🐳 Step 4: Setting up Docker networks..."
-
-docker network create postgres_network 2>/dev/null || echo "✅ postgres_network already exists"
-docker network create procurement_observability 2>/dev/null || echo "✅ procurement_observability already exists"
-
-# Step 5: Start minimal services
-echo ""
-echo "🚀 Step 5: Starting minimal services..."
-
-# Start Postgres
-if [ -f docker-compose.db.yml ]; then
-    echo "Starting Postgres..."
-    docker-compose -f docker-compose.db.yml up -d
-    echo "✅ Postgres started"
-fi
-
-# Start API
-if [ -f docker-compose.api.yml ]; then
-    echo "Starting API..."
-    docker-compose -f docker-compose.api.yml up -d
-    echo "✅ API started"
-fi
-
-# Start Frontend
-if [ -f docker-compose.frontend.yml ]; then
-    echo "Starting Frontend..."
-    docker-compose -f docker-compose.frontend.yml up -d
-    echo "✅ Frontend started"
-fi
-
-# Step 6: Configure nginx for reverse proxy
-echo ""
-echo "⚙️  Step 6: Configuring nginx..."
-
-# Determine nginx configuration directory (M1 Mac with Homebrew)
-if [ -d "/opt/homebrew/etc/nginx" ]; then
-    NGINX_DIR="/opt/homebrew/etc/nginx"
-elif [ -d "/usr/local/etc/nginx" ]; then
-    NGINX_DIR="/usr/local/etc/nginx"
-else
-    echo "❌ Could not find nginx configuration directory"
+    echo "❌ system-setup.sh not found in current directory"
     exit 1
 fi
 
-# Check if our custom nginx config exists, if not copy the template
-if [ ! -f "$NGINX_DIR/nginx.conf.procurement" ]; then
-    echo "Creating nginx configuration from template..."
-    if [ -f "./nginx-mac.conf" ]; then
-        # Update paths in the template to use absolute paths
-        sed -e "s|/Users/antbly/dev/procurement|$(pwd)|g" \
-            -e "s|HOMEBREW_PREFIX|$(brew --prefix)|g" \
-            ./nginx-mac.conf > "$NGINX_DIR/nginx.conf.procurement"
-    else
-        echo "❌ nginx-mac.conf template not found"
-        exit 1
-    fi
-    echo "✅ nginx configuration template created"
-else
-    echo "✅ nginx configuration already exists"
-fi
-
-# Backup original nginx.conf if it exists and isn't already backed up
-if [ -f "$NGINX_DIR/nginx.conf" ] && [ ! -f "$NGINX_DIR/nginx.conf.original" ]; then
-    cp "$NGINX_DIR/nginx.conf" "$NGINX_DIR/nginx.conf.original"
-    echo "✅ Original nginx.conf backed up"
-fi
-
-# Use our procurement-specific configuration
-cp "$NGINX_DIR/nginx.conf.procurement" "$NGINX_DIR/nginx.conf"
-
-echo "✅ nginx configuration created"
-
-# Step 7: Create log directory and configure nginx for privileged ports
 echo ""
-echo "🔄 Step 7: Configuring nginx for ports 80/443..."
+echo "=================="
+echo "Phase 2: Application Deployment"  
+echo "=================="
+echo ""
+echo "This phase runs as regular user and configures:"
+echo "  - User-level tool installation"
+echo "  - Local SSL certificates"
+echo "  - Docker containers and networks"
+echo "  - Application services"
+echo ""
 
-# Create log directory if it doesn't exist
-mkdir -p "$(brew --prefix)/var/log/nginx"
-
-# Replace the current config with our standard ports version
-sed -e "s|/Users/antbly/dev/procurement|$(pwd)|g" \
-    -e "s|HOMEBREW_PREFIX|$(brew --prefix)|g" \
-    ./nginx.conf > "$NGINX_DIR/nginx.conf"
-
-# Test nginx configuration
-if nginx -t; then
-    echo "✅ nginx configuration is valid"
+if [ -f "./app-deploy.sh" ]; then
+    echo "🚀 Running application deployment..."
+    ./app-deploy.sh
+    echo ""
+    echo "✅ Application deployment complete"
 else
-    echo "❌ nginx configuration is invalid"
+    echo "❌ app-deploy.sh not found in current directory"
     exit 1
 fi
 
-# Stop current nginx service
-brew services stop nginx 2>/dev/null || true
-
-# Create a system-level LaunchDaemon for nginx with privileged ports
-echo "Creating system LaunchDaemon for nginx (requires sudo)..."
-echo "You may be prompted for your password to allow nginx to use ports 80/443"
-
-# Create the LaunchDaemon plist
-cat > /tmp/nginx.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>dev.sparkify.nginx</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>NGINX_PATH</string>
-        <string>-g</string>
-        <string>daemon off;</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>WorkingDirectory</key>
-    <string>HOMEBREW_PREFIX</string>
-    <key>StandardOutPath</key>
-    <string>HOMEBREW_PREFIX/var/log/nginx/access.log</string>
-    <key>StandardErrorPath</key>
-    <string>HOMEBREW_PREFIX/var/log/nginx/error.log</string>
-</dict>
-</plist>
-EOF
-
-# Replace placeholders in the plist
-sed -e "s|NGINX_PATH|$(brew --prefix)/bin/nginx|g" \
-    -e "s|HOMEBREW_PREFIX|$(brew --prefix)|g" \
-    /tmp/nginx.plist > /tmp/nginx-final.plist
-
-echo "Starting nginx on standard ports 80/443 (requires sudo)..."
-
-# Use the standard ports config
-sed -e "s|/Users/antbly/dev/procurement|$(pwd)|g" \
-    -e "s|HOMEBREW_PREFIX|$(brew --prefix)|g" \
-    ./nginx.conf > "$NGINX_DIR/nginx.conf"
-
-# Enable standard ports
-./enable-standard-ports.sh
-
-echo "✅ nginx started on ports 80/443"
-
-# Step 8: Wait for services to be ready
 echo ""
-echo "⏳ Step 8: Waiting for services to be ready..."
+echo "=================="
+echo "Phase 3: System Service Activation"
+echo "=================="
+echo ""
+echo "🔄 Starting system services (requires sudo)..."
 
+# Load and start nginx LaunchDaemon
+if sudo launchctl load /Library/LaunchDaemons/dev.sparkify.nginx.plist 2>/dev/null; then
+    echo "✅ nginx LaunchDaemon loaded"
+else
+    echo "⚠️  nginx LaunchDaemon already loaded or failed to load"
+fi
+
+if sudo launchctl start dev.sparkify.nginx 2>/dev/null; then
+    echo "✅ nginx system service started"
+else
+    echo "⚠️  nginx system service already running or failed to start"
+fi
+
+# Load and start cloudflared LaunchDaemon  
+if sudo launchctl load /Library/LaunchDaemons/com.cloudflare.sparkify.plist 2>/dev/null; then
+    echo "✅ cloudflared LaunchDaemon loaded"
+else
+    echo "⚠️  cloudflared LaunchDaemon already loaded or failed to load"
+fi
+
+if sudo launchctl start com.cloudflare.sparkify 2>/dev/null; then
+    echo "✅ cloudflared system service started"
+else
+    echo "⚠️  cloudflared system service already running or failed to start"
+fi
+
+echo ""
+echo "⏳ Waiting for system services to stabilize..."
 sleep 5
 
-# Step 9: Health checks
 echo ""
-echo "🔍 Step 9: Running health checks..."
+echo "=================="
+echo "Phase 4: Final Health Checks"
+echo "=================="
+echo ""
 
-# Check if services are responding
+# Health check function
 check_service() {
     local url=$1
     local name=$2
+    local timeout_seconds=${3:-10}
     
-    if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200\|302"; then
-        echo "✅ $name is responding"
+    echo "Testing $name at $url..."
+    local response_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$timeout_seconds" "$url" 2>/dev/null)
+    
+    if [[ "$response_code" =~ ^(200|301|302)$ ]]; then
+        echo "✅ $name is responding (HTTP $response_code)"
         return 0
     else
-        echo "❌ $name is not responding at $url"
+        echo "❌ $name is not responding at $url (HTTP $response_code)"
         return 1
     fi
 }
 
-# Health checks (non-fatal - services might still be starting)
-check_service "http://localhost:5001/health" "API" || echo "⚠️  API health check failed (service may still be starting)"
-check_service "http://localhost:4200" "Frontend" || echo "⚠️  Frontend health check failed (service may still be starting)"
+echo "🔍 Testing full stack connectivity..."
+
+# Test direct services (non-fatal)
+check_service "http://localhost:5001/health" "API (direct)" 10 || echo "⚠️  API may still be starting"
+check_service "http://localhost:4200" "Frontend (direct)" 5 || echo "⚠️  Frontend may still be starting"
+
+# Test through nginx (local)
+echo ""
+echo "🌐 Testing through nginx (local)..."
+check_service "http://localhost/api/health" "API (via nginx)" 5 || echo "⚠️  nginx may not be fully started yet"
+check_service "http://localhost" "Frontend (via nginx)" 5 || echo "⚠️  nginx may not be fully started yet"
+
+# Test through public domain (if tunnel is working)
+echo ""
+echo "🌐 Testing public access (may take a moment for tunnel to connect)..."
+check_service "https://sparkify.dev/api/health" "API (public)" 10 || echo "⚠️  Cloudflare tunnel may still be connecting"
+check_service "https://sparkify.dev" "Frontend (public)" 5 || echo "⚠️  Cloudflare tunnel may still be connecting"
 
 echo ""
-echo "🎉 Mac deployment complete!"
-echo "=========================="
+echo "🎉 Mac Studio M1 Deployment Complete!"
+echo "===================================="
 echo ""
 echo "🌐 Access your application:"
 echo "   - HTTPS: https://$DOMAIN"
@@ -256,13 +162,36 @@ echo "   - API Swagger:   http://localhost:5001/swagger"
 echo "   - Frontend:      http://localhost:4200"
 echo "   - PostgreSQL:    localhost:5432 (password: admin_password)"
 echo ""
-echo "📝 Useful commands:"
-echo "   - nginx status:  brew services list | grep nginx"
-echo "   - nginx stop:    brew services stop nginx"
-echo "   - nginx restart: brew services restart nginx"
-echo "   - nginx logs:    tail -f $(brew --prefix)/var/log/nginx/error.log"
-echo "   - View services: docker ps"
-echo "   - Stop services: ./stop.sh"
+echo "📋 System Status Commands:"
 echo ""
-echo "🔒 SSL Certificate: Self-signed certificate installed for local development"
-echo "   Certificate location: $(pwd)/ssl/$DOMAIN.pem"
+echo "🌐 nginx system service:"
+echo "   - Status: sudo launchctl list | grep nginx"
+echo "   - Stop:   sudo launchctl stop dev.sparkify.nginx"
+echo "   - Start:  sudo launchctl start dev.sparkify.nginx"
+echo "   - Logs:   tail -f $(brew --prefix)/var/log/nginx/error.log"
+echo ""
+echo "☁️ Cloudflare tunnel service:"
+echo "   - Status: sudo launchctl list | grep cloudflare"
+echo "   - Stop:   sudo launchctl stop com.cloudflare.sparkify"
+echo "   - Start:  sudo launchctl start com.cloudflare.sparkify"
+echo "   - Logs:   tail -f /var/log/cloudflared.log"
+echo ""
+echo "📦 Application services:"
+echo "   - Status: docker ps"
+echo "   - Stop:   ./stop.sh"
+echo "   - Restart API: docker-compose -f docker-compose.api.yml restart"
+echo ""
+echo "⚡ Power management:"
+echo "   - Current settings: pmset -g"
+echo "   - Display sleep is disabled for tunnel stability"
+echo ""
+echo "🔒 SSL Certificates:"
+echo "   - System location: /etc/ssl/sparkify/$DOMAIN.pem"
+echo "   - Local backup: $(pwd)/ssl/$DOMAIN.pem"
+echo ""
+echo "☁️ Cloudflare Configuration:"
+echo "   - System config: /etc/cloudflared/config.yml"
+echo "   - System credentials: /etc/cloudflared/cert.pem"
+echo ""
+echo "🚀 All services are configured to start automatically on boot!"
+echo "   Both nginx and cloudflared will persist through screen locks and reboots."

@@ -259,25 +259,4 @@ The project includes specific Cursor rules that should be followed:
 - Lazy loading for Angular feature modules
 - AG Grid virtual scrolling for large datasets
 
-## Troubleshooting Common Issues
-
-### Port Conflicts on macOS
-- Port 5000 conflicts with AirPlay - use port 5001 for API
-- Use `./enable-standard-ports.sh` to run nginx on 80/443
-- Check for Tailscale conflicts on port 443
-
-### Database Issues
-```bash
-./health-check.sh              # Check service status
-docker-compose logs postgres   # Check database logs
-./reset-db.sh                 # Nuclear option - rebuilds database
-```
-
-### AI/Vector Store Issues
-```bash
-./test-ai-endpoints.sh         # Test AI functionality
-./test-vector-store.sh         # Test vector operations
-curl http://localhost:11434/api/tags  # Check Ollama models
-```
-
 This architecture supports a full-featured procurement system with modern AI capabilities, comprehensive testing, and production-ready deployment options.
