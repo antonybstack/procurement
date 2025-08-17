@@ -1,14 +1,28 @@
-<div class="h-screen flex flex-col bg-light-bg dark:bg-grok-bg stars-bg transition-all duration-300">
+<div
+  class="h-screen flex flex-col bg-light-bg dark:bg-grok-bg stars-bg transition-all duration-300"
+>
   <!-- Starry night twinkling sky -->
   <div class="stars-wrapper">
-    <svg class="stars" width="100%" height="100%" preserveAspectRatio="none"
-      *ngFor="let layer of starsLayers; let li = index">
-      <ng-container *ngFor="let star of layer; let si = index">
-        <circle class="star" [attr.cx]="star.cx" [attr.cy]="star.cy" [attr.r]="star.r"
-          [attr.style]="'animation-delay:' + star.delay + 's'"></circle>
-      </ng-container>
+    @for (layer of starsLayers; track $index) {
+    <svg class="stars" width="100%" height="100%" preserveAspectRatio="none">
+      @for (star of layer; track $index) {
+      <circle
+        class="star"
+        [attr.cx]="star.cx"
+        [attr.cy]="star.cy"
+        [attr.r]="star.r"
+        [attr.style]="'animation-delay:' + star.delay + 's'"
+      ></circle>
+      }
     </svg>
-    <svg class="extras" width="100%" height="100%" preserveAspectRatio="none" aria-hidden="true">
+    }
+    <svg
+      class="extras"
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
       <defs>
         <radialGradient id="comet-gradient" cx="0" cy=".5" r="0.5">
           <stop offset="0%" stop-color="rgba(255,255,255,.8)"></stop>
@@ -16,29 +30,63 @@
         </radialGradient>
       </defs>
       <g transform="rotate(-135)">
-        <ellipse class="comet comet-a" fill="url(#comet-gradient)" cx="0" cy="0" rx="150" ry="2"></ellipse>
+        <ellipse
+          class="comet comet-a"
+          fill="url(#comet-gradient)"
+          cx="0"
+          cy="0"
+          rx="150"
+          ry="2"
+        ></ellipse>
       </g>
       <g transform="rotate(20)">
-        <ellipse class="comet comet-b" fill="url(#comet-gradient)" cx="100%" cy="0" rx="150" ry="2"></ellipse>
+        <ellipse
+          class="comet comet-b"
+          fill="url(#comet-gradient)"
+          cx="100%"
+          cy="0"
+          rx="150"
+          ry="2"
+        ></ellipse>
       </g>
       <g transform="rotate(300)">
-        <ellipse class="comet comet-c" fill="url(#comet-gradient)" cx="40%" cy="100%" rx="150" ry="2"></ellipse>
+        <ellipse
+          class="comet comet-c"
+          fill="url(#comet-gradient)"
+          cx="40%"
+          cy="100%"
+          rx="150"
+          ry="2"
+        ></ellipse>
       </g>
     </svg>
   </div>
   <!-- Navigation Header -->
   <nav
-    class="bg-light-surface/70 dark:bg-grok-bg-light/50 backdrop-blur-md flex-shrink-0 transition-all duration-300 shadow-sm app-content-layer">
+    class="bg-light-surface/70 dark:bg-grok-bg-light/50 backdrop-blur-md flex-shrink-0 transition-all duration-300 shadow-sm app-content-layer"
+  >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center space-x-3">
           <!-- App Icon: Magnifying Glass linking to Search -->
           <a routerLink="/search" aria-label="Search" class="relative">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md"
-              style="background: var(--gradient-brand);">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 26" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-4.35-4.35m2.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md"
+              style="background: var(--gradient-brand)"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 26"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-4.35-4.35m2.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
+                />
               </svg>
             </div>
           </a>
@@ -46,59 +94,113 @@
         <div class="flex items-center space-x-6">
           <!-- Navigation Links -->
           <div class="hidden md:flex items-center space-x-6">
-            <a routerLink="/rfqs"
+            <a
+              routerLink="/rfqs"
               routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
-              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
               Requests
             </a>
-            <a routerLink="/suppliers"
+            <a
+              routerLink="/suppliers"
               routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
-              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
               Suppliers
             </a>
-            <a routerLink="/quotes"
+            <a
+              routerLink="/quotes"
               routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
-              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
               Quotes
             </a>
-            <a routerLink="/items"
+            <a
+              routerLink="/items"
               routerLinkActive="text-light-accent dark:text-grok-accent border-b-2 border-light-accent dark:border-grok-accent"
-              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200">
+              class="text-light-text-dim dark:text-grok-text-dim hover:text-light-accent dark:hover:text-grok-accent px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
               Items
             </a>
           </div>
 
-          <!-- Theme Toggle (disabled)
-          <button (click)="toggleTheme()"
+          <!-- Theme Toggle (disabled) -->
+          <button
+            (click)="toggleTheme()"
             class="p-2.5 rounded-xl bg-light-bg-surface dark:bg-grok-surface hover:bg-light-border-light dark:hover:bg-grok-bg-lighter btn-grok"
-            [title]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
-          <svg *ngIf="!isDarkMode()" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-            </path>
-          </svg>
-          <svg *ngIf="isDarkMode()" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-          </svg>
-          </button> -->
+            [title]="
+              isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'
+            "
+          >
+            @if(!isDarkMode()) {
+            <svg
+              class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              ></path>
+            </svg>
+            } @if(!isDarkMode()) {
+            <svg
+              class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              ></path>
+            </svg>
+            }
+          </button>
 
           <!-- Mobile Menu Button -->
-          <button (click)="toggleMobileMenu()"
+          <button
+            (click)="toggleMobileMenu()"
             class="md:hidden p-2 rounded-lg hover:bg-light-bg-surface dark:hover:bg-grok-surface transition-colors duration-200"
-            [attr.aria-expanded]="isMobileMenuOpen" aria-label="Toggle navigation menu">
+            [attr.aria-expanded]="isMobileMenuOpen"
+            aria-label="Toggle navigation menu"
+          >
             <!-- Hamburger Icon -->
-            <svg *ngIf="!isMobileMenuOpen" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <svg
+              *ngIf="!isMobileMenuOpen"
+              class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
             </svg>
             <!-- Close Icon (X) -->
-            <svg *ngIf="isMobileMenuOpen" class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            @if(isMobileMenuOpen) {
+            <svg
+              class="w-5 h-5 text-light-text-dim dark:text-grok-text-dim"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
+            }
           </button>
         </div>
       </div>
@@ -106,35 +208,56 @@
   </nav>
 
   <!-- Mobile Navigation Menu -->
-  <div *ngIf="isMobileMenuOpen"
-    class="md:hidden bg-light-surface/95 dark:bg-grok-bg-light/95 backdrop-blur-md border-b border-light-border dark:border-grok-border app-content-layer animate-fade-in">
+  @if(isMobileMenuOpen) {
+  <div
+    class="md:hidden bg-light-surface/95 dark:bg-grok-bg-light/95 backdrop-blur-md border-b border-light-border dark:border-grok-border app-content-layer animate-fade-in"
+  >
     <div class="px-2 pt-2 pb-3 space-y-1">
-      <a routerLink="/rfqs" (click)="closeMobileMenu()"
+      <a
+        routerLink="/rfqs"
+        (click)="closeMobileMenu()"
         routerLinkActive="bg-light-bg-surface dark:bg-grok-surface text-light-accent dark:text-grok-accent"
-        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
+        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+      >
         Requests
       </a>
-      <a routerLink="/suppliers" (click)="closeMobileMenu()"
+      <a
+        routerLink="/suppliers"
+        (click)="closeMobileMenu()"
         routerLinkActive="bg-light-bg-surface dark:bg-grok-surface text-light-accent dark:text-grok-accent"
-        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
+        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+      >
         Suppliers
       </a>
-      <a routerLink="/quotes" (click)="closeMobileMenu()"
+      <a
+        routerLink="/quotes"
+        (click)="closeMobileMenu()"
         routerLinkActive="bg-light-bg-surface dark:bg-grok-surface text-light-accent dark:text-grok-accent"
-        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
+        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+      >
         Quotes
       </a>
-      <a routerLink="/items" (click)="closeMobileMenu()"
+      <a
+        routerLink="/items"
+        (click)="closeMobileMenu()"
         routerLinkActive="bg-light-bg-surface dark:bg-grok-surface text-light-accent dark:text-grok-accent"
-        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
+        class="text-light-text-dim dark:text-grok-text-dim hover:bg-light-bg-surface dark:hover:bg-grok-surface hover:text-light-accent dark:hover:text-grok-accent block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+      >
         Items
       </a>
     </div>
   </div>
+  }
 
   <!-- Main Content -->
-  <main class="flex-1 min-h-0 app-content-layer"
-    [class]="isSearchRoute() ? '' : 'w-full py-2 px-2 sm:max-w-7xl sm:mx-auto sm:py-6 sm:px-6 lg:px-8'">
+  <main
+    class="flex-1 min-h-0 app-content-layer"
+    [class]="
+      isSearchRoute()
+        ? ''
+        : 'w-full py-2 px-2 sm:max-w-7xl sm:mx-auto sm:py-6 sm:px-6 lg:px-8'
+    "
+  >
     <router-outlet />
   </main>
 </div>

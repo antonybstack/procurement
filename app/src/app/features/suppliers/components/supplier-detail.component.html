@@ -1,21 +1,38 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div class="flex items-center space-x-4">
-      <button (click)="goBack()"
-        class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text transition-colors duration-200">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      <button
+        (click)="goBack()"
+        class="text-light-text-muted dark:text-grok-text-muted hover:text-light-text dark:hover:text-grok-text transition-colors duration-200"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          ></path>
         </svg>
       </button>
-      <h1 class="text-2xl font-bold text-light-text dark:text-grok-text">Supplier Details</h1>
+      <h1 class="text-2xl font-bold text-light-text dark:text-grok-text">
+        Supplier Details
+      </h1>
     </div>
     <div class="flex space-x-3">
-      <button (click)="editSupplier()"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+      <button
+        (click)="editSupplier()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+      >
         Edit Supplier
       </button>
       <button
-        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+      >
         View Quotes
       </button>
     </div>
@@ -23,19 +40,29 @@
 
   @if (loading()) {
   <div class="flex justify-center items-center py-12">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">Loading supplier details...</span>
+    <div
+      class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+    ></div>
+    <span class="ml-2 text-light-text-muted dark:text-grok-text-muted"
+      >Loading supplier details...</span
+    >
   </div>
-  }
-
-  @if (error()) {
-  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4">
+  } @if (error()) {
+  <div
+    class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-md p-4"
+  >
     <div class="flex">
       <div class="flex-shrink-0">
-        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd"
+        <svg
+          class="h-5 w-5 text-red-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd" />
+            clip-rule="evenodd"
+          />
         </svg>
       </div>
       <div class="ml-3">
@@ -43,82 +70,139 @@
       </div>
     </div>
   </div>
-  }
-
-  @if (supplier() && !loading() && !error()) {
+  } @if (supplier() && !loading() && !error()) {
   <div class="space-y-6">
     <div
-      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-      <h2 class="text-lg font-semibold text-light-text dark:text-grok-text mb-4">Basic Information</h2>
+      class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+    >
+      <h2
+        class="text-lg font-semibold text-light-text dark:text-grok-text mb-4"
+      >
+        Basic Information
+      </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Supplier Code</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.supplierCode }}</p>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Supplier Code</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ supplier()!.supplierCode }}
+          </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Company Name</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.companyName }}</p>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Company Name</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ supplier()!.companyName }}
+          </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Status</label>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Status</label
+          >
           <span
-            class="mt-1 inline-flex px-2 py-1 text-xs font-medium rounded-full {{ getStatusClass(supplier()!.isActive) }}">
+            class="mt-1 inline-flex px-2 py-1 text-xs font-medium rounded-full {{
+              getStatusClass(supplier()!.isActive)
+            }}"
+          >
             {{ getStatusText(supplier()!.isActive) }}
           </span>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Contact Name</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.contactName || 'Not specified' }}
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Contact Name</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ supplier()!.contactName || "Not specified" }}
           </p>
         </div>
         <div>
-          <label class="block text sm font-medium text-light-text-muted dark:text-grok-text-muted">Email</label>
+          <label
+            class="block text sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Email</label
+          >
           <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             @if (supplier()!.email) {
-            <a href="mailto:{{ supplier()!.email }}" class="text-blue-600 hover:text-blue-800">
+            <a
+              href="mailto:{{ supplier()!.email }}"
+              class="text-blue-600 hover:text-blue-800"
+            >
               {{ supplier()!.email }}
             </a>
-            } @else {
-            Not specified
-            }
+            } @else { Not specified }
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Phone</label>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Phone</label
+          >
           <p class="mt-1 text-sm text-light-text dark:text-grok-text">
             @if (supplier()!.phone) {
-            <a href="tel:{{ supplier()!.phone }}" class="text-blue-600 hover:text-blue-800">
+            <a
+              href="tel:{{ supplier()!.phone }}"
+              class="text-blue-600 hover:text-blue-800"
+            >
               {{ supplier()!.phone }}
             </a>
-            } @else {
-            Not specified
-            }
+            } @else { Not specified }
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">City</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.city || 'Not specified' }}</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">State</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.state || 'Not specified' }}</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Country</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ supplier()!.country || 'Not specified' }}</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Rating</label>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >City</label
+          >
           <p class="mt-1 text-sm text-light-text dark:text-grok-text">
-            <span class="text-yellow-400">{{ getRatingStars(supplier()!.rating) }}</span>
+            {{ supplier()!.city || "Not specified" }}
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >State</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ supplier()!.state || "Not specified" }}
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Country</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ supplier()!.country || "Not specified" }}
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Rating</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            <span class="text-yellow-400">{{
+              getRatingStars(supplier()!.rating)
+            }}</span>
             @if (supplier()!.rating) {
-            <span class="ml-2 text-light-text-muted dark:text-grok-text-muted">({{ supplier()!.rating }}/5)</span>
+            <span class="ml-2 text-light-text-muted dark:text-grok-text-muted"
+              >({{ supplier()!.rating }}/5)</span
+            >
             }
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Created At</label>
-          <p class="mt-1 text-sm text-light-text dark:text-grok-text">{{ getCreatedAtDisplay(supplier()!.createdAt) }}
+          <label
+            class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >Created At</label
+          >
+          <p class="mt-1 text-sm text-light-text dark:text-grok-text">
+            {{ getCreatedAtDisplay(supplier()!.createdAt) }}
           </p>
         </div>
       </div>
@@ -126,72 +210,141 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
-        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-              </path>
+            <svg
+              class="h-8 w-8 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Total Quotes</p>
-            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{
-              supplier()?.performance?.totalQuotes ?? '-' }}</p>
+            <p
+              class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >
+              Total Quotes
+            </p>
+            <p
+              class="text-2xl font-semibold text-light-text dark:text-grok-text"
+            >
+              {{ supplier()?.performance?.totalQuotes ?? "-" }}
+            </p>
           </div>
         </div>
       </div>
 
       <div
-        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <svg
+              class="h-8 w-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Awarded Quotes</p>
-            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{
-              supplier()?.performance?.awardedQuotes ?? '-' }}</p>
+            <p
+              class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >
+              Awarded Quotes
+            </p>
+            <p
+              class="text-2xl font-semibold text-light-text dark:text-grok-text"
+            >
+              {{ supplier()?.performance?.awardedQuotes ?? "-" }}
+            </p>
           </div>
         </div>
       </div>
 
       <div
-        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-              </path>
+            <svg
+              class="h-8 w-8 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+              ></path>
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Avg Quote Price</p>
-            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{
-              supplier()?.performance?.avgQuotePrice?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) ??
-              '-' }}</p>
+            <p
+              class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >
+              Avg Quote Price
+            </p>
+            <p
+              class="text-2xl font-semibold text-light-text dark:text-grok-text"
+            >
+              {{
+                supplier()?.performance?.avgQuotePrice?.toLocaleString(
+                  "en-US",
+                  { style: "currency", currency: "USD" }
+                ) ?? "-"
+              }}
+            </p>
           </div>
         </div>
       </div>
 
       <div
-        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border">
+        class="bg-light-surface dark:bg-grok-surface p-6 rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            <svg
+              class="h-8 w-8 text-orange-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              ></path>
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted">Purchase Orders</p>
-            <p class="text-2xl font-semibold text-light-text dark:text-grok-text">{{
-              supplier()?.performance?.totalPurchaseOrders ?? '-' }}
+            <p
+              class="text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
+            >
+              Purchase Orders
+            </p>
+            <p
+              class="text-2xl font-semibold text-light-text dark:text-grok-text"
+            >
+              {{ supplier()?.performance?.totalPurchaseOrders ?? "-" }}
             </p>
           </div>
         </div>
@@ -199,58 +352,107 @@
     </div>
 
     <div
-      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
-        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Recent Activity</h3>
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+    >
+      <div
+        class="px-6 py-4 border-b border-light-border dark:border-grok-border"
+      >
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">
+          Recent Activity
+        </h3>
       </div>
       <div class="p-6">
-        <p class="text-light-text-muted dark:text-grok-text-muted text-center py-4">No recent activity to display.</p>
+        <p
+          class="text-light-text-muted dark:text-grok-text-muted text-center py-4"
+        >
+          No recent activity to display.
+        </p>
       </div>
     </div>
 
     <!-- Capabilities Card -->
     <div
-      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
-        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Capabilities</h3>
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+    >
+      <div
+        class="px-6 py-4 border-b border-light-border dark:border-grok-border"
+      >
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">
+          Capabilities
+        </h3>
       </div>
       <div class="p-6">
-        <div *ngIf="supplier()?.capabilities?.length; else noCapabilities">
-          <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <li *ngFor="let cap of supplier()!.capabilities"
-              class="bg-light-bg-alt dark:bg-grok-bg-light p-4 rounded-lg shadow-sm">
-              <p class="font-bold text-light-text dark:text-grok-text">{{ cap.capabilityType }}</p>
-              <p class="text-light-text-muted dark:text-grok-text-muted">{{ cap.capabilityValue }}</p>
-            </li>
-          </ul>
-        </div>
-        <ng-template #noCapabilities>
-          <p class="text-light-text-muted dark:text-grok-text-muted italic">No capabilities listed for this supplier.
-          </p>
-        </ng-template>
+        @if(supplier()?.capabilities?.length) {
+        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (cap of supplier()!.capabilities; track $index) {
+          <li
+            class="bg-light-bg-alt dark:bg-grok-bg-light p-4 rounded-lg shadow-sm"
+          >
+            <p class="font-bold text-light-text dark:text-grok-text">
+              {{ cap.capabilityType }}
+            </p>
+            <p class="text-light-text-muted dark:text-grok-text-muted">
+              {{ cap.capabilityValue }}
+            </p>
+          </li>
+          }
+        </ul>
+        } @else {
+        <p class="text-light-text-muted dark:text-grok-text-muted italic">
+          No capabilities listed for this supplier.
+        </p>
+        }
       </div>
     </div>
 
     <div
-      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border">
-      <div class="px-6 py-4 border-b border-light-border dark:border-grok-border">
-        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">Performance Metrics</h3>
+      class="bg-light-surface dark:bg-grok-surface rounded-lg shadow-sm border border-light-border dark:border-grok-border"
+    >
+      <div
+        class="px-6 py-4 border-b border-light-border dark:border-grok-border"
+      >
+        <h3 class="text-lg font-semibold text-light-text dark:text-grok-text">
+          Performance Metrics
+        </h3>
       </div>
       <div class="p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 class="text-sm font-medium text-light-text dark:text-grok-text mb-2">Quote Acceptance Rate</h4>
-            <div class="w-full bg-light-bg-alt dark:bg-grok-bg-light rounded-full h-2">
+            <h4
+              class="text-sm font-medium text-light-text dark:text-grok-text mb-2"
+            >
+              Quote Acceptance Rate
+            </h4>
+            <div
+              class="w-full bg-light-bg-alt dark:bg-grok-bg-light rounded-full h-2"
+            >
               <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
             </div>
-            <p class="text-xs text-light-text-muted dark:text-grok-text-muted mt-1">0%</p>
+            <p
+              class="text-xs text-light-text-muted dark:text-grok-text-muted mt-1"
+            >
+              0%
+            </p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-light-text dark:text-grok-text mb-2">On-Time Delivery</h4>
-            <div class="w-full bg-light-bg-alt dark:bg-grok-bg-light rounded-full h-2">
-              <div class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+            <h4
+              class="text-sm font-medium text-light-text dark:text-grok-text mb-2"
+            >
+              On-Time Delivery
+            </h4>
+            <div
+              class="w-full bg-light-bg-alt dark:bg-grok-bg-light rounded-full h-2"
+            >
+              <div
+                class="bg-green-600 h-2 rounded-full"
+                style="width: 0%"
+              ></div>
             </div>
-            <p class="text-xs text-light-text-muted dark:text-grok-text-muted mt-1">0%</p>
+            <p
+              class="text-xs text-light-text-muted dark:text-grok-text-muted mt-1"
+            >
+              0%
+            </p>
           </div>
         </div>
       </div>
