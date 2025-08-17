@@ -1,40 +1,12 @@
 @import "tailwindcss";
 
 /* Theme CSS Custom Properties */
+
+
 :root {
   --twinkle-duration: 4s;
 
-  /* Light theme */
-  --color-bg: 255 255 255;
-  /* white */
-  --color-bg-alt: 249 250 251;
-  /* gray-50 */
-  --color-bg-surface: 243 244 246;
-  /* gray-100 */
-  --color-surface: 255 255 255;
-  /* white */
-  --color-border: 229 231 235;
-  /* gray-200 */
-  --color-border-light: 243 244 246;
-  /* gray-100 */
-  --color-text: 17 24 39;
-  /* gray-900 */
-  --color-text-dim: 55 65 81;
-  /* gray-700 */
-  --color-text-muted: 107 114 128;
-  /* gray-500 */
-  --color-accent: 59 130 246;
-  /* blue-500 */
-  --color-accent-hover: 37 99 235;
-  /* blue-600 */
-
-  /* Brand gradients */
-  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-brand-subtle: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
-}
-
-/* Dark theme */
-.dark {
+  /* Default to dark theme values */
   --color-bg: 22 22 24;
   /* #161618 */
   --color-bg-alt: 31 31 33;
@@ -61,6 +33,40 @@
   /* Dark brand gradients */
   --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   --gradient-brand-subtle: linear-gradient(135deg, #1e3a8a 0%, #5b21b6 100%);
+}
+
+html {
+  background-color: rgb(var(--color-bg));
+}
+
+/* Light theme override */
+.light {
+  --color-bg: 255 255 255;
+  /* white */
+  --color-bg-alt: 249 250 251;
+  /* gray-50 */
+  --color-bg-surface: 243 244 246;
+  /* gray-100 */
+  --color-surface: 255 255 255;
+  /* white */
+  --color-border: 229 231 235;
+  /* gray-200 */
+  --color-border-light: 243 244 246;
+  /* gray-100 */
+  --color-text: 17 24 39;
+  /* gray-900 */
+  --color-text-dim: 55 65 81;
+  /* gray-700 */
+  --color-text-muted: 107 114 128;
+  /* gray-500 */
+  --color-accent: 59 130 246;
+  /* blue-500 */
+  --color-accent-hover: 37 99 235;
+  /* blue-600 */
+
+  /* Light brand gradients */
+  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
 }
 
 /* Utility classes using custom properties */
@@ -112,8 +118,8 @@
   background-color: rgb(var(--color-accent-hover));
 }
 
-/* Smooth theme transitions */
-* {
+/* Smooth theme transitions - only apply during manual theme changes */
+.theme-transition * {
   transition-property: color, background-color, border-color, fill, stroke;
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

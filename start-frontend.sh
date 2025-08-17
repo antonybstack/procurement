@@ -9,8 +9,8 @@ if ! docker network ls | grep -q "procurement_observability"; then
     docker network create procurement_observability
 fi
 
-# Start the frontend service
-docker-compose -f docker-compose.frontend.yml up -d
+# Build and start the frontend service (force rebuild)
+docker-compose -f docker-compose.frontend.yml up -d --build
 
 # Wait a moment for the container to start
 sleep 5

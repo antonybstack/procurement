@@ -15,11 +15,11 @@ export class ThemeService {
   private document = inject(DOCUMENT);
 
   // Private signals
-  private _theme = signal<Theme>('system');
+  private _theme = signal<Theme>('dark');
   private _systemPrefersDark = signal<boolean>(false);
 
   // Computed signal for actual dark mode state
-  private _isDark = signal<boolean>(false);
+  private _isDark = signal<boolean>(true);
 
   // Public readonly signals
   readonly theme = this._theme.asReadonly();
@@ -62,6 +62,8 @@ export class ThemeService {
    * Set specific theme
    */
   setTheme(theme: Theme): void {
+    this.document.documentElement.classList.add('theme-transition');
+
     this._theme.set(theme);
     this.updateIsDark();
     this.saveThemePreference(theme);
@@ -124,11 +126,15 @@ export class ThemeService {
     const isDark = this._isDark();
     const html = this.document.documentElement;
 
+    // Remove both light and dark classes first
+    html.classList.remove('light', 'dark');
+
+    // Add the appropriate theme class
     if (isDark) {
       html.classList.add('dark');
       html.style.colorScheme = 'dark';
     } else {
-      html.classList.remove('dark');
+      html.classList.add('light');
       html.style.colorScheme = 'light';
     }
 
@@ -152,7 +158,7 @@ export class ThemeService {
       console.warn('Could not load theme preference from localStorage:', e);
     }
 
-    return 'system'; // Default to system preference
+    return 'dark'; // Default to dark mode
   }
 
   private saveThemePreference(theme: Theme): void {
