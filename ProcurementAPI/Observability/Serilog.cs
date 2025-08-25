@@ -50,22 +50,26 @@ public static class SerilogRegistration
     public static IApplicationBuilder RegisterSerilogRequestLogging(this WebApplication app) =>
         app.UseSerilogRequestLogging(options =>
         {
-            options.MessageTemplate = "{RequestMethod} {Protocol} {RequestPath} responded {StatusCode} {ContentType} in {Elapsed:0.00} ms from {TraceIdentifier} {RemoteIpAddress}:{RemotePort}";
+            options.MessageTemplate =
+                "{RequestMethod} {Protocol} {RequestPath} responded {StatusCode} {ContentType} in {Elapsed:0.00} ms from {TraceIdentifier} {RemoteIpAddress}:{RemotePort}";
             options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
             {
-                if (httpContext == null) return;
-
-                diagnosticContext.Set("Host", httpContext.Request?.Host.Value);
-                diagnosticContext.Set("Protocol", httpContext.Request?.Protocol);
-                diagnosticContext.Set("Scheme", httpContext.Request?.Scheme);
-                diagnosticContext.Set("QueryString", httpContext.Request?.QueryString.Value);
-                diagnosticContext.Set("ContentType", httpContext.Request?.ContentType);
-                diagnosticContext.Set("ContentLength", httpContext.Request?.ContentLength);
-                diagnosticContext.Set("TraceIdentifier", httpContext.TraceIdentifier);
-                diagnosticContext.Set("RemoteIpAddress", httpContext.Connection?.RemoteIpAddress);
-                diagnosticContext.Set("RemotePort", httpContext.Connection?.RemotePort);
-                diagnosticContext.Set("LocalIpAddress", httpContext.Connection?.LocalIpAddress);
-                diagnosticContext.Set("LocalPort", httpContext.Connection?.LocalPort);
+                if (httpContext.Request.Host.HasValue)
+                {
+                    diagnosticContext.Set("Host", httpContext.Request.Host.Value);
+                    diagnosticContext.Set("Protocol", httpContext.Request.Protocol);
+                    diagnosticContext.Set("Scheme", httpContext.Request.Scheme);
+                    diagnosticContext.Set("QueryString", httpContext.Request.QueryString.Value ?? string.Empty);
+                    diagnosticContext.Set("ContentType", httpContext.Request.ContentType ?? string.Empty);
+                    diagnosticContext.Set("ContentLength", httpContext.Request.ContentLength ?? 0);
+                    diagnosticContext.Set("TraceIdentifier", httpContext.TraceIdentifier);
+                    diagnosticContext.Set("RemoteIpAddress",
+                        httpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty);
+                    diagnosticContext.Set("RemotePort", httpContext.Connection.RemotePort);
+                    diagnosticContext.Set("LocalIpAddress",
+                        httpContext.Connection.LocalIpAddress?.ToString() ?? string.Empty);
+                    diagnosticContext.Set("LocalPort", httpContext.Connection.LocalPort);
+                }
             };
         });
 }

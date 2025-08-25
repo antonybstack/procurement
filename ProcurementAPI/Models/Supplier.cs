@@ -80,6 +80,30 @@ public class Supplier
     [NotMapped]
     public float[]? Embedding { get; set; }
 
+    // [Column("distance")]
+    // public double? Distance { get; set; }
+
+    // [Column("chunk")]
+    // public string? Chunk { get; set; }
+
+    /// <summary>
+    /// Label arrays for enhanced filtering with vector search
+    /// </summary>
+    [Column("category_labels")]
+    public string[]? CategoryLabels { get; set; }
+
+    [Column("certification_labels")]
+    public string[]? CertificationLabels { get; set; }
+
+    [Column("process_labels")]
+    public string[]? ProcessLabels { get; set; }
+
+    [Column("material_labels")]
+    public string[]? MaterialLabels { get; set; }
+
+    [Column("service_labels")]
+    public string[]? ServiceLabels { get; set; }
+
     // Navigation properties
     public virtual ICollection<RfqSupplier> RfqSuppliers { get; set; } = new List<RfqSupplier>();
     public virtual ICollection<Quote> Quotes { get; set; } = new List<Quote>();

@@ -5,7 +5,7 @@ namespace ProcurementAPI.Services;
 /// <summary>
 /// Service for handling AI vectorization operations
 /// </summary>
-public interface IAiVectorizationService
+public interface IVectorizationService
 {
     /// <summary>
     /// Generates embeddings for all suppliers in the database

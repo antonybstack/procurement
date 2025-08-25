@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: timescale/timescaledb:latest-pg17
+    image: timescale/timescaledb-ha:pg17
     container_name: postgres_db
     restart: unless-stopped
     env_file:
@@ -31,20 +31,6 @@ services:
     networks:
       - procurement_postgres_network
 
-  vectorizer-worker:
-    image: timescale/pgai-vectorizer-worker:latest
-    container_name: pgai_vectorizer_worker
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres_password@postgres:5432/myapp
-      OPENAI_API_KEY: "${OpenAIKey}"
-    command: ["--poll-interval", "5s"]
-    depends_on:
-      - postgres
-    networks:
-      - procurement_postgres_network
 
 volumes:
   postgres_data:

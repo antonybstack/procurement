@@ -36,7 +36,7 @@ The current structure supports vector embeddings on all tables, but the TigerDat
 
 - Advanced diskann indexes
 - Label-based filtering
-- Automated embedding generation via pgai
+- Automated embedding generation via Microsoft AI services
 
 Other tables will continue using standard pgvector indexes until future migrations.
 

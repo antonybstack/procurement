@@ -68,16 +68,13 @@ builder.Services.AddDbContext<ProcurementDbContext>(options =>
            .EnableSensitiveDataLogging()
            .EnableDetailedErrors());
 
-// Add Postgres Vector Store with Semantic Kernel
-builder.Services.AddPostgresVectorStore(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 // Register services
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 // Register AI services
-builder.Services.AddScoped<IAiVectorizationService, AiVectorizationService>();
-builder.Services.AddScoped<IVectorStoreService, VectorStoreService>();
+builder.Services.AddScoped<IVectorizationService, VectorizationService>();
 
 
 

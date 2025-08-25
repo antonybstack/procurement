@@ -11,10 +11,10 @@ namespace ProcurementAPI.Services;
 /// <summary>
 /// Service for handling AI vectorization operations using Ollama
 /// </summary>
-public class AiVectorizationService : IAiVectorizationService
+public class VectorizationService : IVectorizationService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<AiVectorizationService> _logger;
+    private readonly ILogger<VectorizationService> _logger;
     private readonly IConfiguration _configuration;
     private const string ModelName = "nomic-embed-text"; // Using specialized embedding model
     private const int EmbeddingDimension = 768; // nomic-embed-text uses 768 dimensions
@@ -24,9 +24,9 @@ public class AiVectorizationService : IAiVectorizationService
         Timeout = TimeSpan.FromMinutes(5) // Increase timeout for embedding requests
     };
 
-    public AiVectorizationService(
+    public VectorizationService(
         IServiceProvider serviceProvider,
-        ILogger<AiVectorizationService> logger,
+        ILogger<VectorizationService> logger,
         IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;

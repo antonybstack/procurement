@@ -110,7 +110,8 @@ public class ChatController : ControllerBase
             {
                 Tools = [
                     AIFunctionFactory.Create(SearchAsync),
-                    AIFunctionFactory.Create(GetSupplierInfoAsync)
+                    AIFunctionFactory.Create(GetSupplierInfoAsync),
+                    // TODO: Add GetSupplierEmbeddingAsync
                 ]
             };
 

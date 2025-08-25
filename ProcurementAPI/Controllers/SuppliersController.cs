@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ProcurementAPI.DTOs;
+using ProcurementAPI.Models;
 using ProcurementAPI.Services;
 
 namespace ProcurementAPI.Controllers;
@@ -201,4 +202,33 @@ public class SuppliersController : ControllerBase
             return StatusCode(500, "An error occurred while validating the supplier code");
         }
     }
+
+    /// <summary>
+    /// Enhanced supplier search using vector similarity
+    /// </summary>
+    [HttpPost("search")]
+    public async Task<ActionResult<List<SupplierVectorModel>>> SearchSuppliers([FromBody] SupplierSearchRequest request)
+    {
+        try
+        {
+            // TODO
+
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to perform supplier search for query: {Query}", request.Query);
+            return StatusCode(500, "An error occurred while searching suppliers");
+        }
+    }
+
+}
+
+/// <summary>
+/// Request model for supplier search
+/// </summary>
+public class SupplierSearchRequest
+{
+    public string Query { get; set; } = string.Empty;
+    public int Limit { get; set; } = 10;
 }
