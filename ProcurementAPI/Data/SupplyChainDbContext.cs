@@ -26,6 +26,9 @@ public class ProcurementDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Enable pgvector extension
+        modelBuilder.HasPostgresExtension("vector");
+
         modelBuilder.Entity<SupplierPerformance>(entity =>
         {
             entity.HasNoKey();
@@ -193,8 +196,5 @@ public class ProcurementDbContext : DbContext
         modelBuilder.Entity<ItemSpecification>()
             .HasIndex(ispec => new { ispec.ItemId, ispec.SpecName, ispec.SpecValue })
             .IsUnique();
-
-        // Vector embedding properties are excluded from EF Core mapping using [NotMapped]
-        // These will be handled by raw SQL queries for vector operations
     }
 }

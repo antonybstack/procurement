@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 using OpenAI;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
@@ -61,22 +62,19 @@ builder.Services.AddSwaggerGen(options =>
 // Add HttpClient for health checks
 builder.Services.AddHttpClient();
 
-// Add Entity Framework with PostgreSQL
+// Add Entity Framework with PostgreSQL and pgvector support
+
 builder.Services.AddDbContext<ProcurementDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), o => o.UseVector())
            .LogTo(Console.WriteLine, LogLevel.Information)
            .EnableSensitiveDataLogging()
            .EnableDetailedErrors());
 
+builder.Services.AddPostgresVectorStore();
 
 // Register services
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
-
-// Register AI services
-builder.Services.AddScoped<IVectorizationService, VectorizationService>();
-
-
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
@@ -216,7 +214,6 @@ builder.Services.AddSqliteCollection<string, IngestedChunk>("data-chatapp-chunks
 builder.Services.AddSqliteCollection<string, IngestedDocument>("data-chatapp-documents", vectorStoreConnectionString);
 
 builder.Services.AddScoped<DataIngestor>();
-builder.Services.AddSingleton<SemanticSearch>();
 
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);

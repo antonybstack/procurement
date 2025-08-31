@@ -14,20 +14,17 @@ namespace ChatApp.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly IChatClient _chatClient;
-    private readonly SemanticSearch _search;
     private readonly ISupplierService _supplierService;
     private readonly ISupplierDataService _supplierDataService;
     private readonly ILogger<ChatController> _logger;
 
     public ChatController(
         IChatClient chatClient,
-        SemanticSearch search,
         ISupplierService supplierService,
         ISupplierDataService supplierDataService,
         ILogger<ChatController> logger)
     {
         _chatClient = chatClient;
-        _search = search;
         _supplierService = supplierService;
         _supplierDataService = supplierDataService;
         _logger = logger;
@@ -56,7 +53,6 @@ public class ChatController : ControllerBase
             var chatOptions = new ChatOptions
             {
                 Tools = [
-                    AIFunctionFactory.Create(SearchAsync),
                     AIFunctionFactory.Create(GetSupplierInfoAsync)
                 ]
             };
@@ -109,9 +105,7 @@ public class ChatController : ControllerBase
             var chatOptions = new ChatOptions
             {
                 Tools = [
-                    AIFunctionFactory.Create(SearchAsync),
                     AIFunctionFactory.Create(GetSupplierInfoAsync),
-                    // TODO: Add GetSupplierEmbeddingAsync
                 ]
             };
 
@@ -154,18 +148,6 @@ public class ChatController : ControllerBase
         }
 
         return new EmptyResult();
-    }
-
-    /// <summary>
-    /// Search for information in documents (kept for future use)
-    /// </summary>
-    [Description("Searches for general procurement information, policies, or best practices in documents. Use this for non-supplier specific questions.")]
-    private async Task<IEnumerable<string>> SearchAsync(
-        [Description("The phrase to search for.")] string searchPhrase,
-        [Description("If possible, specify the filename to search that file only.")] string? filenameFilter = null)
-    {
-        var results = await _search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
-        return results.Select(result => result.Text);
     }
 
     /// <summary>
