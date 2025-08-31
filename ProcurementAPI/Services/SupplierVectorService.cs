@@ -1,8 +1,6 @@
-using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using ProcurementAPI.DTOs;
 using ProcurementAPI.Models;
 using ProcurementAPI.Services.DataServices;
 
@@ -10,14 +8,14 @@ namespace ProcurementAPI.Services;
 
 public class SupplierVectorService : ISupplierVectorService
 {
-    private readonly ISupplierDataService _supplierDataService;
-    private readonly ILogger<SupplierVectorService> _logger;
-    private readonly PostgresVectorStore _vectorStore;
+    private readonly string _collectionName = "sksuppliers10";
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-    private readonly string _collectionName = $"sksuppliers10";
+    private readonly ILogger<SupplierVectorService> _logger;
+    private readonly ISupplierDataService _supplierDataService;
+    private readonly PostgresVectorStore _vectorStore;
 
     public SupplierVectorService(
-        ISupplierDataService supplierDataService, 
+        ISupplierDataService supplierDataService,
         ILogger<SupplierVectorService> logger,
         PostgresVectorStore vectorStore,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
@@ -47,13 +45,10 @@ public class SupplierVectorService : ISupplierVectorService
             Country = s.Country,
             PaymentTerms = s.PaymentTerms,
             Rating = s.Rating,
-            IsActive = s.IsActive,
+            IsActive = s.IsActive
         }).ToList();
 
-        foreach (var record in supplierVectors)
-        {
-            record.EmbeddingText = record.BuildSearchableContent();
-        }
+        foreach (var record in supplierVectors) record.EmbeddingText = record.BuildSearchableContent();
 
         var collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
         await collection.UpsertAsync(supplierVectors);
@@ -77,7 +72,7 @@ public class SupplierVectorService : ISupplierVectorService
         {
             "SupplierCodeABC123",
             "SupplierCodeXYZ789",
-            "SupplierCodeLMN456",
+            "SupplierCodeLMN456"
         };
 
         // Create records with test data
@@ -94,16 +89,12 @@ public class SupplierVectorService : ISupplierVectorService
             Country = $"CountryName {index + 1}",
             IsActive = true,
             PaymentTerms = "Net 30",
-            Rating = (index % 5) + 1,
+            Rating = index % 5 + 1
         }).ToList();
 
         // Generate embeddings for each record
-        foreach (var record in records)
-        {
-            record.EmbeddingText = record.BuildSearchableContent();
-            // record.Embedding = (await _embeddingGenerator.GenerateAsync(record.BuildSearchableContent())).Vector;
-        }
-
+        foreach (var record in records) record.EmbeddingText = record.BuildSearchableContent();
+        // record.Embedding = (await _embeddingGenerator.GenerateAsync(record.BuildSearchableContent())).Vector;
         // Upsert records to vector store
         await collection.UpsertAsync(records);
 
@@ -111,17 +102,22 @@ public class SupplierVectorService : ISupplierVectorService
         return records;
     }
 
-    public async Task<IAsyncEnumerable<VectorSearchResult<SupplierVector>>> SearchByHybridAsync(string searchText, int top = 1)
-    {
-        // TODO: Implement hybrid search combining vector and keyword search
-        // Depends on implement of NpgsqlTsVector: https://www.npgsql.org/efcore/mapping/full-text-search.html
-        var collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
-        return collection.SearchAsync(searchText, top: top);
-    }
+    // public async Task<IAsyncEnumerable<VectorSearchResult<SupplierVector>>> SearchByHybridAsync(string searchValue,
+    //     int top,
+    //     CancellationToken cancellationToken)
+    // {
+    //     // TODO: Implement hybrid search combining vector and keyword search
+    //     // Depends on implement of NpgsqlTsVector: https://www.npgsql.org/efcore/mapping/full-text-search.html
+    //     var collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
+    //     return collection.SearchAsync(searchValue, top);
+    // }
 
-    public async Task<IAsyncEnumerable<VectorSearchResult<SupplierVector>>> SearchByVectorAsync(string searchText, int top = 1)
+    public async Task<IAsyncEnumerable<VectorSearchResult<SupplierVector>>> SearchByVectorAsync(
+        string searchValue,
+        int top,
+        CancellationToken cancellationToken)
     {
         var collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
-        return collection.SearchAsync(searchText, top: top);
+        return collection.SearchAsync(searchValue, top, null, cancellationToken);
     }
 }

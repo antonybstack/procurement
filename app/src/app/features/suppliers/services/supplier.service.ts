@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ApiService } from '../../../shared/services/api.service';
-import { SupplierDto, SupplierDetailDto } from '../../../shared/models';
-import { PaginatedResult } from '../../../shared/models';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {ApiService} from '../../../shared/services/api.service';
+import {PaginatedResult, SupplierDetailDto, SupplierDto} from '../../../shared/models';
 
 export interface SupplierFilters {
   page?: number;
@@ -11,6 +10,11 @@ export interface SupplierFilters {
   country?: string;
   minRating?: number;
   isActive?: boolean;
+}
+
+export interface VectorSearchFilters {
+  searchValue: string;
+  top?: number;
 }
 
 export interface SupplierUpdateDto {
@@ -35,7 +39,8 @@ export interface SupplierUpdateDto {
   providedIn: 'root'
 })
 export class SupplierService {
-  constructor(private apiService: ApiService) { }
+  constructor(private apiService: ApiService) {
+  }
 
   getSuppliers(filters: SupplierFilters = {}): Observable<PaginatedResult<SupplierDto>> {
     return this.apiService.get<PaginatedResult<SupplierDto>>('suppliers', filters);
@@ -51,5 +56,9 @@ export class SupplierService {
 
   getCountries(): Observable<string[]> {
     return this.apiService.get<string[]>('suppliers/countries');
+  }
+
+  vectorSearch(filters: VectorSearchFilters): Observable<PaginatedResult<SupplierDto>> {
+    return this.apiService.get<PaginatedResult<SupplierDto>>('suppliers/vectorsearch', filters);
   }
 }

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ProcurementAPI.DTOs;
-using ProcurementAPI.Models;
 using ProcurementAPI.Services;
 
 namespace ProcurementAPI.Controllers;
@@ -10,9 +9,9 @@ namespace ProcurementAPI.Controllers;
 [Route("api/[controller]")]
 public class SuppliersController : ControllerBase
 {
+    private readonly ILogger<SuppliersController> _logger;
     private readonly ISupplierService _supplierService;
     private readonly ISupplierVectorService _supplierVectorService;
-    private readonly ILogger<SuppliersController> _logger;
 
     public SuppliersController(ISupplierService supplierService,
         ISupplierVectorService supplierVectorService,
@@ -24,7 +23,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Get all suppliers with optional filtering and pagination
+    ///     Get all suppliers with optional filtering and pagination
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<SupplierDto>>> GetSuppliers(
@@ -54,7 +53,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Get a specific supplier by ID
+    ///     Get a specific supplier by ID
     /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<SupplierDto>> GetSupplier(int id)
@@ -63,10 +62,7 @@ public class SuppliersController : ControllerBase
         {
             var supplier = await _supplierService.GetSupplierByIdAsync(id);
 
-            if (supplier == null)
-            {
-                return NotFound($"Supplier with ID {id} not found");
-            }
+            if (supplier == null) return NotFound($"Supplier with ID {id} not found");
 
             return Ok(supplier);
         }
@@ -77,7 +73,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new supplier
+    ///     Create a new supplier
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<SupplierDto>> CreateSupplier([FromBody] SupplierUpdateDto createDto)
@@ -94,7 +90,6 @@ public class SuppliersController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-
             return BadRequest(ex.Message);
         }
         catch (Exception ex)
@@ -104,7 +99,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Update a supplier
+    ///     Update a supplier
     /// </summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<SupplierDto>> UpdateSupplier(int id, [FromBody] SupplierUpdateDto updateDto)
@@ -130,7 +125,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a supplier
+    ///     Delete a supplier
     /// </summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteSupplier(int id)
@@ -142,10 +137,7 @@ public class SuppliersController : ControllerBase
         {
             var result = await _supplierService.DeleteSupplierAsync(id);
 
-            if (!result)
-            {
-                return NotFound($"Supplier with ID {id} not found");
-            }
+            if (!result) return NotFound($"Supplier with ID {id} not found");
 
             return NoContent();
         }
@@ -158,7 +150,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Get countries for filtering
+    ///     Get countries for filtering
     /// </summary>
     [HttpGet("countries")]
     public async Task<ActionResult<List<string>>> GetCountries()
@@ -176,7 +168,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Validate if a supplier code is available
+    ///     Validate if a supplier code is available
     /// </summary>
     [HttpGet("validate-code")]
     public async Task<ActionResult<bool>> ValidateSupplierCode(
@@ -188,10 +180,7 @@ public class SuppliersController : ControllerBase
 
         try
         {
-            if (string.IsNullOrWhiteSpace(supplierCode))
-            {
-                return BadRequest("Supplier code is required");
-            }
+            if (string.IsNullOrWhiteSpace(supplierCode)) return BadRequest("Supplier code is required");
 
             var isValid = await _supplierService.ValidateSupplierCodeAsync(supplierCode, excludeId);
 
@@ -208,7 +197,7 @@ public class SuppliersController : ControllerBase
     }
 
     /// <summary>
-    /// Vectorize suppliers for semantic search
+    ///     Vectorize suppliers for semantic search
     /// </summary>
     [HttpPost("vectorize")]
     public async Task<ActionResult> VectorizeSuppliers()
@@ -216,38 +205,21 @@ public class SuppliersController : ControllerBase
         await _supplierVectorService.VectorizeSuppliersAsync(null);
         return Ok("Vectorization started");
     }
-    
+
     /// <summary>
-    /// Vectorize suppliers for semantic search
+    ///     Vectorize suppliers for semantic search
     /// </summary>
     [HttpGet("vectorsearch")]
-    public async Task<ActionResult> VectorSearch(string searchString, CancellationToken ct)
+    public async Task<ActionResult> VectorSearch(
+        [FromQuery] string searchValue,
+        [FromQuery] int top,
+        CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(searchString))
-        {
-            return BadRequest("Search string is required");
-        }
+        if (string.IsNullOrWhiteSpace(searchValue)) return BadRequest("Search string is required");
 
         ct.ThrowIfCancellationRequested();
-        
-        var results = await _supplierVectorService.SearchByHybridAsync(searchString, top: 5);
-        return Ok(results);
-    }
-    
-    /// <summary>
-    /// Vectorize suppliers for semantic search
-    /// </summary>
-    [HttpGet("hybridsearch")]
-    public async Task<ActionResult> HybridSearch(string searchString, CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-        {
-            return BadRequest("Search string is required");
-        }
 
-        ct.ThrowIfCancellationRequested();
-        
-        var results = await _supplierVectorService.SearchByHybridAsync(searchString, top: 5);
+        var results = await _supplierVectorService.SearchByVectorAsync(searchValue, top, ct);
         return Ok(results);
     }
 }
