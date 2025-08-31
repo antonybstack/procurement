@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using OpenAI;
 using ProcurementAPI.Data;
@@ -17,10 +18,10 @@ using Sparkify.Observability;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true)
-                     .AddEnvironmentVariables()
-                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                     .AddCommandLine(args);
+    .AddEnvironmentVariables()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddCommandLine(args);
 
 /*
 Alternatives:
@@ -37,7 +38,7 @@ string embeddingModelName = builder.Configuration.GetRequiredSection("EmbeddingM
 
 // Register OpenTelemetry and Serilog
 builder.RegisterOpenTelemetry()
-       .RegisterSerilog();
+    .RegisterSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -66,15 +67,18 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddDbContext<ProcurementDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), o => o.UseVector())
-           .LogTo(Console.WriteLine, LogLevel.Information)
-           .EnableSensitiveDataLogging()
-           .EnableDetailedErrors());
+        .LogTo(Console.WriteLine, LogLevel.Information)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors());
 
-builder.Services.AddPostgresVectorStore();
+// Configure PostgreSQL vector store with connection string
+// Note: This will be updated later with embedding generator configuration
+// builder.Services.AddPostgresVectorStore();
 
 // Register services
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<ISupplierVectorService, SupplierVectorService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
@@ -94,9 +98,9 @@ builder.Services.AddCors(options =>
     {
         // policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
         policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithExposedHeaders("Content-Type"); // Required for Server-Sent Events
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithExposedHeaders("Content-Type"); // Required for Server-Sent Events
     });
 });
 
@@ -154,6 +158,9 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAiEmbeddi
     .GetEmbeddingClient(model: embeddingModelName)
     .AsIEmbeddingGenerator();
 
+builder.Services.AddPostgresVectorStore(builder.Configuration.GetConnectionString("DefaultConnection")!, new PostgresVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
+
+
 // test chat client and embedding generator (optional)
 var testOpenAI = builder.Configuration.GetSection("TestOpenAIOnStartup").Get<bool?>() ?? false;
 if (testOpenAI)
@@ -173,7 +180,7 @@ if (testOpenAI)
             new[] { "Hello world" },
             options: null,
             cancellationToken: default)).GetAwaiter().GetResult();
-            
+
         Console.WriteLine("✅ OpenAI API test successful");
     }
     catch (Exception ex)
@@ -199,6 +206,7 @@ if (resetVectorStores)
             Debug.WriteLine($"Failed to delete old vector store file {oldFile}: {ex.Message}");
         }
     }
+
     // Configure services
     vectorStorePath = Path.Combine(AppContext.BaseDirectory, $"vector-store-{Guid.NewGuid()}.db");
 }
@@ -208,6 +216,7 @@ else
     vectorStorePath = existingVectorStore ?? Path.Combine(AppContext.BaseDirectory, $"vector-store-{Guid.NewGuid()}.db");
     Debug.WriteLine($"Using vector store at: {vectorStorePath}");
 }
+
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
 
 builder.Services.AddSqliteCollection<string, IngestedChunk>("data-chatapp-chunks", vectorStoreConnectionString);
@@ -221,7 +230,46 @@ builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 /*** AI STUFF END ***/
 
 var app = builder.Build();
-
+//
+// Task.Run(async () =>
+// {
+//     // get a scope to resolve scoped services
+//     using var scope = app.Services.CreateScope();
+//     var services = scope.ServiceProvider;
+//     
+//     // Get service created from AddPostgresVectorStore to test
+//     var vectorStore = services.GetRequiredService<PostgresVectorStore>();
+//     var supplierVectorService = services.GetRequiredService<ISupplierVectorService>();
+//     
+//     // Initialize vector store
+//     await supplierVectorService.InitializeVectorStoreAsync();
+//     
+//     // Create and upsert test data
+//     var records = await supplierVectorService.CreateTestDataAsync();
+//     
+//     // Wait for indexing to complete
+//     await Task.Delay(5000);
+//     
+//     // Test text-based search
+//     // var searchResult = await supplierVectorService.SearchByTextAsync("SupplierCodeXYZ789", top: 1);
+//     
+//     // Test vector-based search
+//     var embeddingGenerator = app.Services.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+//     var searchString = "What is SupplierCodeXYZ789";
+//     // var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
+//     var resultRecords = await supplierVectorService.SearchByVectorAsync(searchString, top: 1);
+//     
+//     await foreach (var record in resultRecords)
+//     {
+//         Console.WriteLine("Search string: " + searchString);
+//         Console.WriteLine("SupplierId: " + record.Record.SupplierId);
+//         Console.WriteLine("EmbeddingText: " + record.Record.EmbeddingText);
+//         Console.WriteLine("BuildSearchableContent: " + record.Record.BuildSearchableContent());
+//         // Console.WriteLine("Embedding: " + record.Record.EmbeddingText.ToString());
+//         // Console.WriteLine("Embedding: " + record.Record.Embedding.ToArray().ToString());
+//         Console.WriteLine();
+//     }
+// }).GetAwaiter().GetResult();
 // Log startup information
 app.LogStartupInfo(builder);
 
@@ -265,4 +313,6 @@ if (ingestDocuments)
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

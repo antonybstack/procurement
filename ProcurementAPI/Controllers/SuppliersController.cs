@@ -11,11 +11,15 @@ namespace ProcurementAPI.Controllers;
 public class SuppliersController : ControllerBase
 {
     private readonly ISupplierService _supplierService;
+    private readonly ISupplierVectorService _supplierVectorService;
     private readonly ILogger<SuppliersController> _logger;
 
-    public SuppliersController(ISupplierService supplierService, ILogger<SuppliersController> logger)
+    public SuppliersController(ISupplierService supplierService,
+        ISupplierVectorService supplierVectorService,
+        ILogger<SuppliersController> logger)
     {
         _supplierService = supplierService;
+        _supplierVectorService = supplierVectorService;
         _logger = logger;
     }
 
@@ -201,5 +205,49 @@ public class SuppliersController : ControllerBase
 
             return StatusCode(500, "An error occurred while validating the supplier code");
         }
+    }
+
+    /// <summary>
+    /// Vectorize suppliers for semantic search
+    /// </summary>
+    [HttpPost("vectorize")]
+    public async Task<ActionResult> VectorizeSuppliers()
+    {
+        await _supplierVectorService.VectorizeSuppliersAsync(null);
+        return Ok("Vectorization started");
+    }
+    
+    /// <summary>
+    /// Vectorize suppliers for semantic search
+    /// </summary>
+    [HttpGet("vectorsearch")]
+    public async Task<ActionResult> VectorSearch(string searchString, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return BadRequest("Search string is required");
+        }
+
+        ct.ThrowIfCancellationRequested();
+        
+        var results = await _supplierVectorService.SearchByHybridAsync(searchString, top: 5);
+        return Ok(results);
+    }
+    
+    /// <summary>
+    /// Vectorize suppliers for semantic search
+    /// </summary>
+    [HttpGet("hybridsearch")]
+    public async Task<ActionResult> HybridSearch(string searchString, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return BadRequest("Search string is required");
+        }
+
+        ct.ThrowIfCancellationRequested();
+        
+        var results = await _supplierVectorService.SearchByHybridAsync(searchString, top: 5);
+        return Ok(results);
     }
 }
