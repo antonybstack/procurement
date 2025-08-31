@@ -1,439 +1,402 @@
-<!-- Grok-Inspired Chat Interface -->
-<div class="h-full flex flex-col overflow-hidden app-content-layer">
-  <!-- Chat Container -->
-  <div class="flex-1 flex flex-col max-w-4xl mx-auto w-full min-h-0">
-    <!-- Header Area with Logo - Fixed Size -->
+<!-- Brutalist Chat Interface -->
+<div style="height: 100vh; display: flex; flex-direction: column; min-height: 0;">
+  <!-- Chat Area -->
+  <div
+    style="flex: 1; display: flex; flex-direction: column; padding: calc(var(--space-unit) * 2) var(--space-unit) var(--space-unit); overflow: hidden; min-height: 0;">
+
+    <!-- Welcome State -->
     @if (messages().length === 0) {
+      <div class="search-welcome-container" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        text-align: center;
+        gap: calc(var(--space-unit) * 2);
+        max-width: 50rem;
+        margin: 0 auto;
+        width: 100%;
+      ">
 
-    <div class="flex flex-col items-center pt-6 pb-4 flex-shrink-0">
-      <!-- Procurement AI Logo -->
-      <div class="flex items-center space-x-4 mb-8">
-        <div class="relative">
-          <div
-            class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-            style="background: var(--gradient-brand)"
-          >
-            <!-- Multiple sparkles icon -->
-            <svg
-              width="300"
-              height="200"
-              viewBox="0 0 300 200"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <symbol id="sparkle" viewBox="0 0 10 10">
-                  <path
-                    d="M5 0L6.5 3.5L10 5L6.5 6.5L5 10L3.5 6.5L0 5L3.5 3.5Z"
-                    fill="#EAEAEA"
-                  ></path>
-                </symbol>
-              </defs>
-
-              <use href="#sparkle" x="65" y="10" width="50" height="50"></use>
-              <use href="#sparkle" x="85" y="125" width="60" height="80"></use>
-              <use
-                href="#sparkle"
-                x="150"
-                y="45"
-                width="100"
-                height="110"
-              ></use>
-
-              <!-- <use href="#sparkle" x="40" y="40" width="10" height="10"></use> -->
-              <!-- <use href="#sparkle" x="200" y="160" width="8" height="8"></use> -->
-              <!-- <use href="#sparkle" x="50" y="100" width="12" height="12"></use>
-              <use href="#sparkle" x="270" y="130" width="9" height="9"></use>
-              <use href="#sparkle" x="140" y="20" width="7" height="7"></use> -->
-            </svg>
-          </div>
-        </div>
-
-        <h1
-          class="text-4xl font-bold text-light-text dark:text-grok-text tracking-tight"
-        >
-          AI Procurement
-        </h1>
-      </div>
-    </div>
-    }
-
-    <!-- Chat Area - Flexible with proper height -->
-    <div class="flex-1 flex flex-col px-2 pb-2 min-h-0">
-      <!-- Messages Container - Scrollable with max height -->
-      <div class="flex-1 min-h-0 flex flex-col">
-        <!-- Welcome State -->
-        @if (messages().length === 0) {
-        <div class="text-center space-y-10 animate-fade-in">
-          <!-- Conversation Starters -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-2 gap-4 place-items-center max-w-3xl mx-auto"
-          >
-            @for (suggestion of suggestions; track suggestion) {
+        <!-- Suggestion Buttons -->
+        <div class="search-suggestions" style="
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: calc(var(--space-unit) * 1.5);
+          width: 100%;
+          max-width: 45rem;
+        ">
+          @for (suggestion of suggestions; track suggestion) {
             <button
               (click)="useSuggestion(suggestion)"
-              class="group relative px-5 py-3 w-full rounded-2xl text-center transition-all duration-300 glass-effect backdrop-blur-xl bg-white/5 dark:bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 ring-1 ring-inset ring-white/5 hover:ring-light-accent/40 dark:hover:ring-grok-accent/40 shadow-lg hover:shadow-xl"
-            >
-              <span
-                class="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"
-              ></span>
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-xl flex items-center flex-shrink-0 transition-all duration-200 bg-light-accent/15 dark:bg-grok-accent/25 group-hover:bg-light-accent/25 dark:group-hover:bg-grok-accent/35 shadow-sm"
-                >
-                  <!-- Electric bolt icon -->
-                  <svg
-                    class="w-5 h-5 text-light-accent dark:text-grok-accent"
-                    fill="#FFD43B"
-                    stroke="#FFD43B"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p
-                    class="text-light-text dark:text-grok-text text-sm font-medium text-left"
-                  >
-                    {{ suggestion }}
-                  </p>
-                </div>
+              style="
+              border: var(--border-width) solid rgb(var(--color-accent));
+              background: transparent;
+              color: rgb(var(--color-accent));
+              padding: calc(var(--space-unit) * 1.25) var(--space-unit);
+              font-family: var(--font-mono);
+              text-align: left;
+              cursor: pointer;
+              text-transform: lowercase;
+              transition: all 0.2s ease;
+            "
+              onmouseover="this.style.background='rgb(var(--color-accent))'; this.style.color='rgb(var(--color-bg))'"
+              onmouseout="this.style.background='transparent'; this.style.color='rgb(var(--color-accent))'">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="
+                display: inline-block;
+                width: 1.5rem;
+                height: 1.5rem;
+                background: rgb(var(--color-accent));
+                color: rgb(var(--color-bg));
+                text-align: center;
+                line-height: 1.5rem;
+                font-size: 1.2rem;
+                flex-shrink: 0;
+              ">⚡</span>
+                <span style="line-height: 1.4;">{{ suggestion }}</span>
               </div>
             </button>
-            }
-          </div>
-        </div>
-        }
-
-        <!-- Chat Messages -->
-        @else {
-        <div
-          #messagesContainer
-          (scroll)="onScroll()"
-          class="flex-1 space-y-2 pr-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent min-h-0"
-        >
-          @for (message of messages(); track message.id) {
-          <div class="flex" [class.justify-end]="message.role === 'user'">
-            <!-- Message Bubble -->
-            <div class="max-w-3xl">
-              <!-- User Message -->
-              @if (message.role === 'user') {
-              <div
-                class="p-[1.5px] rounded-2xl rounded-br-lg bg-[length:200%_200%] bg-gradient-to-r from-blue-500/80 via-indigo-500/80 to-purple-500/80 gradient-border-shimmer shadow-xl animate-slide-up overflow-hidden"
-              >
-                <div
-                  class="bg-white/10 dark:bg-white/10 backdrop-blur-xl rounded-2xl rounded-br-lg px-4 py-2"
-                >
-                  <p
-                    class="text-sm leading-relaxed whitespace-pre-wrap font-medium text-white/95"
-                  >
-                    {{ message.content }}
-                  </p>
-                  <p class="text-xs text-white/70 mt-1 opacity-75">
-                    {{ formatTimestamp(message.timestamp) }}
-                  </p>
-                </div>
-              </div>
-              }
-
-              <!-- Assistant Message -->
-              @else {
-              <div class="dark:text-grok-text px-4 py-2 animate-slide-up">
-                <div class="flex items-center space-x-3 mb-2">
-                  @if (isMessageStreaming(message)) {
-                  <div class="flex space-x-1 ml-auto">
-                    <div
-                      class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
-                      style="animation-delay: 0s"
-                    ></div>
-                    <div
-                      class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
-                      style="animation-delay: 0.1s"
-                    ></div>
-                    <div
-                      class="w-1.5 h-1.5 bg-light-accent dark:bg-grok-accent rounded-full animate-bounce"
-                      style="animation-delay: 0.2s"
-                    ></div>
-                  </div>
-                  }
-                </div>
-
-                @if (message.content) {
-                <div
-                  class="text-sm leading-relaxed whitespace-pre-wrap text-light-text dark:text-grok-text"
-                >
-                  {{ message.content }}
-                </div>
-                } @else {
-                <div class="flex items-center space-x-1 py-1">
-                  <div
-                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
-                    style="animation-delay: 0s"
-                  ></div>
-                  <div
-                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
-                    style="animation-delay: 0.2s"
-                  ></div>
-                  <div
-                    class="inline-block w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white ring-1 ring-white/40 dark:ring-transparent animate-bounce"
-                    style="animation-delay: 0.3s"
-                  ></div>
-                </div>
-                } @if (!isMessageStreaming(message) && message.content) {
-                <div
-                  class="flex items-center justify-between mt-4 pt-3 border-t border-light-border dark:border-grok-border"
-                >
-                  <span
-                    class="text-xs text-light-text-muted dark:text-grok-text-muted"
-                    >{{ formatTimestamp(message.timestamp) }}</span
-                  >
-                  <button
-                    (click)="copyMessage(message)"
-                    class="text-light-text-muted dark:text-grok-text-muted hover:text-light-accent dark:hover:text-grok-accent transition-colors p-1.5 rounded-lg hover:bg-light-bg-surface dark:hover:bg-grok-surface"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
-                }
-              </div>
-              }
-            </div>
-          </div>
           }
         </div>
-        }
       </div>
+    }
 
-      <!-- Input Area - Fixed at bottom -->
-      <div class="relative max-w-4xl mx-auto w-full flex-shrink-0">
-        <!-- Main Input -->
-        <div (click)="messageInput.focus()" style="cursor: text">
-          <div
-            class="input-frame relative flex items-center rounded-2xl bg-white/8 dark:bg-white/8 backdrop-blur-xl border border-white/10 transition-all duration-200"
-          >
-            <textarea
-              #messageInput
-              [(ngModel)]="currentMessage"
-              (keydown)="handleKeyDown($event)"
-              (compositionstart)="handleCompositionStart()"
-              (compositionend)="handleCompositionEnd()"
-              name="message"
-              placeholder="What do you want to know about?"
-              rows="1"
-              class="chat-input flex-1 px-6 py-3 bg-transparent border-0 rounded-2xl text-light-text dark:text-grok-text placeholder-light-text-muted/80 dark:placeholder-grok-text-muted/80 resize-none transition-all duration-300 focus:outline-none focus:ring-0"
-              [disabled]="!canSendMessage() || isComposing()"
-              style="min-height: 3.25rem; max-height: 8rem"
-            ></textarea>
+    <!-- Chat Messages -->
+    @else {
+      <div
+        class="search-chat-container"
+        #messagesContainer
+        (scroll)="onScroll()"
+        style="
+          flex: 1;
+          overflow-y: auto;
+          margin-bottom: calc(var(--space-unit) * 1.5);
+          border: var(--border-width) solid rgb(var(--color-text-muted));
+          padding: calc(var(--space-unit) * 1.5) var(--space-unit);
+          max-width: 50rem;
+          margin-left: auto;
+          margin-right: auto;
+        ">
+        @for (message of messages(); track message.id) {
+          <div style="margin-bottom: var(--space-unit); display: flex;"
+               [style.justify-content]="message.role === 'user' ? 'flex-end' : 'flex-start'">
 
-            <!-- Send Button -->
-            <button
-              type="button"
-              (click)="sendMessage()"
-              [disabled]="
-                !canSendMessage() || !currentMessage().trim() || isComposing()
-              "
-              class="m-2 w-10 h-10 bg-light-accent dark:bg-grok-accent hover:bg-light-accent-hover dark:hover:bg-grok-accent-hover disabled:bg-light-text-muted dark:disabled:bg-grok-text-muted disabled:cursor-not-allowed rounded-2xl flex items-center justify-center transition-all duration-200 disabled:opacity-50 shadow-lg btn-grok"
-            >
-              @if (isStreaming()) {
-              <div
-                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-              ></div>
-              } @else {
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                ></path>
-              </svg>
-              }
-            </button>
-          </div>
-        </div>
+            <!-- User Message -->
+            @if (message.role === 'user') {
+              <div style="
+                max-width: 70%;
+                border: var(--border-width) solid rgb(var(--color-accent));
+                background: rgb(var(--color-accent));
+                color: rgb(var(--color-bg));
+                padding: var(--space-unit);
+                font-family: var(--font-mono);
+              ">
+                <div style="white-space: pre-wrap;">{{ message.content }}</div>
+                <div style="
+                  font-size: 0.8rem;
+                  margin-top: 0.5rem;
+                  opacity: 0.7;
+                ">{{ formatTimestamp(message.timestamp) }}
+                </div>
+              </div>
+            }
 
-        <!-- Controls Row -->
-        @if (messages().length > 0) {
-        <div class="flex items-center justify-between px-2 mt-2">
-          <div class="flex items-center space-x-4">
-            <button
-              (click)="clearChat()"
-              class="text-xs text-light-text-muted dark:text-grok-text-muted hover:text-light-accent dark:hover:text-grok-accent transition-all duration-200 flex items-center space-x-2 px-3 rounded-xl hover:bg-light-bg-surface dark:hover:bg-grok-surface"
-            >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                ></path>
-              </svg>
-              <span>Clear</span>
-            </button>
+            <!-- Assistant Message -->
+            @else {
+              <div style="
+                max-width: 70%;
+                border: var(--border-width) solid rgb(var(--color-text-muted));
+                background: transparent;
+                color: rgb(var(--color-text));
+                padding: var(--space-unit);
+                font-family: var(--font-mono);
+              ">
+                @if (isMessageStreaming(message)) {
+                  <div style="display: flex; gap: 0.25rem; margin-bottom: 0.5rem;">
+                    <span style="animation: bounce 1s infinite 0s;">•</span>
+                    <span style="animation: bounce 1s infinite 0.1s;">•</span>
+                    <span style="animation: bounce 1s infinite 0.2s;">•</span>
+                  </div>
+                }
 
-            @if (isStreaming()) {
-            <button
-              (click)="cancelStream()"
-              class="text-xs text-red-400 hover:text-red-300 transition-all duration-200 flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 10h6v4H9z"
-                ></path>
-              </svg>
-              <span>Stop</span>
-            </button>
+                @if (message.content) {
+                  <div style="white-space: pre-wrap; line-height: 1.4;">{{ message.content }}</div>
+
+                  @if (!isMessageStreaming(message)) {
+                    <div style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      margin-top: var(--space-unit);
+                      padding-top: var(--space-unit);
+                      border-top: var(--border-width) solid rgb(var(--color-text-muted));
+                      font-size: 0.8rem;
+                    ">
+                      <span>{{ formatTimestamp(message.timestamp) }}</span>
+                      <button
+                        (click)="copyMessage(message)"
+                        style="
+                          background: transparent;
+                          border: var(--border-width) solid rgb(var(--color-text-muted));
+                          color: rgb(var(--color-text-muted));
+                          padding: 0.25rem 0.5rem;
+                          font-family: var(--font-mono);
+                          font-size: 0.8rem;
+                          cursor: pointer;
+                        "
+                        onmouseover="this.style.background='rgb(var(--color-text-muted))'; this.style.color='rgb(var(--color-bg))'"
+                        onmouseout="this.style.background='transparent'; this.style.color='rgb(var(--color-text-muted))'">
+                        copy
+                      </button>
+                    </div>
+                  }
+                }
+              </div>
             }
           </div>
-
-          <div
-            class="text-xs text-light-text-muted dark:text-grok-text-muted bg-light-bg-surface dark:bg-grok-surface px-3 rounded-full"
-          >
-            {{ messages().length }} message{{
-              messages().length !== 1 ? "s" : ""
-            }}
-          </div>
-        </div>
-        }
-
-        <!-- Error Display -->
-        @if (chatError()) {
-        <div
-          class="mt-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-2xl p-4 animate-slide-up"
-        >
-          <div class="flex items-center space-x-3">
-            <svg
-              class="w-5 h-5 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-            <span class="flex-1">{{ chatError() }}</span>
-            <button
-              (click)="retryLastMessage()"
-              class="text-red-600 dark:text-red-300 hover:text-red-700 dark:hover:text-red-200 px-3 py-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
         }
       </div>
-    </div>
+    }
   </div>
 
-  <!-- Auto-scroll button -->
-  @if (!autoScroll() && messages().length > 0) {
-  <div class="fixed bottom-32 right-6">
-    <button
-      (click)="toggleAutoScroll()"
-      class="bg-light-surface dark:bg-grok-bg-lighter hover:bg-light-bg-surface dark:hover:bg-grok-surface text-light-text dark:text-grok-text p-4 rounded-2xl shadow-xl border border-light-border dark:border-grok-border btn-grok backdrop-blur-sm"
-    >
-      <svg
-        class="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 14l-7 7m0 0l-7-7m7 7V3"
-        ></path>
-      </svg>
-    </button>
+  <!-- Input Area - Fixed at bottom -->
+  <div class="search-input-container" style="
+    position: sticky;
+    bottom: 0;
+    background: rgb(var(--color-bg));
+    padding: calc(var(--space-unit) * 1.25) var(--space-unit);
+    border-top: var(--border-width) solid rgb(var(--color-text-muted));
+  ">
+    <div style="max-width: 50rem; margin: 0 auto;">
+      <form (ngSubmit)="sendMessage()" style="display: flex; gap: var(--space-unit);">
+        <textarea
+          #messageInput
+          (compositionend)="handleCompositionEnd()"
+          (compositionstart)="handleCompositionStart()"
+          (keydown)="handleKeyDown($event)"
+          [(ngModel)]="currentMessage"
+          [disabled]="!canSendMessage() || isComposing()"
+          name="message"
+          placeholder="What do you want to know about?"
+          rows="1"
+          style="
+            flex: 1;
+            border: var(--border-width) solid rgb(var(--color-text-muted));
+            background: transparent;
+            color: rgb(var(--color-text));
+            padding: calc(var(--space-unit) * 1.125) var(--space-unit);
+            font-family: var(--font-mono);
+            resize: none;
+            min-height: 3.5rem;
+            max-height: 8rem;
+            font-size: 1rem;
+            line-height: 1.4;
+          "></textarea>
+
+        <button
+          [disabled]="!canSendMessage() || !currentMessage().trim() || isComposing()"
+          onmouseout="if(!this.disabled) { this.style.background='rgb(var(--color-accent))'; this.style.color='rgb(var(--color-bg))' }"
+          onmouseover="if(!this.disabled) { this.style.background='transparent'; this.style.color='rgb(var(--color-accent))' }"
+          style="
+            border: var(--border-width) solid rgb(var(--color-accent));
+            background: rgb(var(--color-accent));
+            color: rgb(var(--color-bg));
+            padding: calc(var(--space-unit) * 1.125) var(--space-unit);
+            font-family: var(--font-mono);
+            cursor: pointer;
+            text-transform: lowercase;
+            width: 4.5rem;
+            min-height: 3.5rem;
+            font-size: 1.1rem;
+          "
+          type="submit">
+          @if (isStreaming()) {
+            ⏹
+          } @else {
+            ↗
+          }
+        </button>
+      </form>
+    </div>
+
+    <!-- Controls and Error Display -->
+    @if (messages().length > 0) {
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--space-unit);
+        border-top: var(--border-width) solid rgb(var(--color-text-muted));
+        margin-top: var(--space-unit);
+        font-size: 0.8rem;
+      ">
+        <div style="display: flex; gap: var(--space-unit);">
+          <button
+            (click)="clearChat()"
+            style="
+              background: transparent;
+              border: var(--border-width) solid rgb(var(--color-text-muted));
+              color: rgb(var(--color-text-muted));
+              padding: 0.25rem 0.5rem;
+              font-family: var(--font-mono);
+              font-size: 0.8rem;
+              cursor: pointer;
+            "
+            onmouseover="this.style.background='rgb(var(--color-text-muted))'; this.style.color='rgb(var(--color-bg))'"
+            onmouseout="this.style.background='transparent'; this.style.color='rgb(var(--color-text-muted))'">
+            clear
+          </button>
+
+          @if (isStreaming()) {
+            <button
+              (click)="cancelStream()"
+              style="
+              background: transparent;
+              border: var(--border-width) solid rgb(var(--color-accent));
+              color: rgb(var(--color-accent));
+              padding: 0.25rem 0.5rem;
+              font-family: var(--font-mono);
+              font-size: 0.8rem;
+              cursor: pointer;
+            "
+              onmouseover="this.style.background='rgb(var(--color-accent))'; this.style.color='rgb(var(--color-bg))'"
+              onmouseout="this.style.background='transparent'; this.style.color='rgb(var(--color-accent))'">
+              stop
+            </button>
+          }
+        </div>
+
+        <div style="
+          color: rgb(var(--color-text-muted));
+          font-family: var(--font-mono);
+          font-size: 0.8rem;
+        ">
+          {{ messages().length }} message{{ messages().length !== 1 ? "s" : "" }}
+        </div>
+      </div>
+    }
+
+    <!-- Error Display -->
+    @if (chatError()) {
+      <div style="
+      margin-top: var(--space-unit);
+      border: var(--border-width) solid rgb(var(--color-accent));
+      background: transparent;
+      color: rgb(var(--color-accent));
+      padding: var(--space-unit);
+      font-family: var(--font-mono);
+    ">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>error: {{ chatError() }}</span>
+          <button
+            (click)="retryLastMessage()"
+            style="
+            background: transparent;
+            border: var(--border-width) solid rgb(var(--color-accent));
+            color: rgb(var(--color-accent));
+            padding: 0.25rem 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            cursor: pointer;
+          "
+            onmouseover="this.style.background='rgb(var(--color-accent))'; this.style.color='rgb(var(--color-bg))'"
+            onmouseout="this.style.background='transparent'; this.style.color='rgb(var(--color-accent))'">
+            retry
+          </button>
+        </div>
+      </div>
+    }
   </div>
-  }
 </div>
 
-<!-- Custom Scrollbar Styles -->
+<!-- Brutalist scrollbar and input styles -->
 <style>
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-
-  .scrollbar-thumb-gray-600 {
-    scrollbar-color: #4b5563 transparent;
-  }
-
-  .scrollbar-track-transparent {
-    scrollbar-track-color: transparent;
-  }
-
-  /* Webkit scrollbar */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
-    border-radius: 3px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #6b7280;
-  }
-
-  /* Smooth animations */
-  textarea {
-    transition: all 0.2s ease-in-out;
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-0.5rem);
+    }
+    60% {
+      transform: translateY(-0.25rem);
+    }
   }
 
   textarea:focus {
-    outline: none;
-    box-shadow: none;
+    outline: var(--border-width) solid rgb(var(--color-accent));
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  button:disabled:hover {
+    background: rgb(var(--color-text-muted)) !important;
+    color: rgb(var(--color-bg)) !important;
+  }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .search-welcome-container {
+      padding: calc(var(--space-unit) * 1.5) !important;
+      gap: calc(var(--space-unit) * 1.5) !important;
+    }
+
+    .search-welcome-header h1 {
+      font-size: 1.5rem !important;
+    }
+
+    .search-welcome-header .search-icon {
+      width: 3rem !important;
+      height: 3rem !important;
+      font-size: 1.25rem !important;
+    }
+
+    .search-suggestions {
+      gap: var(--space-unit) !important;
+    }
+
+    .search-suggestions button {
+      padding: var(--space-unit) calc(var(--space-unit) * 0.75) !important;
+      font-size: 0.9rem !important;
+    }
+
+    .search-input-container {
+      padding: var(--space-unit) calc(var(--space-unit) * 0.75) !important;
+    }
+
+    .search-input-container textarea {
+      min-height: 3rem !important;
+      padding: var(--space-unit) calc(var(--space-unit) * 0.75) !important;
+      font-size: 0.9rem !important;
+    }
+
+    .search-input-container button {
+      width: 3.5rem !important;
+      min-height: 3rem !important;
+      padding: var(--space-unit) calc(var(--space-unit) * 0.75) !important;
+      font-size: 1rem !important;
+    }
+
+    .search-chat-container {
+      padding: var(--space-unit) calc(var(--space-unit) * 0.75) !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .search-welcome-header h1 {
+      font-size: 1.25rem !important;
+    }
+
+    .search-welcome-header p {
+      font-size: 0.85rem !important;
+    }
+
+    .search-suggestions button {
+      font-size: 0.85rem !important;
+    }
   }
 </style>

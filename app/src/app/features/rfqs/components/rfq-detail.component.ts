@@ -1,10 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, themeQuartz, colorSchemeVariable } from 'ag-grid-community';
-import { RfqService } from '../services/rfq.service';
-import { RfqDetailDto } from '../../../shared/models/rfq.model';
+import {Component, inject, OnInit, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {AgGridAngular} from 'ag-grid-angular';
+import {ColDef, colorSchemeVariable, themeQuartz} from 'ag-grid-community';
+import {RfqService} from '../services/rfq.service';
+import {RfqDetailDto} from '../../../shared/models/rfq.model';
 
 @Component({
   selector: 'app-rfq-detail',
@@ -15,28 +15,23 @@ import { RfqDetailDto } from '../../../shared/models/rfq.model';
 })
 export class RfqDetailComponent implements OnInit {
   Date = Date;
-  private rfqService = inject(RfqService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-
   // Signals
   rfq = signal<RfqDetailDto | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
-
   // AG Grid for Line Items
   lineItemColumnDefs: ColDef[] = [
-    { field: 'lineNumber', headerName: 'Line #', width: 80 },
+    {field: 'lineNumber', headerName: 'Line #', width: 80},
     {
       field: 'item.itemCode',
       headerName: 'Item Code',
       width: 120,
-      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      cellStyle: {cursor: 'pointer', color: '#2563eb'},
       onCellClicked: (params) => this.navigateToItem(params.data.item.itemId)
     },
-    { field: 'item.description', headerName: 'Description', flex: 1 },
-    { field: 'quantityRequired', headerName: 'Qty Required', width: 120 },
-    { field: 'unitOfMeasure', headerName: 'UOM', width: 100 },
+    {field: 'item.description', headerName: 'Description'},
+    {field: 'quantityRequired', headerName: 'Qty Required', width: 120},
+    {field: 'unitOfMeasure', headerName: 'UOM', width: 100},
     {
       field: 'estimatedUnitCost', headerName: 'Est. Unit Cost', width: 130,
       valueFormatter: (params: any) => params.value ? params.value.toLocaleString() : '-'
@@ -46,21 +41,19 @@ export class RfqDetailComponent implements OnInit {
       valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleDateString() : '-'
     }
   ];
-
   // AG Grid for Quotes
   quoteColumnDefs: ColDef[] = [
     {
       field: 'quoteNumber',
       headerName: 'Quote #',
       width: 120,
-      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      cellStyle: {cursor: 'pointer', color: '#2563eb'},
       onCellClicked: (params) => this.navigateToQuote(params.data.quoteId)
     },
     {
       field: 'supplier.companyName',
       headerName: 'Supplier',
-      flex: 1,
-      cellStyle: { cursor: 'pointer', color: '#2563eb' },
+      cellStyle: {cursor: 'pointer', color: '#2563eb'},
       onCellClicked: (params) => this.navigateToSupplier(params.data.supplier.supplierId)
     },
     {
@@ -88,13 +81,11 @@ export class RfqDetailComponent implements OnInit {
       valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleDateString() : '-'
     }
   ];
-
   defaultColDef: ColDef = {
     sortable: true,
     filter: true,
     resizable: true
   };
-
   // AG Grid theme configured to respond to data-ag-theme-mode
   gridTheme = themeQuartz
     .withPart(colorSchemeVariable)
@@ -102,6 +93,9 @@ export class RfqDetailComponent implements OnInit {
       backgroundColor: 'rgba(0,0,0,0)',
       chromeBackgroundColor: 'rgba(0,0,0,0)'
     });
+  private rfqService = inject(RfqService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   ngOnInit() {
     this.loadRfq();
@@ -161,21 +155,6 @@ export class RfqDetailComponent implements OnInit {
     }
   }
 
-  private getQuoteStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'submitted':
-        return 'bg-blue-100 text-blue-800';
-      case 'under_review':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'accepted':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }
-
   getAwardDateDisplay(awardDate?: string): string {
     if (!awardDate) return 'Not awarded';
     return new Date(awardDate).toLocaleDateString();
@@ -192,5 +171,20 @@ export class RfqDetailComponent implements OnInit {
 
   getSupplierLocationDisplay(city?: string, state?: string, country?: string): string {
     return [city, state, country].filter(Boolean).join(', ');
+  }
+
+  private getQuoteStatusClass(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'submitted':
+        return 'bg-blue-100 text-blue-800';
+      case 'under_review':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 }

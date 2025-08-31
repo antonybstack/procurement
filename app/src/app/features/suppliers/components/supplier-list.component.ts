@@ -62,7 +62,6 @@ export class SupplierListComponent implements OnInit {
       headerName: 'Company Name',
       sortable: true,
       filter: true,
-      flex: 1,
       editable: true,
       cellEditor: 'agTextCellEditor'
     },

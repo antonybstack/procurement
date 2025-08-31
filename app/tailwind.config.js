@@ -3,7 +3,6 @@ module.exports = {
   content: [
     "./src/**/*.{html,ts}",
   ],
-  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
@@ -32,20 +31,6 @@ module.exports = {
           text: '#ffffff',       // Primary text
           'text-dim': '#d1d5db', // Secondary text
           'text-muted': '#9ca3af', // Muted text
-          accent: '#3b82f6',     // Blue accent
-          'accent-hover': '#2563eb' // Blue accent hover
-        },
-        // Light theme colors
-        light: {
-          bg: '#ffffff',         // Main light background
-          'bg-alt': '#f9fafb',   // Alternative background
-          'bg-surface': '#f3f4f6', // Surface elements
-          surface: '#ffffff',    // Card/modal backgrounds
-          border: '#e5e7eb',     // Border color
-          'border-light': '#f3f4f6', // Lighter borders
-          text: '#111827',       // Primary text
-          'text-dim': '#374151', // Secondary text
-          'text-muted': '#6b7280', // Muted text
           accent: '#3b82f6',     // Blue accent
           'accent-hover': '#2563eb' // Blue accent hover
         },

@@ -1,134 +1,286 @@
 @import "tailwindcss";
 
-/* Theme CSS Custom Properties */
+/* =============================================================================
+   BRUTALIST/MINIMALIST DESIGN SYSTEM
+   Inspired by terminal emulators and plaintext documentation
+   Typography-first approach with monospace emphasis
+   ============================================================================= */
 
-
+/* Core Variables */
 :root {
   --twinkle-duration: 4s;
 
-  /* Default to dark theme values */
-  --color-bg: 22 22 24;
-  /* #161618 */
-  --color-bg-alt: 31 31 33;
-  /* #1f1f21 */
-  --color-bg-surface: 42 42 44;
-  /* #2a2a2c */
-  --color-surface: 32 32 34;
-  /* #202022 */
-  --color-border: 52 52 55;
-  /* #343437 */
-  --color-border-light: 64 64 69;
-  /* #404045 */
-  --color-text: 255 255 255;
-  /* white */
-  --color-text-dim: 209 213 219;
-  /* gray-300 */
-  --color-text-muted: 156 163 175;
-  /* gray-400 */
-  --color-accent: 59 130 246;
-  /* blue-500 */
-  --color-accent-hover: 37 99 235;
-  /* blue-600 */
+  /* Typography - Monospace Primary */
+  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
-  /* Dark brand gradients */
-  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-brand-subtle: linear-gradient(135deg, #1e3a8a 0%, #5b21b6 100%);
+  /* Brutalist Color Palette - High Contrast */
+  --color-bg: 0 0 0; /* Pure black background */
+  --color-text: 255 255 255; /* Pure white text */
+  --color-text-dim: 200 200 200; /* Slightly dimmed white */
+  --color-text-muted: 140 140 140; /* Muted gray */
+  --color-accent: 0 100 255; /* Bright blue links */
+  --color-accent-visited: 128 0 128; /* Purple visited links */
+
+  /* Minimal borders - thin, sharp lines */
+  --color-border: 80 80 80;
+  --border-width: 1px;
+
+  /* No surface colors - transparent or same as background */
+  --color-surface: 0 0 0;
+
+  --space-unit: 1rem;
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block !important;
+  }
+
+  nav .nav-link:not(.mobile-menu .nav-link) {
+    display: none !important;
+  }
+
+  .mobile-menu {
+    display: block;
+    border-bottom: var(--border-width) solid rgb(var(--color-text-muted));
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-menu {
+    display: none !important;
+  }
 }
 
 html {
   background-color: rgb(var(--color-bg));
 }
 
-/* Light theme override */
-.light {
-  --color-bg: 255 255 255;
-  /* white */
-  --color-bg-alt: 249 250 251;
-  /* gray-50 */
-  --color-bg-surface: 243 244 246;
-  /* gray-100 */
-  --color-surface: 255 255 255;
-  /* white */
-  --color-border: 229 231 235;
-  /* gray-200 */
-  --color-border-light: 243 244 246;
-  /* gray-100 */
-  --color-text: 17 24 39;
-  /* gray-900 */
-  --color-text-dim: 55 65 81;
-  /* gray-700 */
-  --color-text-muted: 107 114 128;
-  /* gray-500 */
-  --color-accent: 59 130 246;
-  /* blue-500 */
-  --color-accent-hover: 37 99 235;
-  /* blue-600 */
+/* =============================================================================
+   BRUTALIST TYPOGRAPHY SYSTEM
+   ============================================================================= */
 
-  /* Light brand gradients */
-  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-brand-subtle: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
+/* Base typography - monospace primary */
+* {
+  font-family: var(--font-mono);
 }
 
-/* Utility classes using custom properties */
-.bg-theme {
-  background-color: rgb(var(--color-bg));
+/* Reset fancy styling */
+*, *::before, *::after {
+  border-radius: 0 !important; /* No rounded corners */
+  box-shadow: none !important; /* No shadows */
+  background-image: none !important; /* No gradients */
+  backdrop-filter: none !important; /* No blur effects */
 }
 
-.bg-theme-alt {
-  background-color: rgb(var(--color-bg-alt));
-}
-
-.bg-theme-surface {
-  background-color: rgb(var(--color-bg-surface));
-}
-
-.bg-surface {
-  background-color: rgb(var(--color-surface));
-}
-
-.border-theme {
-  border-color: rgb(var(--color-border));
-}
-
-.border-theme-light {
-  border-color: rgb(var(--color-border-light));
-}
-
-.text-theme {
+/* Typography hierarchy - using only HTML semantics */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-mono);
+  font-weight: bold;
   color: rgb(var(--color-text));
 }
 
-.text-theme-dim {
-  color: rgb(var(--color-text-dim));
+h1 {
+  font-size: 1.5rem;
 }
 
-.text-theme-muted {
-  color: rgb(var(--color-text-muted));
+h2 {
+  font-size: 1.25rem;
 }
 
-.text-accent {
+h3 {
+  font-size: 1.125rem;
+}
+
+h4, h5, h6 {
+  font-size: 1rem;
+}
+
+p, div, span, td, th, li {
+  font-family: var(--font-mono);
+  color: rgb(var(--color-text));
+  line-height: var(--line-height);
+}
+
+/* Links - browser default styling */
+a {
   color: rgb(var(--color-accent));
+  text-decoration: underline;
 }
 
-.bg-accent {
-  background-color: rgb(var(--color-accent));
+a:visited {
+  color: rgb(var(--color-accent-visited));
 }
 
-.hover\:bg-accent:hover {
-  background-color: rgb(var(--color-accent-hover));
+a:hover {
+  text-decoration: none;
 }
 
-/* Smooth theme transitions - only apply during manual theme changes */
-.theme-transition * {
-  transition-property: color, background-color, border-color, fill, stroke;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Forms - minimal styling */
+input, textarea, select, button {
+  font-family: var(--font-mono);
+  background: transparent;
+  border: var(--border-width) solid rgb(var(--color-border));
+  color: rgb(var(--color-text));
+  padding: 0.25rem 0.5rem;
 }
 
-/* Custom scrollbar for consistent styling */
+input:focus, textarea:focus, select:focus {
+  outline: var(--border-width) solid rgb(var(--color-accent));
+  outline-offset: -1px;
+}
+
+button {
+  cursor: pointer;
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-bg));
+}
+
+button:hover {
+  background: rgb(var(--color-accent-visited));
+}
+
+/* Tables - simple grid lines */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+}
+
+th, td {
+  border: var(--border-width) solid rgb(var(--color-border));
+  padding: 0.5rem;
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+  background: rgb(var(--color-border) / 0.2);
+}
+
+/* Lists - minimal indentation */
+ul, ol {
+  padding-left: 2rem;
+}
+
+li {
+  margin: 0.25rem 0;
+}
+
+/* =============================================================================
+   LAYOUT SYSTEM - NO CHROME, CONTENT-FIRST
+   ============================================================================= */
+
+/* Remove all fancy backgrounds and surfaces */
+/*.brutalist-reset {*/
+/*  background: transparent !important;*/
+/*  border: none !important;*/
+/*  border-radius: 0 !important;*/
+/*  box-shadow: none !important;*/
+/*  backdrop-filter: none !important;*/
+/*}*/
+
+/* =============================================================================
+   BRUTALIST UTILITY CLASSES - MINIMAL SET
+   ============================================================================= */
+
+/* Essential overrides for special elements */
+.preserve-stars-bg {
+  /* Allow star background to show through */
+  background: transparent !important;
+}
+
+.nav-link {
+  color: rgb(var(--color-text-dim));
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding: 0.25rem 0;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: rgb(var(--color-accent));
+  border-bottom-color: rgb(var(--color-accent));
+  text-decoration: none;
+}
+
+/* Data grid - minimal styling */
+.data-grid {
+  border: var(--border-width) solid rgb(var(--color-border));
+  background: transparent;
+}
+
+/* Loading spinner - simple ASCII */
+.loading::after {
+  content: "|/-\\";
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    content: "|";
+  }
+  25% {
+    content: "/";
+  }
+  50% {
+    content: "-";
+  }
+  75% {
+    content: "\\";
+  }
+}
+
+/* Status indicators - high contrast, monospace */
+.brutalist-status-draft {
+  background: transparent;
+  color: rgb(var(--color-text-muted));
+  border: var(--border-width) solid rgb(var(--color-text-muted));
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+}
+
+.brutalist-status-open {
+  background: transparent;
+  color: rgb(var(--color-accent));
+  border: var(--border-width) solid rgb(var(--color-accent));
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+}
+
+.brutalist-status-closed {
+  background: transparent;
+  color: rgb(var(--color-text));
+  border: var(--border-width) solid rgb(var(--color-text));
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+}
+
+.brutalist-status-awarded {
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-bg));
+  border: var(--border-width) solid rgb(var(--color-accent));
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+}
+
+/* =============================================================================
+   ESSENTIAL OVERRIDES - PRESERVE STAR BACKGROUND ONLY
+   ============================================================================= */
+
+/* Minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -137,236 +289,13 @@ html {
 
 ::-webkit-scrollbar-thumb {
   background-color: rgb(var(--color-border));
-  border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(var(--color-text-muted));
-}
-
-/* Focus ring styling */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2;
-}
-
-.focus-ring-inset {
-  @apply focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500/50;
-}
-
-/* Animation classes */
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.2s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Grok-style input focus effects */
-.input-grok {
-  @apply transition-all duration-200 ease-out;
-}
-
-.input-grok:focus {
-  @apply ring-2 ring-blue-500/50;
-  box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.5),
-    0 0 20px rgba(59, 130, 246, 0.2),
-    0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.chat-input:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.input-frame:focus-within {
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.07);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-/* Darker, crisper placeholder */
-::placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-:root :where(textarea)::placeholder {
-  color: rgba(31, 41, 55, 0.55);
-}
-
-.dark :where(textarea)::placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-/* Button hover effects */
-.btn-grok {
-  @apply transition-all duration-200 ease-out;
-}
-
-.btn-grok:hover {
-  @apply scale-105;
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.btn-grok:active {
-  @apply scale-95;
-}
-
-/* Glass morphism effect for cards */
-.glass-effect {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dark .glass-effect {
-  background: rgba(22, 22, 24, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Aurora animated background */
-.aurora-bg {
-  position: relative;
-  background-color: rgb(var(--color-bg));
-}
-
-.aurora-bg::before,
-.aurora-bg::after {
-  content: "";
-  position: fixed;
-  inset: -30% -20% -20% -30%;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(140px);
-  will-change: transform, background-position;
-}
-
-/* Primary aurora ribbons with vertical wave motion */
-.aurora-bg::before {
-  mix-blend-mode: screen;
-  background-blend-mode: screen;
-  opacity: 0.5;
-  background:
-    radial-gradient(25% 30% at 20% 15%, rgba(59, 130, 246, 0.45), transparent 60%),
-    radial-gradient(24% 28% at 78% 18%, rgba(139, 92, 246, 0.40), transparent 60%),
-    radial-gradient(28% 26% at 62% 82%, rgba(236, 72, 153, 0.28), transparent 60%),
-    radial-gradient(22% 24% at 14% 85%, rgba(16, 185, 129, 0.22), transparent 60%),
-    linear-gradient(180deg,
-      rgba(59, 130, 246, 0.20) 0%,
-      rgba(139, 92, 246, 0.18) 30%,
-      rgba(236, 72, 153, 0.15) 55%,
-      rgba(16, 185, 129, 0.15) 75%,
-      rgba(59, 130, 246, 0.18) 100%);
-  background-size: 110% 240%, 110% 240%, 110% 240%, 110% 240%, 100% 200%;
-  background-position: 50% 0%, 60% 8%, 55% 92%, 12% 85%, 50% 0%;
-  background-repeat: no-repeat;
-  animation: auroraWaveY 32s ease-in-out infinite alternate;
-}
-
-/* Secondary layer with slower counter-motion for depth */
-.aurora-bg::after {
-  mix-blend-mode: screen;
-  background-blend-mode: screen;
-  opacity: 0.4;
-  background:
-    radial-gradient(24% 26% at 28% 12%, rgba(99, 102, 241, 0.28), transparent 60%),
-    radial-gradient(26% 28% at 82% 22%, rgba(59, 130, 246, 0.28), transparent 60%),
-    radial-gradient(24% 24% at 68% 78%, rgba(16, 185, 129, 0.20), transparent 60%);
-  background-size: 110% 240%, 110% 240%, 110% 240%;
-  background-position: 25% 12%, 78% 0%, 60% 92%;
-  background-repeat: no-repeat;
-  animation: auroraWaveYReverse 40s ease-in-out infinite alternate;
-}
-
-.dark .aurora-bg::before,
-.dark .aurora-bg::after {
-  mix-blend-mode: normal;
-  opacity: 0.45;
-}
-
-@keyframes auroraWaveY {
-  0% {
-    transform: translate3d(0, -4%, 0) scale(1.02);
-    background-position: 50% 0%, 60% 6%, 55% 90%, 12% 82%, 50% 0%;
-  }
-
-  50% {
-    transform: translate3d(0, 4%, 0) scale(1.00);
-    background-position: 50% 18%, 60% 20%, 55% 70%, 12% 68%, 50% 30%;
-  }
-
-  100% {
-    transform: translate3d(0, -2%, 0) scale(1.01);
-    background-position: 50% 6%, 60% 10%, 55% 84%, 12% 78%, 50% 60%;
-  }
-}
-
-@keyframes auroraWaveYReverse {
-  0% {
-    transform: translate3d(0, 3%, 0) scale(1.01);
-  }
-
-  50% {
-    transform: translate3d(0, -4%, 0) scale(1.00);
-  }
-
-  100% {
-    transform: translate3d(0, 2%, 0) scale(1.01);
-  }
-}
-
-/* Dark mode: reduce blend intensity to avoid artifacts */
-.dark .aurora-bg::before,
-.dark .aurora-bg::after {
-  mix-blend-mode: normal;
-  opacity: 0.35;
-}
-
-/* Ensure content sits above aurora layers */
+/* Content layering - preserve stars background */
 .app-content-layer {
   position: relative;
   z-index: 1;
+  background: transparent;
 }
 
 /* Starfield background */
