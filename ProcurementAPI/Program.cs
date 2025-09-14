@@ -81,6 +81,7 @@ builder.Services.AddDbContext<ProcurementDbContext>(options =>
 builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<ISupplierVectorService, SupplierVectorService>();
+builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
@@ -102,7 +103,7 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .WithExposedHeaders("Content-Type"); // Required for Server-Sent Events
+            .WithExposedHeaders("Content-Type", "X-Chat-Session-Id"); // Required for Server-Sent Events and session management
     });
 });
 

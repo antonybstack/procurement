@@ -22,6 +22,9 @@ export class SearchService {
     private http = inject(HttpClient);
     private baseUrl = '/api';
 
+    // Session management
+    private _currentSessionId = signal<string | null>(null);
+
     // Signals for reactive state management
     private _chatState = signal<ChatState>({
         messages: [],
@@ -46,6 +49,7 @@ export class SearchService {
     readonly searchState = this._searchState.asReadonly();
     readonly documents = this._documents.asReadonly();
     readonly isLoadingDocuments = this._isLoadingDocuments.asReadonly();
+    readonly currentSessionId = this._currentSessionId.asReadonly();
 
     // Computed signals
     readonly hasMessages = computed(() => this._chatState().messages.length > 0);
@@ -177,7 +181,7 @@ export class SearchService {
     }
 
     /**
-     * Clear chat messages
+     * Clear chat messages and reset session
      */
     clearChat(): void {
         this._chatState.update(state => ({
@@ -185,6 +189,7 @@ export class SearchService {
             messages: [],
             error: undefined
         }));
+        this._currentSessionId.set(null);
     }
 
     /**
@@ -216,19 +221,41 @@ export class SearchService {
         return new Observable(observer => {
             const controller = new AbortController();
 
+            // Prepare headers including session management
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+                'Accept': 'text/event-stream',
+                'Cache-Control': 'no-cache'
+            };
+
+            // Add session headers - only if we already have messages in this session
+            const currentSessionId = this._currentSessionId();
+            const hasMessages = this._chatState().messages.length > 0;
+            if (currentSessionId && hasMessages) {
+                headers['X-Chat-Session-Id'] = currentSessionId;
+            }
+
+            // Add user ID header (you can customize this logic)
+            const userId = this.getCurrentUserId();
+            if (userId) {
+                headers['X-User-Id'] = userId;
+            }
+
             fetch(`${this.baseUrl}/Chat/completions/stream`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'text/event-stream',
-                    'Cache-Control': 'no-cache'
-                },
+                headers,
                 body: JSON.stringify(request),
                 signal: controller.signal
             })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    // Handle session ID from response headers
+                    const responseSessionId = response.headers.get('X-Chat-Session-Id');
+                    if (responseSessionId) {
+                        this.setSessionId(responseSessionId);
                     }
 
                     if (!response.body) {
@@ -380,5 +407,33 @@ export class SearchService {
             // Let the app keep running by returning an empty result
             return EMPTY;
         };
+    }
+
+    // Session management helper methods
+
+    private setSessionId(sessionId: string): void {
+        this._currentSessionId.set(sessionId);
+    }
+
+    private getCurrentUserId(): string | null {
+        // For now, return a default user ID
+        // In a real application, this would come from authentication service
+        return 'frontend-user';
+    }
+
+    // Public session methods
+
+    /**
+     * Get the current session ID
+     */
+    getSessionId(): string | null {
+        return this._currentSessionId();
+    }
+
+    /**
+     * Force set a session ID (useful for testing or session restoration)
+     */
+    setCurrentSessionId(sessionId: string | null): void {
+        this._currentSessionId.set(sessionId);
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProcurementAPI.Models;
+using ProcurementAPI.Models.Chat;
 
 namespace ProcurementAPI.Data;
 
@@ -21,6 +22,7 @@ public class ProcurementDbContext : DbContext
     public DbSet<SupplierCapability> SupplierCapabilities { get; set; }
     public DbSet<ItemSpecification> ItemSpecifications { get; set; }
     public DbSet<SupplierPerformance> SupplierPerformance { get; set; }
+    public DbSet<ChatSession> ChatSessions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -196,5 +198,14 @@ public class ProcurementDbContext : DbContext
         modelBuilder.Entity<ItemSpecification>()
             .HasIndex(ispec => new { ispec.ItemId, ispec.SpecName, ispec.SpecValue })
             .IsUnique();
+
+        // Configure ChatSession entity
+        modelBuilder.Entity<ChatSession>()
+            .Property(cs => cs.UpdatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<ChatSession>()
+            .Property(cs => cs.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using ProcurementAPI.DTOs;
 using ProcurementAPI.Models;
+using ProcurementAPI.Models.Chat;
 using ProcurementAPI.Services;
 using ProcurementAPI.Services.DataServices;
+using ChatMessage = ProcurementAPI.Models.Chat.ChatMessage;
 
 namespace ChatApp.Controllers;
 
@@ -15,6 +17,7 @@ namespace ChatApp.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly IChatClient _chatClient;
+    private readonly IChatSessionService _chatSessionService;
     private readonly ILogger<ChatController> _logger;
     private readonly ISupplierDataService _supplierDataService;
     private readonly ISupplierService _supplierService;
@@ -25,67 +28,19 @@ public class ChatController : ControllerBase
         ISupplierService supplierService,
         ISupplierDataService supplierDataService,
         ISupplierVectorService supplierVectorService,
+        IChatSessionService chatSessionService,
         ILogger<ChatController> logger)
     {
         _chatClient = chatClient;
         _supplierService = supplierService;
         _supplierDataService = supplierDataService;
         _supplierVectorService = supplierVectorService;
+        _chatSessionService = chatSessionService;
         _logger = logger;
     }
 
     /// <summary>
-    ///     Creates a non-streaming chat completion
-    /// </summary>
-    [HttpPost("completions")]
-    public async Task<IActionResult> CreateCompletion([FromBody] PublicChatRequest request)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        try
-        {
-            // Build messages with system prompt and user message
-            var messages = new List<ChatMessage>
-            {
-                new(ChatRole.System, GetSystemPrompt()),
-                new(ChatRole.User, request.Message)
-            };
-
-            var chatOptions = new ChatOptions
-            {
-                Tools =
-                [
-                    AIFunctionFactory.Create(GetSupplierInfoAsync),
-                    AIFunctionFactory.Create(SearchSuppliersVectorAsync),
-                    AIFunctionFactory.Create(SearchSuppliersKeywordAsync)
-                ],
-                AllowMultipleToolCalls = true
-            };
-
-            // For non-streaming, we'll collect the streaming response
-            var responseBuilder = new StringBuilder();
-            await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions))
-            {
-                responseBuilder.Append(update.Text);
-            }
-
-            return Ok(new PublicChatResponse(
-                Guid.NewGuid().ToString(),
-                responseBuilder.ToString(),
-                DateTime.UtcNow));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating chat completion");
-            return StatusCode(500, new { error = "Internal server error", details = ex.Message });
-        }
-    }
-
-    /// <summary>
-    ///     Creates a streaming chat completion using Server-Sent Events
+    ///     Creates a streaming chat completion using Server-Sent Events with session persistence
     /// </summary>
     [HttpPost("completions/stream")]
     public async Task<IActionResult> CreateStreamingCompletion([FromBody] PublicChatRequest request)
@@ -101,14 +56,51 @@ public class ChatController : ControllerBase
         Response.Headers["Connection"] = "keep-alive";
         Response.Headers["Access-Control-Allow-Origin"] = "*";
 
+        ChatSession? session = null;
+        var assistantResponse = new StringBuilder();
+
         try
         {
-            // Build messages with system prompt and user message
-            var messages = new List<ChatMessage>
+            // Get session ID from headers
+            var sessionIdHeader = Request.Headers["X-Chat-Session-Id"].FirstOrDefault();
+            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
+
+            // Load or create session
+            if (!string.IsNullOrEmpty(sessionIdHeader) && Guid.TryParse(sessionIdHeader, out var sessionId))
             {
-                new(ChatRole.System, GetSystemPrompt()),
-                new(ChatRole.User, request.Message)
-            };
+                session = await _chatSessionService.GetSessionAsync(sessionId, HttpContext.RequestAborted);
+            }
+
+            if (session == null)
+            {
+                // Create new session if none provided
+                session = await _chatSessionService.CreateSessionAsync(userIdHeader, cancellationToken: HttpContext.RequestAborted);
+            }
+
+            // Set session ID in response headers
+            Response.Headers["X-Chat-Session-Id"] = session.Id.ToString();
+            Response.Headers["Access-Control-Expose-Headers"] = "X-Chat-Session-Id";
+
+            // Build message list from session history + system prompt + new user message
+            var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
+
+            // Always start with system prompt
+            messages.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, GetSystemPrompt()));
+
+            // Add existing conversation history (skip system messages from history)
+            foreach (var historyMessage in session.MessageList.Where(m => m.Role != "system"))
+            {
+                var role = historyMessage.Role.ToLowerInvariant() switch
+                {
+                    "user" => ChatRole.User,
+                    "assistant" => ChatRole.Assistant,
+                    _ => ChatRole.User
+                };
+                messages.Add(new Microsoft.Extensions.AI.ChatMessage(role, historyMessage.Content));
+            }
+
+            // Add new user message
+            messages.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, request.Message));
 
             var chatOptions = new ChatOptions
             {
@@ -128,6 +120,12 @@ public class ChatController : ControllerBase
                     content = update.Text ?? "",
                     createdAt = DateTime.UtcNow
                 };
+
+                // Accumulate assistant response
+                if (!string.IsNullOrEmpty(update.Text))
+                {
+                    assistantResponse.Append(update.Text);
+                }
 
                 var json = JsonSerializer.Serialize(streamChunk, new JsonSerializerOptions
                 {
@@ -155,6 +153,31 @@ public class ChatController : ControllerBase
         }
         finally
         {
+            // Save conversation to session
+            if (session != null && !HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                try
+                {
+                    List<ChatMessage> updatedMessages = session.MessageList.ToList();
+
+                    // Add user message
+                    updatedMessages.Add(new ChatMessage("user", request.Message));
+
+                    // Add assistant response if we have content
+                    var assistantContent = assistantResponse.ToString().Trim();
+                    if (!string.IsNullOrEmpty(assistantContent))
+                    {
+                        updatedMessages.Add(new ChatMessage("assistant", assistantContent));
+                    }
+
+                    await _chatSessionService.UpdateSessionAsync(session.Id, updatedMessages, cancellationToken: HttpContext.RequestAborted);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error saving conversation to session {SessionId}", session.Id);
+                }
+            }
+
             // Signal completion
             await Response.WriteAsync("data: [DONE]\n\n");
             await Response.Body.FlushAsync();
@@ -462,5 +485,79 @@ public class ChatController : ControllerBase
             - If making 5 tool calls, provide 5+ separate analysis updates
             - Always include a 'Done' line before starting your response section
             - Stream each analysis step immediately, don't batch them";
+    }
+
+    // Session Management Endpoints
+
+    /// <summary>
+    ///     Creates a new chat session
+    /// </summary>
+    [HttpPost("sessions")]
+    public async Task<ActionResult<ChatSessionDto>> CreateSession([FromBody] CreateChatSessionRequest request)
+    {
+        var session = await _chatSessionService.CreateSessionAsync(request.UserId, request.Title, HttpContext.RequestAborted);
+        return Ok(ChatSessionDto.FromEntity(session));
+    }
+
+    /// <summary>
+    ///     Gets a specific chat session by ID
+    /// </summary>
+    [HttpGet("sessions/{sessionId:guid}")]
+    public async Task<ActionResult<ChatSessionDto>> GetSession(Guid sessionId)
+    {
+        var session = await _chatSessionService.GetSessionAsync(sessionId, HttpContext.RequestAborted);
+        if (session == null)
+        {
+            return NotFound($"Session {sessionId} not found");
+        }
+
+        return Ok(ChatSessionDto.FromEntity(session));
+    }
+
+    /// <summary>
+    ///     Gets all chat sessions for a user
+    /// </summary>
+    [HttpGet("sessions")]
+    public async Task<ActionResult<List<ChatSessionSummaryDto>>> GetUserSessions([FromQuery] string? userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return BadRequest("UserId is required");
+        }
+
+        List<ChatSession> sessions = await _chatSessionService.GetUserSessionsAsync(userId, HttpContext.RequestAborted);
+        List<ChatSessionSummaryDto> summaries = sessions.Select(ChatSessionSummaryDto.FromEntity).ToList();
+
+        return Ok(summaries);
+    }
+
+    /// <summary>
+    ///     Updates the title of a chat session
+    /// </summary>
+    [HttpPatch("sessions/{sessionId:guid}/title")]
+    public async Task<ActionResult<ChatSessionDto>> UpdateSessionTitle(Guid sessionId, [FromBody] UpdateChatSessionTitleRequest request)
+    {
+        var session = await _chatSessionService.UpdateSessionTitleAsync(sessionId, request.Title, HttpContext.RequestAborted);
+        if (session == null)
+        {
+            return NotFound($"Session {sessionId} not found");
+        }
+
+        return Ok(ChatSessionDto.FromEntity(session));
+    }
+
+    /// <summary>
+    ///     Deletes a chat session
+    /// </summary>
+    [HttpDelete("sessions/{sessionId:guid}")]
+    public async Task<IActionResult> DeleteSession(Guid sessionId)
+    {
+        var deleted = await _chatSessionService.DeleteSessionAsync(sessionId, HttpContext.RequestAborted);
+        if (!deleted)
+        {
+            return NotFound($"Session {sessionId} not found");
+        }
+
+        return NoContent();
     }
 }
