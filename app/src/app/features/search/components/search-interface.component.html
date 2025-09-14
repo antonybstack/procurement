@@ -13,7 +13,6 @@
         flex: 1;
         text-align: center;
         gap: calc(var(--space-unit) * 2);
-        max-width: 50rem;
         margin: 0 auto;
         width: 100%;
       ">
@@ -74,9 +73,6 @@
           margin-bottom: calc(var(--space-unit) * 1.5);
           border: var(--border-width) solid rgb(var(--color-text-muted));
           padding: calc(var(--space-unit) * 1.5) var(--space-unit);
-          max-width: 50rem;
-          margin-left: auto;
-          margin-right: auto;
         ">
         @for (message of messages(); track message.id) {
           <div style="margin-bottom: var(--space-unit); display: flex;"
@@ -168,7 +164,7 @@
     padding: calc(var(--space-unit) * 1.25) var(--space-unit);
     border-top: var(--border-width) solid rgb(var(--color-text-muted));
   ">
-    <div style="max-width: 50rem; margin: 0 auto;">
+    <div style="margin: 0 auto;">
       <form (ngSubmit)="sendMessage()" style="display: flex; gap: var(--space-unit);">
         <textarea
           #messageInput
