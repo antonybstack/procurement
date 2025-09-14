@@ -40,7 +40,10 @@ public class ChatController : ControllerBase
     [HttpPost("completions")]
     public async Task<IActionResult> CreateCompletion([FromBody] PublicChatRequest request)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         try
         {
@@ -64,7 +67,10 @@ public class ChatController : ControllerBase
 
             // For non-streaming, we'll collect the streaming response
             var responseBuilder = new StringBuilder();
-            await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions)) responseBuilder.Append(update.Text);
+            await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions))
+            {
+                responseBuilder.Append(update.Text);
+            }
 
             return Ok(new PublicChatResponse(
                 Guid.NewGuid().ToString(),
@@ -84,7 +90,10 @@ public class ChatController : ControllerBase
     [HttpPost("completions/stream")]
     public async Task<IActionResult> CreateStreamingCompletion([FromBody] PublicChatRequest request)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         // Set up Server-Sent Events headers
         Response.Headers["Content-Type"] = "text/event-stream";
@@ -129,7 +138,9 @@ public class ChatController : ControllerBase
                 await Response.Body.FlushAsync();
 
                 if (HttpContext.RequestAborted.IsCancellationRequested)
+                {
                     break;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -171,7 +182,10 @@ public class ChatController : ControllerBase
                 null,
                 true);
 
-            if (searchResults.Data == null || searchResults.Data.Count == 0) return $"No suppliers found matching '{supplierNameOrCode}'.";
+            if (searchResults.Data == null || searchResults.Data.Count == 0)
+            {
+                return $"No suppliers found matching '{supplierNameOrCode}'.";
+            }
 
             // Get the first match (keeping it simple as requested)
             var firstMatch = searchResults.Data.First();
@@ -179,7 +193,10 @@ public class ChatController : ControllerBase
             // Get detailed information including capabilities
             var detailedInfo = await _supplierDataService.GetSupplierByIdAsync(firstMatch.SupplierId);
 
-            if (detailedInfo == null) return $"Supplier '{supplierNameOrCode}' was found but detailed information is not available.";
+            if (detailedInfo == null)
+            {
+                return $"Supplier '{supplierNameOrCode}' was found but detailed information is not available.";
+            }
 
             // Format the response with comprehensive supplier information
             var response = new StringBuilder();
@@ -187,37 +204,65 @@ public class ChatController : ControllerBase
             response.AppendLine($"- Supplier Code: {detailedInfo.SupplierCode}");
 
             if (!string.IsNullOrEmpty(detailedInfo.ContactName))
+            {
                 response.AppendLine($"- Contact: {detailedInfo.ContactName}");
+            }
 
             if (!string.IsNullOrEmpty(detailedInfo.Email))
+            {
                 response.AppendLine($"- Email: {detailedInfo.Email}");
+            }
 
             if (!string.IsNullOrEmpty(detailedInfo.Phone))
+            {
                 response.AppendLine($"- Phone: {detailedInfo.Phone}");
+            }
 
             // Location information
             var location = new List<string>();
-            if (!string.IsNullOrEmpty(detailedInfo.City)) location.Add(detailedInfo.City);
-            if (!string.IsNullOrEmpty(detailedInfo.State)) location.Add(detailedInfo.State);
-            if (!string.IsNullOrEmpty(detailedInfo.Country)) location.Add(detailedInfo.Country);
+            if (!string.IsNullOrEmpty(detailedInfo.City))
+            {
+                location.Add(detailedInfo.City);
+            }
+
+            if (!string.IsNullOrEmpty(detailedInfo.State))
+            {
+                location.Add(detailedInfo.State);
+            }
+
+            if (!string.IsNullOrEmpty(detailedInfo.Country))
+            {
+                location.Add(detailedInfo.Country);
+            }
 
             if (location.Count > 0)
+            {
                 response.AppendLine($"- Location: {string.Join(", ", location)}");
+            }
 
             if (detailedInfo.Rating.HasValue)
+            {
                 response.AppendLine($"- Rating: {detailedInfo.Rating}/5");
+            }
 
             if (!string.IsNullOrEmpty(detailedInfo.PaymentTerms))
+            {
                 response.AppendLine($"- Payment Terms: {detailedInfo.PaymentTerms}");
+            }
 
             if (detailedInfo.CreditLimit.HasValue)
+            {
                 response.AppendLine($"- Credit Limit: ${detailedInfo.CreditLimit:N2}");
+            }
 
             // Capabilities
             if (detailedInfo.Capabilities != null && detailedInfo.Capabilities.Count > 0)
             {
                 response.AppendLine("\n**Capabilities:**");
-                foreach (var capability in detailedInfo.Capabilities) response.AppendLine($"- {capability.CapabilityType}: {capability.CapabilityValue}");
+                foreach (var capability in detailedInfo.Capabilities)
+                {
+                    response.AppendLine($"- {capability.CapabilityType}: {capability.CapabilityValue}");
+                }
             }
 
             // Performance data (if available)
@@ -228,7 +273,9 @@ public class ChatController : ControllerBase
                 response.AppendLine($"- Awarded Quotes: {detailedInfo.Performance.AwardedQuotes}");
 
                 if (detailedInfo.Performance.AvgQuotePrice.HasValue)
+                {
                     response.AppendLine($"- Average Quote Price: ${detailedInfo.Performance.AvgQuotePrice:N2}");
+                }
 
                 response.AppendLine($"- Total Purchase Orders: {detailedInfo.Performance.TotalPurchaseOrders}");
             }
@@ -262,7 +309,10 @@ public class ChatController : ControllerBase
             IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByVectorAsync(searchQuery, limit, CancellationToken.None);
             List<Supplier> suppliers = await results.ToListAsync();
 
-            if (!suppliers.Any()) return $"No suppliers found using vector search for query: '{searchQuery}'";
+            if (!suppliers.Any())
+            {
+                return $"No suppliers found using vector search for query: '{searchQuery}'";
+            }
 
             var response = new StringBuilder();
             response.AppendLine($"**Vector Search Results for '{searchQuery}'** ({suppliers.Count} suppliers found):\n");
@@ -271,13 +321,25 @@ public class ChatController : ControllerBase
             {
                 response.AppendLine($"**{supplier.CompanyName}** ({supplier.SupplierCode})");
                 if (!string.IsNullOrEmpty(supplier.ContactName))
+                {
                     response.AppendLine($"  - Contact: {supplier.ContactName}");
+                }
+
                 if (!string.IsNullOrEmpty(supplier.Email))
+                {
                     response.AppendLine($"  - Email: {supplier.Email}");
+                }
+
                 if (!string.IsNullOrEmpty(supplier.City) || !string.IsNullOrEmpty(supplier.State))
+                {
                     response.AppendLine($"  - Location: {supplier.City}, {supplier.State}");
+                }
+
                 if (supplier.Rating.HasValue)
+                {
                     response.AppendLine($"  - Rating: {supplier.Rating}/5");
+                }
+
                 response.AppendLine($"  - Status: {(supplier.IsActive ? "Active" : "Inactive")}");
                 response.AppendLine();
             }
@@ -309,7 +371,10 @@ public class ChatController : ControllerBase
             IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByKeywordAsync(keyword, limit, CancellationToken.None);
             List<Supplier> suppliers = await results.ToListAsync();
 
-            if (!suppliers.Any()) return $"No suppliers found using keyword search for: '{keyword}'";
+            if (!suppliers.Any())
+            {
+                return $"No suppliers found using keyword search for: '{keyword}'";
+            }
 
             var response = new StringBuilder();
             response.AppendLine($"**Keyword Search Results for '{keyword}'** ({suppliers.Count} suppliers found):\n");
@@ -318,13 +383,25 @@ public class ChatController : ControllerBase
             {
                 response.AppendLine($"**{supplier.CompanyName}** ({supplier.SupplierCode})");
                 if (!string.IsNullOrEmpty(supplier.ContactName))
+                {
                     response.AppendLine($"  - Contact: {supplier.ContactName}");
+                }
+
                 if (!string.IsNullOrEmpty(supplier.Email))
+                {
                     response.AppendLine($"  - Email: {supplier.Email}");
+                }
+
                 if (!string.IsNullOrEmpty(supplier.City) || !string.IsNullOrEmpty(supplier.State))
+                {
                     response.AppendLine($"  - Location: {supplier.City}, {supplier.State}");
+                }
+
                 if (supplier.Rating.HasValue)
+                {
                     response.AppendLine($"  - Rating: {supplier.Rating}/5");
+                }
+
                 response.AppendLine($"  - Status: {(supplier.IsActive ? "Active" : "Inactive")}");
                 response.AppendLine();
             }
@@ -376,6 +453,14 @@ public class ChatController : ControllerBase
             Example: If asked ""Find suppliers who manufacture electronics"", first use vector search, then automatically get detailed information for each result using the supplier information tool to provide comprehensive profiles including capabilities, performance data, and contact details.
 
             Choose the most appropriate search method based on the user's query type and intent, but always consider using multiple tools to enrich your response with nested data and additional context.
-            You are limited to 6 tool calls per user request, so use them wisely to maximize the value of your responses.";
+            You are limited to 6 tool calls per user request, so use them wisely to maximize the value of your responses.
+
+            CRITICAL: Provide analysis steps in REAL-TIME as continuous feedback:
+            - Each analysis step should start with '→ ' and be on its own line
+            - Before each tool call, announce a high-level what you're about to do, without giving details on the internal tool parameters
+            - After each tool call, announce progress or what you'll do next
+            - If making 5 tool calls, provide 5+ separate analysis updates
+            - Always include a 'Done' line before starting your response section
+            - Stream each analysis step immediately, don't batch them";
     }
 }
