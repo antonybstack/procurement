@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Mail;
 using ProcurementAPI.DTOs;
 using ProcurementAPI.Models;
 using ProcurementAPI.Services.DataServices;
@@ -7,8 +8,8 @@ namespace ProcurementAPI.Services;
 
 public class SupplierService : ISupplierService
 {
-    private readonly ISupplierDataService _supplierDataService;
     private readonly ILogger<SupplierService> _logger;
+    private readonly ISupplierDataService _supplierDataService;
 
     public SupplierService(ISupplierDataService supplierDataService, ILogger<SupplierService> logger)
     {
@@ -44,12 +45,10 @@ public class SupplierService : ISupplierService
             pageSize = Math.Max(1, Math.Min(100, pageSize)); // Cap at 100 to prevent abuse
 
             if (pageSize > 100)
-            {
                 _logger.LogWarning("Validation error - PageSize: {PageSize}, Message: Page size exceeds maximum limit of 100, CorrelationId: {CorrelationId}",
                     pageSize, correlationId);
-            }
 
-            var result = await _supplierDataService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
+            PaginatedResult<SupplierDto> result = await _supplierDataService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
 
             stopwatch.Stop();
             _logger.LogInformation("Performance metric - Service get suppliers completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, TotalCount: {TotalCount}, Page: {Page}, PageSize: {PageSize}, TotalPages: {TotalPages}",
@@ -63,7 +62,8 @@ public class SupplierService : ISupplierService
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogError(ex, "Service get suppliers failed - CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}, DurationMs: {DurationMs}",
+            _logger.LogError(ex,
+                "Service get suppliers failed - CorrelationId: {CorrelationId}, Page: {Page}, PageSize: {PageSize}, Search: {Search}, Country: {Country}, MinRating: {MinRating}, IsActive: {IsActive}, DurationMs: {DurationMs}",
                 correlationId, page, pageSize, search, country, minRating, isActive, stopwatch.ElapsedMilliseconds);
             throw;
         }
@@ -91,15 +91,11 @@ public class SupplierService : ISupplierService
                 stopwatch.ElapsedMilliseconds, correlationId, id, result != null);
 
             if (result != null)
-            {
                 _logger.LogInformation("Service get supplier by ID completed - SupplierId: {SupplierId}, SupplierCode: {SupplierCode}, CompanyName: {CompanyName}, CorrelationId: {CorrelationId}",
                     id, result.SupplierCode, result.CompanyName, correlationId);
-            }
             else
-            {
                 _logger.LogWarning("Service get supplier by ID not found - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
                     id, correlationId, stopwatch.ElapsedMilliseconds);
-            }
 
             return result;
         }
@@ -195,7 +191,6 @@ public class SupplierService : ISupplierService
     {
         var stopwatch = Stopwatch.StartNew();
         var correlationId = Activity.Current?.Id ?? "unknown";
-
 
 
         try
@@ -306,14 +301,10 @@ public class SupplierService : ISupplierService
                 stopwatch.ElapsedMilliseconds, correlationId, id, result);
 
             if (result)
-            {
                 _logger.LogInformation("Service delete supplier completed - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}", id, correlationId);
-            }
             else
-            {
                 _logger.LogWarning("Service delete supplier not found - SupplierId: {SupplierId}, CorrelationId: {CorrelationId}, DurationMs: {DurationMs}",
                     id, correlationId, stopwatch.ElapsedMilliseconds);
-            }
 
             return result;
         }
@@ -335,7 +326,7 @@ public class SupplierService : ISupplierService
         {
             _logger.LogInformation("Service get countries started - CorrelationId: {CorrelationId}", correlationId);
 
-            var result = await _supplierDataService.GetCountriesAsync();
+            List<string> result = await _supplierDataService.GetCountriesAsync();
 
             stopwatch.Stop();
             _logger.LogInformation("Performance metric - Service get countries completed in {ElapsedMs}ms - CorrelationId: {CorrelationId}, CountryCount: {CountryCount}",
@@ -438,7 +429,7 @@ public class SupplierService : ISupplierService
     {
         try
         {
-            var addr = new System.Net.Mail.MailAddress(email);
+            var addr = new MailAddress(email);
             return addr.Address == email;
         }
         catch

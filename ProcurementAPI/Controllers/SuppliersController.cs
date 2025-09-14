@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ProcurementAPI.DTOs;
+using ProcurementAPI.Models;
 using ProcurementAPI.Services;
 
 namespace ProcurementAPI.Controllers;
@@ -43,7 +44,7 @@ public class SuppliersController : ControllerBase
         activity?.SetTag("isActive", isActive);
         try
         {
-            var result = await _supplierService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
+            PaginatedResult<SupplierDto> result = await _supplierService.GetSuppliersAsync(page, pageSize, search, country, minRating, isActive);
             return Ok(result);
         }
         catch (Exception ex)
@@ -157,7 +158,7 @@ public class SuppliersController : ControllerBase
     {
         try
         {
-            var countries = await _supplierService.GetCountriesAsync();
+            List<string> countries = await _supplierService.GetCountriesAsync();
 
             return Ok(countries);
         }
@@ -211,15 +212,34 @@ public class SuppliersController : ControllerBase
     /// </summary>
     [HttpGet("vectorsearch")]
     public async Task<ActionResult> VectorSearch(
+        CancellationToken ct,
         [FromQuery] string searchValue,
-        [FromQuery] int top,
-        CancellationToken ct)
+        [FromQuery] int top = 1
+    )
     {
         if (string.IsNullOrWhiteSpace(searchValue)) return BadRequest("Search string is required");
 
         ct.ThrowIfCancellationRequested();
 
-        var results = await _supplierVectorService.SearchByVectorAsync(searchValue, top, ct);
+        IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByVectorAsync(searchValue, top, ct);
+        return Ok(results);
+    }
+
+    /// <summary>
+    ///     Vectorize suppliers for semantic search
+    /// </summary>
+    [HttpGet("keywordsearch")]
+    public async Task<ActionResult> KeywordSearch(
+        CancellationToken ct,
+        [FromQuery] string searchValue,
+        [FromQuery] int top = 1
+    )
+    {
+        if (string.IsNullOrWhiteSpace(searchValue)) return BadRequest("Search string is required");
+
+        ct.ThrowIfCancellationRequested();
+
+        IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByKeywordAsync(searchValue, top, ct);
         return Ok(results);
     }
 }

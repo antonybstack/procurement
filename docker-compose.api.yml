@@ -13,10 +13,11 @@ services:
       - OpenAIKey=${OpenAIKey}
       - ModelName=${ModelName}
       - EmbeddingModelName=${EmbeddingModelName}
+      - ElasticsearchUrl=http://es01.procurement.orb.local
     ports:
       - "5001:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
       interval: 2m
       timeout: 15s
       retries: 3

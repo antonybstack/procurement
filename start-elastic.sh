@@ -35,7 +35,7 @@ timeout=90
 counter=0
 while [ $counter -lt $timeout ]; do
     # Check cluster health using docker exec on es01 (master node)
-    if docker exec procurement-es01-1 curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -u "elastic:elastic_password" https://localhost:9200/_cluster/health > /dev/null 2>&1; then
+    if docker exec procurement-es01-1 curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -u "elastic:elastic_password" http://localhost:9200/_cluster/health > /dev/null 2>&1; then
         echo "✅ Elasticsearch cluster is ready!"
         break
     fi

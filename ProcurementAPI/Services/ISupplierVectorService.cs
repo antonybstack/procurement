@@ -1,4 +1,3 @@
-using Microsoft.Extensions.VectorData;
 using ProcurementAPI.Models;
 
 namespace ProcurementAPI.Services;
@@ -14,7 +13,12 @@ public interface ISupplierVectorService
     //     int top,
     //     CancellationToken cancellationToken);
 
-    Task<IAsyncEnumerable<VectorSearchResult<SupplierVector>>> SearchByVectorAsync(
+    Task<IAsyncEnumerable<Supplier>> SearchByVectorAsync(
+        string searchValue,
+        int top,
+        CancellationToken cancellationToken);
+
+    Task<IAsyncEnumerable<Supplier>> SearchByKeywordAsync(
         string searchValue,
         int top,
         CancellationToken cancellationToken);

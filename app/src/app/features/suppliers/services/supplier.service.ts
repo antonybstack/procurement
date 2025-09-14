@@ -58,7 +58,7 @@ export class SupplierService {
     return this.apiService.get<string[]>('suppliers/countries');
   }
 
-  vectorSearch(filters: VectorSearchFilters): Observable<PaginatedResult<SupplierDto>> {
-    return this.apiService.get<PaginatedResult<SupplierDto>>('suppliers/vectorsearch', filters);
+  vectorSearch(filters: VectorSearchFilters): Observable<SupplierDto[]> {
+    return this.apiService.get<SupplierDto[]>('suppliers/vectorsearch', filters);
   }
 }

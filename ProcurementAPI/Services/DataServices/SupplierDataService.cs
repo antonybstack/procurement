@@ -140,7 +140,7 @@ public class SupplierDataService : ISupplierDataService
 
             // 1. Get the core supplier details and capabilities
             var supplier = await _context.Suppliers
-                .AsNoTracking()
+                .AsNoTracking() 
                 .Include(s => s.SupplierCapabilities) // Eagerly load capabilities
                 .Where(s => s.SupplierId == id)
                 .Select(s => new SupplierDetailDto

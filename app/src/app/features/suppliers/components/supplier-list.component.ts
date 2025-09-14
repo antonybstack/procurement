@@ -281,10 +281,10 @@ export class SupplierListComponent implements OnInit {
       };
 
       this.supplierService.vectorSearch(vectorFilters).subscribe({
-        next: (result: PaginatedResult<SupplierDto>) => {
-          const res = (result as any).map((x: { record: any; }) => x.record);
-          this.suppliers.set(res);
-          this.totalCount.set(res.length);
+        next: (result: SupplierDto[]) => {
+          // const res = (result as any).map((x: { record: any; }) => x.record);
+          this.suppliers.set(result);
+          this.totalCount.set(result.length);
           this.currentPage.set(1);
           this.loading.set(false);
         },

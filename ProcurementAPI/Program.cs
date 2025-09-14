@@ -1,10 +1,10 @@
 using System.ClientModel;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.PgVector;
 using OpenAI;
 using ProcurementAPI.Data;
 using ProcurementAPI.HealthChecks;
@@ -12,15 +12,15 @@ using ProcurementAPI.Models;
 using ProcurementAPI.Services;
 using ProcurementAPI.Services.DataServices;
 using ProcurementAPI.Services.Ingestion;
+using Scalar.AspNetCore;
 using Sparkify.Observability;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true)
+builder.Configuration.AddUserSecrets<Program>(true, true)
     .AddEnvironmentVariables()
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
     .AddCommandLine(args);
 
 /*
@@ -30,11 +30,11 @@ Alternatives:
 - https://openrouter.ai/openai/gpt-4o-mini
 - https://openrouter.ai/google/gemini-2.0-flash-exp:free
 */
-string chatModel = "openai/gpt-5-nano" ?? builder.Configuration.GetRequiredSection("ModelName").Value!;
+var chatModel = "openai/gpt-5-nano" ?? builder.Configuration.GetRequiredSection("ModelName").Value!;
 chatModel = "gpt-5-nano";
 //string openRouterKey = builder.Configuration.GetRequiredSection("OpenRouterKey").Value!;
-string openAIKey = builder.Configuration.GetRequiredSection("OpenAIKey").Value!;
-string embeddingModelName = builder.Configuration.GetRequiredSection("EmbeddingModelName").Value!;
+var openAIKey = builder.Configuration.GetRequiredSection("OpenAIKey").Value!;
+var embeddingModelName = builder.Configuration.GetRequiredSection("EmbeddingModelName").Value!;
 
 // Register OpenTelemetry and Serilog
 builder.RegisterOpenTelemetry()
@@ -44,22 +44,24 @@ builder.RegisterOpenTelemetry()
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.MaxDepth = 64;
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen(options =>
+// {
+//     options.SwaggerDoc("v1", new OpenApiInfo
+//     {
+//         Title = "Procurement API",
+//         Version = "v1",
+//         Description = "AI-powered Procurement API"
+//     });
+// });
+// builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "Procurement API",
-        Version = "v1",
-        Description = "AI-powered Procurement API"
-    });
-});
-
+builder.Services.AddOpenApiDocument();
 // Add HttpClient for health checks
 builder.Services.AddHttpClient();
 
@@ -82,8 +84,8 @@ builder.Services.AddScoped<ISupplierVectorService, SupplierVectorService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "ready" })
-    .AddCheck<SwaggerHealthCheck>("swagger", tags: new[] { "ready" })
+    // .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "ready" })
+    // .AddCheck<SwaggerHealthCheck>("swagger", tags: new[] { "ready" })
     .AddCheck<ApiEndpointsHealthCheck>("api_endpoints", tags: new[] { "ready" });
 
 // Determine OTLP endpoint based on environment
@@ -122,18 +124,18 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 //         NetworkTimeout = TimeSpan.FromMinutes(2)
 //     });
 
-OpenAIClient openAiChatClient = new OpenAIClient(
+var openAiChatClient = new OpenAIClient(
     new ApiKeyCredential(openAIKey),
-    new OpenAIClientOptions()
+    new OpenAIClientOptions
     {
         NetworkTimeout = TimeSpan.FromMinutes(2)
     });
 
 
 // Create OpenAI client for embeddings and other models for OpenAI API compatibility
-OpenAIClient openAiEmbeddingClient = new OpenAIClient(
+var openAiEmbeddingClient = new OpenAIClient(
     new ApiKeyCredential(openAIKey),
-    new OpenAIClientOptions()
+    new OpenAIClientOptions
     {
         NetworkTimeout = TimeSpan.FromMinutes(2)
     });
@@ -149,22 +151,45 @@ OpenAIClient openAiEmbeddingClient = new OpenAIClient(
 // var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
 // var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
 
-IChatClient chatClient = openAiChatClient
+var chatClient = openAiChatClient
     .GetChatClient(chatModel)
     .AsIChatClient();
 // IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openRouterClient.GetEmbeddingClient(embeddingModelName).AsIEmbeddingGenerator();
 
 IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAiEmbeddingClient
-    .GetEmbeddingClient(model: embeddingModelName)
+    .GetEmbeddingClient(embeddingModelName)
     .AsIEmbeddingGenerator();
 
-builder.Services.AddPostgresVectorStore(builder.Configuration.GetConnectionString("DefaultConnection")!, new PostgresVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
+// builder.Services.AddPostgresVectorStore(builder.Configuration.GetConnectionString("DefaultConnection")!, new PostgresVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
 
+// builder.Services.AddSingleton<ElasticsearchClient>(sp =>
+//     new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("http://localhost:9200"))));
+// #pragma warning disable SKEXP0020
+// builder.Services.AddElasticsearchVectorStore();
+// #pragma warning restore SKEXP0020
+
+var elasticsearchUrl = builder.Configuration.GetValue<string>("ElasticsearchUrl") ?? "http://localhost:9200"; // builder.Configuration.GetValue<string>("ElasticsearchUrl") ??
+builder.Services.AddSingleton<ElasticsearchClient>(sp =>
+    new ElasticsearchClient(new ElasticsearchClientSettings(new Uri(elasticsearchUrl))));
+builder.Services.AddElasticsearchVectorStore();
+
+// builder.Services.AddElasticsearchVectorStore(new ElasticsearchClientSettings(new Uri(elasticsearchUrl)));
+
+// var nodePool = new SingleNodePool(new Uri(elasticsearchUrl));
+// var settings = new ElasticsearchClientSettings(
+//     nodePool,
+//     (defaultSerializer, settings) =>
+//         new DefaultSourceSerializer(settings, options =>
+//             options.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper));
+// var client = new ElasticsearchClient(settings);
+//
+// builder.Services.AddSingleton(client);
+//
+// builder.Services.AddElasticsearchVectorStore();
 
 // test chat client and embedding generator (optional)
 var testOpenAI = builder.Configuration.GetSection("TestOpenAIOnStartup").Get<bool?>() ?? false;
 if (testOpenAI)
-{
     try
     {
         var testChat = Task.Run(async () => await chatClient.GetResponseAsync(
@@ -172,14 +197,10 @@ if (testOpenAI)
             {
                 new ChatMessage(ChatRole.System, "You are a helpful assistant."),
                 new ChatMessage(ChatRole.User, "Hello world")
-            },
-            options: null,
-            cancellationToken: default)).GetAwaiter().GetResult();
+            })).GetAwaiter().GetResult();
 
-        var testEmbed = Task.Run(async () => await embeddingGenerator.GenerateAsync(
-            new[] { "Hello world" },
-            options: null,
-            cancellationToken: default)).GetAwaiter().GetResult();
+        GeneratedEmbeddings<Embedding<float>> testEmbed = Task.Run(async () => await embeddingGenerator.GenerateAsync(
+            new[] { "Hello world" })).GetAwaiter().GetResult();
 
         Console.WriteLine("✅ OpenAI API test successful");
     }
@@ -187,7 +208,6 @@ if (testOpenAI)
     {
         Console.WriteLine($"⚠️ OpenAI API test failed: {ex.Message}");
     }
-}
 
 var vectorStorePath = string.Empty;
 var resetVectorStores = builder.Configuration.GetSection("ResetVectorStores").Get<bool?>() ?? false;
@@ -196,7 +216,6 @@ if (resetVectorStores)
     // delete old vector-stores that match the pattern
     var oldFiles = Directory.GetFiles(AppContext.BaseDirectory, "vector-store-*.db");
     foreach (var oldFile in oldFiles)
-    {
         try
         {
             File.Delete(oldFile);
@@ -205,7 +224,6 @@ if (resetVectorStores)
         {
             Debug.WriteLine($"Failed to delete old vector store file {oldFile}: {ex.Message}");
         }
-    }
 
     // Configure services
     vectorStorePath = Path.Combine(AppContext.BaseDirectory, $"vector-store-{Guid.NewGuid()}.db");
@@ -230,7 +248,9 @@ builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 /*** AI STUFF END ***/
 
 var app = builder.Build();
-//
+// app.MapOpenApi();
+app.UseOpenApi(options => { options.Path = "/openapi/{documentName}.json"; });
+app.MapScalarApiReference("/docs");
 // Task.Run(async () =>
 // {
 //     // get a scope to resolve scoped services
@@ -274,11 +294,11 @@ var app = builder.Build();
 app.LogStartupInfo(builder);
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
 
 // app.UseHttpsRedirection();
 
