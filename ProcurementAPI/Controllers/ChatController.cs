@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using ProcurementAPI.DTOs;
@@ -10,7 +11,7 @@ using ProcurementAPI.Services;
 using ProcurementAPI.Services.DataServices;
 using ChatMessage = ProcurementAPI.Models.Chat.ChatMessage;
 
-namespace ChatApp.Controllers;
+namespace ProcurementAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -19,6 +20,7 @@ public class ChatController : ControllerBase
     private readonly IChatClient _chatClient;
     private readonly IChatSessionService _chatSessionService;
     private readonly ILogger<ChatController> _logger;
+    private readonly IProgressChannelService _progressChannelService;
     private readonly ISupplierDataService _supplierDataService;
     private readonly ISupplierService _supplierService;
     private readonly ISupplierVectorService _supplierVectorService;
@@ -29,6 +31,7 @@ public class ChatController : ControllerBase
         ISupplierDataService supplierDataService,
         ISupplierVectorService supplierVectorService,
         IChatSessionService chatSessionService,
+        IProgressChannelService progressChannelService,
         ILogger<ChatController> logger)
     {
         _chatClient = chatClient;
@@ -36,6 +39,7 @@ public class ChatController : ControllerBase
         _supplierDataService = supplierDataService;
         _supplierVectorService = supplierVectorService;
         _chatSessionService = chatSessionService;
+        _progressChannelService = progressChannelService;
         _logger = logger;
     }
 
@@ -104,42 +108,31 @@ public class ChatController : ControllerBase
 
             var chatOptions = new ChatOptions
             {
+                ConversationId = session.Id.ToString(),
                 Tools =
                 [
                     AIFunctionFactory.Create(GetSupplierInfoAsync),
                     AIFunctionFactory.Create(SearchSuppliersVectorAsync),
                     AIFunctionFactory.Create(SearchSuppliersKeywordAsync)
-                ]
+                ],
+                AllowMultipleToolCalls = true
             };
 
-            await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions, HttpContext.RequestAborted))
-            {
-                var streamChunk = new
-                {
-                    id = Guid.NewGuid().ToString(),
-                    content = update.Text ?? "",
-                    createdAt = DateTime.UtcNow
-                };
+            // Set conversation ID in HttpContext so tool methods can access it
+            HttpContext.Items["ConversationId"] = session.Id.ToString();
 
-                // Accumulate assistant response
-                if (!string.IsNullOrEmpty(update.Text))
-                {
-                    assistantResponse.Append(update.Text);
-                }
+            // Get or create progress channel for this conversation
+            Channel<ProgressMessage> progressChannel = _progressChannelService.GetOrCreateChannel(session.Id.ToString());
 
-                var json = JsonSerializer.Serialize(streamChunk, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+            // Create cancellation token source for progress task that will be cancelled when streaming starts
+            using var progressCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
 
-                await Response.WriteAsync($"data: {json}\n\n");
-                await Response.Body.FlushAsync();
+            // Create two tasks: streaming response and progress monitoring
+            var streamingTask = ProcessStreamingResponseAsync(messages, chatOptions, assistantResponse, progressCts, HttpContext.RequestAborted);
+            var progressTask = ProcessProgressUpdatesAsync(progressChannel.Reader, progressCts.Token);
 
-                if (HttpContext.RequestAborted.IsCancellationRequested)
-                {
-                    break;
-                }
-            }
+            // Process both tasks concurrently until completion
+            await Task.WhenAll(streamingTask, progressTask);
         }
         catch (OperationCanceledException)
         {
@@ -153,6 +146,12 @@ public class ChatController : ControllerBase
         }
         finally
         {
+            // Complete the progress channel
+            if (session != null)
+            {
+                await _progressChannelService.CompleteChannelAsync(session.Id.ToString());
+            }
+
             // Save conversation to session
             if (session != null && !HttpContext.RequestAborted.IsCancellationRequested)
             {
@@ -187,6 +186,88 @@ public class ChatController : ControllerBase
     }
 
     /// <summary>
+    ///     Processes the streaming response from the AI client and sends content chunks via SSE
+    /// </summary>
+    private async Task ProcessStreamingResponseAsync(
+        List<Microsoft.Extensions.AI.ChatMessage> messages,
+        ChatOptions chatOptions,
+        StringBuilder assistantResponse,
+        CancellationTokenSource progressCts,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var firstResponseReceived = false;
+
+            await foreach (var update in _chatClient.GetStreamingResponseAsync(messages, chatOptions, cancellationToken))
+            {
+                // Cancel progress monitoring once AI response starts streaming
+                if (!firstResponseReceived && !string.IsNullOrEmpty(update.Text))
+                {
+                    firstResponseReceived = true;
+                    await progressCts.CancelAsync(); // Signal progress monitoring to stop
+                }
+
+                var streamChunk = StreamChunk.CreateContent(update.Text ?? "");
+
+                // Accumulate assistant response
+                if (!string.IsNullOrEmpty(update.Text))
+                {
+                    assistantResponse.Append(update.Text);
+                }
+
+                await Response.WriteAsync(streamChunk.ToSseFormat(), cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in streaming response processing");
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     Processes progress updates from the channel and sends them via SSE
+    /// </summary>
+    private async Task ProcessProgressUpdatesAsync(
+        ChannelReader<ProgressMessage> progressReader,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (await progressReader.WaitToReadAsync(cancellationToken))
+            {
+                while (progressReader.TryRead(out var progressMessage))
+                {
+                    var streamChunk = StreamChunk.FromProgressMessage(progressMessage);
+
+                    await Response.WriteAsync(streamChunk.ToSseFormat(), cancellationToken);
+                    await Response.Body.FlushAsync(cancellationToken);
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancellation is requested
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in progress updates processing");
+        }
+    }
+
+    /// <summary>
     ///     Gets detailed information about a specific supplier
     /// </summary>
     [Description("Gets detailed information about a specific supplier including contact details, capabilities, and performance data")]
@@ -194,8 +275,17 @@ public class ChatController : ControllerBase
         [Description("The supplier name or supplier code to search for.")]
         string supplierNameOrCode)
     {
+        var conversationId = HttpContext.Items["ConversationId"]?.ToString();
+
         try
         {
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Looking up supplier information for '{supplierNameOrCode}'...",
+                    "GetSupplierInfo", ProgressStatus.Starting);
+            }
+
             // First search for suppliers by name/code
             PaginatedResult<SupplierDto> searchResults = await _supplierService.GetSuppliersAsync(
                 1,
@@ -207,11 +297,25 @@ public class ChatController : ControllerBase
 
             if (searchResults.Data == null || searchResults.Data.Count == 0)
             {
+                if (conversationId != null)
+                {
+                    await _progressChannelService.SendProgressAsync(conversationId,
+                        $"→ No suppliers found matching '{supplierNameOrCode}'",
+                        "GetSupplierInfo", ProgressStatus.Completed);
+                }
+
                 return $"No suppliers found matching '{supplierNameOrCode}'.";
             }
 
             // Get the first match (keeping it simple as requested)
             var firstMatch = searchResults.Data.First();
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Found supplier '{firstMatch.CompanyName}', getting detailed information...",
+                    "GetSupplierInfo");
+            }
 
             // Get detailed information including capabilities
             var detailedInfo = await _supplierDataService.GetSupplierByIdAsync(firstMatch.SupplierId);
@@ -305,6 +409,13 @@ public class ChatController : ControllerBase
 
             response.AppendLine($"- Status: {(detailedInfo.IsActive ? "Active" : "Inactive")}");
 
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Retrieved complete information for '{detailedInfo.CompanyName}'",
+                    "GetSupplierInfo", ProgressStatus.Completed);
+            }
+
             return response.ToString();
         }
         catch (Exception ex)
@@ -324,17 +435,40 @@ public class ChatController : ControllerBase
         [Description("Number of suppliers to return (1-20, defaults to 10)")]
         int limit = 10)
     {
+        var conversationId = HttpContext.Items["ConversationId"]?.ToString();
+
         try
         {
             // Ensure limit is within bounds
             limit = Math.Max(1, Math.Min(limit, 20));
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Performing AI-powered vector search for '{searchQuery}'...",
+                    "VectorSearch", ProgressStatus.Starting);
+            }
 
             IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByVectorAsync(searchQuery, limit, CancellationToken.None);
             List<Supplier> suppliers = await results.ToListAsync();
 
             if (!suppliers.Any())
             {
+                if (conversationId != null)
+                {
+                    await _progressChannelService.SendProgressAsync(conversationId,
+                        $"→ No suppliers found for query '{searchQuery}'",
+                        "VectorSearch", ProgressStatus.Completed);
+                }
+
                 return $"No suppliers found using vector search for query: '{searchQuery}'";
+            }
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Found {suppliers.Count} suppliers, formatting results...",
+                    "VectorSearch");
             }
 
             var response = new StringBuilder();
@@ -367,6 +501,13 @@ public class ChatController : ControllerBase
                 response.AppendLine();
             }
 
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Vector search completed - found {suppliers.Count} matching suppliers",
+                    "VectorSearch", ProgressStatus.Completed);
+            }
+
             return response.ToString();
         }
         catch (Exception ex)
@@ -386,17 +527,40 @@ public class ChatController : ControllerBase
         [Description("Number of suppliers to return (1-20, defaults to 10)")]
         int limit = 10)
     {
+        var conversationId = HttpContext.Items["ConversationId"]?.ToString();
+
         try
         {
             // Ensure limit is within bounds
             limit = Math.Max(1, Math.Min(limit, 20));
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Performing keyword search for '{keyword}'...",
+                    "KeywordSearch", ProgressStatus.Starting);
+            }
 
             IAsyncEnumerable<Supplier> results = await _supplierVectorService.SearchByKeywordAsync(keyword, limit, CancellationToken.None);
             List<Supplier> suppliers = await results.ToListAsync();
 
             if (!suppliers.Any())
             {
+                if (conversationId != null)
+                {
+                    await _progressChannelService.SendProgressAsync(conversationId,
+                        $"→ No suppliers found for keyword '{keyword}'",
+                        "KeywordSearch", ProgressStatus.Completed);
+                }
+
                 return $"No suppliers found using keyword search for: '{keyword}'";
+            }
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Found {suppliers.Count} suppliers, formatting results...",
+                    "KeywordSearch");
             }
 
             var response = new StringBuilder();
@@ -427,6 +591,13 @@ public class ChatController : ControllerBase
 
                 response.AppendLine($"  - Status: {(supplier.IsActive ? "Active" : "Inactive")}");
                 response.AppendLine();
+            }
+
+            if (conversationId != null)
+            {
+                await _progressChannelService.SendProgressAsync(conversationId,
+                    $"→ Keyword search completed - found {suppliers.Count} matching suppliers",
+                    "KeywordSearch", ProgressStatus.Completed);
             }
 
             return response.ToString();
@@ -476,15 +647,7 @@ public class ChatController : ControllerBase
             Example: If asked ""Find suppliers who manufacture electronics"", first use vector search, then automatically get detailed information for each result using the supplier information tool to provide comprehensive profiles including capabilities, performance data, and contact details.
 
             Choose the most appropriate search method based on the user's query type and intent, but always consider using multiple tools to enrich your response with nested data and additional context.
-            You are limited to 6 tool calls per user request, so use them wisely to maximize the value of your responses.
-
-            CRITICAL: Provide analysis steps in REAL-TIME as continuous feedback:
-            - Each analysis step should start with '→ ' and be on its own line
-            - Before each tool call, announce a high-level what you're about to do, without giving details on the internal tool parameters
-            - After each tool call, announce progress or what you'll do next
-            - If making 5 tool calls, provide 5+ separate analysis updates
-            - Always include a 'Done' line before starting your response section
-            - Stream each analysis step immediately, don't batch them";
+            You are limited to 6 tool calls per user request, so use them wisely to maximize the value of your responses.";
     }
 
     // Session Management Endpoints

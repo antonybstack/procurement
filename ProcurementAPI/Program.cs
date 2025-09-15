@@ -82,6 +82,7 @@ builder.Services.AddScoped<ISupplierDataService, SupplierDataService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<ISupplierVectorService, SupplierVectorService>();
 builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
+builder.Services.AddSingleton<IProgressChannelService, ProgressChannelService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
@@ -191,6 +192,7 @@ builder.Services.AddElasticsearchVectorStore();
 // test chat client and embedding generator (optional)
 var testOpenAI = builder.Configuration.GetSection("TestOpenAIOnStartup").Get<bool?>() ?? false;
 if (testOpenAI)
+{
     try
     {
         var testChat = Task.Run(async () => await chatClient.GetResponseAsync(
@@ -209,6 +211,7 @@ if (testOpenAI)
     {
         Console.WriteLine($"⚠️ OpenAI API test failed: {ex.Message}");
     }
+}
 
 var vectorStorePath = string.Empty;
 var resetVectorStores = builder.Configuration.GetSection("ResetVectorStores").Get<bool?>() ?? false;
@@ -217,6 +220,7 @@ if (resetVectorStores)
     // delete old vector-stores that match the pattern
     var oldFiles = Directory.GetFiles(AppContext.BaseDirectory, "vector-store-*.db");
     foreach (var oldFile in oldFiles)
+    {
         try
         {
             File.Delete(oldFile);
@@ -225,6 +229,7 @@ if (resetVectorStores)
         {
             Debug.WriteLine($"Failed to delete old vector store file {oldFile}: {ex.Message}");
         }
+    }
 
     // Configure services
     vectorStorePath = Path.Combine(AppContext.BaseDirectory, $"vector-store-{Guid.NewGuid()}.db");
@@ -243,7 +248,7 @@ builder.Services.AddSqliteCollection<string, IngestedDocument>("data-chatapp-doc
 
 builder.Services.AddScoped<DataIngestor>();
 
-builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
+builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging().UseOpenTelemetry();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
 /*** AI STUFF END ***/
