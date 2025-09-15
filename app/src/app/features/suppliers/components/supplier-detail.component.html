@@ -104,11 +104,7 @@
             class="block text-sm font-medium text-light-text-muted dark:text-grok-text-muted"
             >Status</label
           >
-          <span
-            class="mt-1 inline-flex px-2 py-1 text-xs font-medium rounded-full {{
-              getStatusClass(supplier()!.isActive)
-            }}"
-          >
+          <span class="mt-1 {{ getStatusClass(supplier()!.isActive) }}">
             {{ getStatusText(supplier()!.isActive) }}
           </span>
         </div>

@@ -154,9 +154,9 @@ export class SupplierListComponent implements OnInit {
       },
       cellRenderer: (params: any) => {
         const isActive = params.value;
-        const statusClass = isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-        const statusText = isActive ? 'Active' : 'Inactive';
-        return `<span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusText}</span>`;
+        const statusClass = isActive ? 'brutalist-status-awarded' : 'brutalist-status-closed';
+        const statusText = isActive ? 'active' : 'inactive';
+        return `<span class="${statusClass}">${statusText}</span>`;
       }
     },
     {

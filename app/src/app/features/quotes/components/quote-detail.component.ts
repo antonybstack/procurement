@@ -61,13 +61,13 @@ export class QuoteDetailComponent implements OnInit {
 
   getStatusClass(status: string): string {
     const statusClasses: { [key: string]: string } = {
-      'Pending': 'bg-yellow-100 text-yellow-800',
-      'Submitted': 'bg-blue-100 text-blue-800',
-      'Awarded': 'bg-green-100 text-green-800',
-      'Rejected': 'bg-red-100 text-red-800',
-      'Expired': 'bg-gray-100 text-gray-800'
+      'Pending': 'brutalist-status-draft',
+      'Submitted': 'brutalist-status-open',
+      'Awarded': 'brutalist-status-awarded',
+      'Rejected': 'brutalist-status-closed',
+      'Expired': 'brutalist-status-closed'
     };
-    return statusClasses[status] || 'bg-gray-100 text-gray-800';
+    return statusClasses[status] || 'brutalist-status-draft';
   }
 
   getStatusText(status: string): string {

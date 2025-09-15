@@ -60,11 +60,11 @@ export class SupplierDetailComponent implements OnInit {
   }
 
   getStatusClass(isActive: boolean): string {
-    return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+    return isActive ? 'brutalist-status-awarded' : 'brutalist-status-closed';
   }
 
   getStatusText(isActive: boolean): string {
-    return isActive ? 'Active' : 'Inactive';
+    return isActive ? 'active' : 'inactive';
   }
 
   getRatingStars(rating?: number): string {

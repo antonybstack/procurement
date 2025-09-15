@@ -143,15 +143,15 @@ export class RfqDetailComponent implements OnInit {
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'draft':
-        return 'bg-gray-100 text-gray-800';
+        return 'brutalist-status-draft';
       case 'open':
-        return 'bg-blue-100 text-blue-800';
+        return 'brutalist-status-open';
       case 'closed':
-        return 'bg-red-100 text-red-800';
+        return 'brutalist-status-closed';
       case 'awarded':
-        return 'bg-green-100 text-green-800';
+        return 'brutalist-status-awarded';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'brutalist-status-draft';
     }
   }
 
@@ -176,15 +176,15 @@ export class RfqDetailComponent implements OnInit {
   private getQuoteStatusClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'submitted':
-        return 'bg-blue-100 text-blue-800';
+        return 'brutalist-status-open';
       case 'under_review':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'brutalist-status-open';
       case 'accepted':
-        return 'bg-green-100 text-green-800';
+        return 'brutalist-status-awarded';
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'brutalist-status-closed';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'brutalist-status-draft';
     }
   }
 }

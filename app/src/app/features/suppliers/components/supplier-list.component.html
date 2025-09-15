@@ -149,9 +149,9 @@
             <button (click)="onPageChange(currentPage() - 1)" [disabled]="!hasPrevPage()">← prev</button>
             
             @for (page of getPageNumbers(); track page) {
-            <button 
+            <button
                 (click)="onPageChange(page)"
-                [style]="page === currentPage() ? 'color: rgb(var(--color-accent)); text-decoration: underline;' : ''">
+                [style]="page === currentPage() ? 'text-decoration: underline;' : ''">
                 {{ page }}
             </button>
             }
