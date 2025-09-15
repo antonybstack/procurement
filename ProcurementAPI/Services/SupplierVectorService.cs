@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 using Elastic.SemanticKernel.Connectors.Elasticsearch;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
@@ -57,7 +58,10 @@ public class SupplierVectorService : ISupplierVectorService
             IsActive = s.IsActive
         }).ToList();
 
-        foreach (var record in supplierVectors) record.EmbeddingText = record.BuildSearchableContent();
+        foreach (var record in supplierVectors)
+        {
+            record.EmbeddingText = record.BuildSearchableContent();
+        }
 
         ElasticsearchCollection<string, SupplierVector> collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
         await collection.UpsertAsync(supplierVectors);
@@ -102,7 +106,11 @@ public class SupplierVectorService : ISupplierVectorService
         }).ToList();
 
         // Generate embeddings for each record
-        foreach (var record in records) record.EmbeddingText = record.BuildSearchableContent();
+        foreach (var record in records)
+        {
+            record.EmbeddingText = record.BuildSearchableContent();
+        }
+
         // record.Embedding = (await _embeddingGenerator.GenerateAsync(record.BuildSearchableContent())).Vector;
         // Upsert records to vector store
         await collection.UpsertAsync(records);
@@ -121,7 +129,11 @@ public class SupplierVectorService : ISupplierVectorService
         Debug.Assert(searchValue.Length > 0, "Search value must be greater than 0");
         top = Math.Min(top, 1);
         top = Math.Max(top, 20);
-        if (string.IsNullOrEmpty(searchValue)) return AsyncEnumerable.Empty<Supplier>();
+        if (string.IsNullOrEmpty(searchValue))
+        {
+            return AsyncEnumerable.Empty<Supplier>();
+        }
+
         ElasticsearchCollection<string, SupplierVector> collection = _vectorStore.GetCollection<string, SupplierVector>(_collectionName);
         IAsyncEnumerable<VectorSearchResult<SupplierVector>> supplierVectorDtos = collection.SearchAsync(searchValue, top, null, cancellationToken);
         return supplierVectorDtos.Select(s => new Supplier
@@ -150,19 +162,22 @@ public class SupplierVectorService : ISupplierVectorService
         Debug.Assert(searchValue.Length > 0, "Search value must be greater than 0");
         top = Math.Min(top, 1);
         top = Math.Max(top, 20);
-        if (string.IsNullOrEmpty(searchValue)) return AsyncEnumerable.Empty<Supplier>();
+        if (string.IsNullOrEmpty(searchValue))
+        {
+            return AsyncEnumerable.Empty<Supplier>();
+        }
 
         try
         {
-            // Use Elasticsearch's query_string query for full-text search across multiple fields
-            var searchResponse = await _elasticClient.SearchAsync<SupplierVector>(s => s
+            // Use Elasticsearch's multi_match query with fuzziness for partial matches and typos
+            SearchResponse<SupplierVector> searchResponse = await _elasticClient.SearchAsync<SupplierVector>(s => s
                 .Index(_collectionName)
                 .Size(top)
                 .Query(q => q
-                    .QueryString(qs => qs
-                        .Query($"({searchValue})")
-                        .Fields(new[] { "COMPANY_NAME", "SUPPLIER_CODE", "CONTACT_NAME", "EMAIL", "EMBEDDING_TEXT" })
-                        .DefaultOperator(Elastic.Clients.Elasticsearch.QueryDsl.Operator.And)
+                    .MultiMatch(mm => mm
+                        .Query(searchValue)
+                        .Fuzziness(new Fuzziness(1))
+                        .Type(TextQueryType.BestFields)
                     )
                 ), cancellationToken);
 
@@ -177,7 +192,7 @@ public class SupplierVectorService : ISupplierVectorService
                 return AsyncEnumerable.Empty<Supplier>();
             }
 
-            var suppliers = searchResponse.Documents.Select(doc => new Supplier
+            List<Supplier> suppliers = searchResponse.Documents.Select(doc => new Supplier
             {
                 SupplierId = int.TryParse(doc.SupplierId, out var id) ? id : 0,
                 CompanyName = doc.CompanyName,

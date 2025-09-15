@@ -61,4 +61,8 @@ export class SupplierService {
   vectorSearch(filters: VectorSearchFilters): Observable<SupplierDto[]> {
     return this.apiService.get<SupplierDto[]>('suppliers/vectorsearch', filters);
   }
+
+  keywordSearch(filters: VectorSearchFilters): Observable<SupplierDto[]> {
+    return this.apiService.get<SupplierDto[]>('suppliers/keywordsearch', filters);
+  }
 }

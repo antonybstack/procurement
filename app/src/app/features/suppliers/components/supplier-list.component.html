@@ -12,32 +12,41 @@
             <!-- Search -->
             <div>
                 <label for="search">search:</label><br>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="search"
-                    [ngModel]="searchQuery()" 
+                    [ngModel]="searchQuery()"
                     (ngModelChange)="onSearchQueryChange($event)"
-                    [placeholder]="vectorSearchEnabled() ? 'AI search: capabilities, expertise...' : 'company name, code...'"
+                    [placeholder]="vectorSearchEnabled() ? 'AI search: capabilities, expertise...' : keywordSearchEnabled() ? 'Full-text search: company name, description...' : 'company name, code...'"
                     style="width: 100%;">
-                
-                <!-- AI Search Toggle - Text Only -->
-                <label style="display: block; margin-top: 0.5rem;">
-                    <input 
-                        type="checkbox" 
-                        [checked]="vectorSearchEnabled()"
-                        (change)="toggleVectorSearch()"> 
-                    ai search
-                </label>
+
+                <!-- Search Type Toggles -->
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                    <label>
+                        <input
+                            type="checkbox"
+                            [checked]="vectorSearchEnabled()"
+                            (change)="toggleVectorSearch()">
+                        ai search
+                    </label>
+                    <label>
+                        <input
+                            type="checkbox"
+                            [checked]="keywordSearchEnabled()"
+                            (change)="toggleKeywordSearch()">
+                        full-text search
+                    </label>
+                </div>
             </div>
             
             <!-- Country Filter -->
-            <div [style.opacity]="vectorSearchEnabled() ? '0.5' : '1'">
+            <div [style.opacity]="vectorSearchEnabled() || keywordSearchEnabled() ? '0.5' : '1'">
                 <label for="country">country:</label><br>
-                <select 
+                <select
                     id="country"
-                    [ngModel]="filters().country" 
+                    [ngModel]="filters().country"
                     (ngModelChange)="onCountryInputChange($event)"
-                    [disabled]="vectorSearchEnabled()"
+                    [disabled]="vectorSearchEnabled() || keywordSearchEnabled()"
                     style="width: 100%;">
                     <option value="">all countries</option>
                     @for (country of countries(); track country) {
@@ -47,16 +56,19 @@
                 @if (vectorSearchEnabled()) {
                 <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in ai mode)</span>
                 }
+                @if (keywordSearchEnabled()) {
+                <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in full-text mode)</span>
+                }
             </div>
-            
+
             <!-- Rating Filter -->
-            <div [style.opacity]="vectorSearchEnabled() ? '0.5' : '1'">
+            <div [style.opacity]="vectorSearchEnabled() || keywordSearchEnabled() ? '0.5' : '1'">
                 <label for="rating">min rating:</label><br>
-                <select 
+                <select
                     id="rating"
-                    [ngModel]="filters().minRating" 
+                    [ngModel]="filters().minRating"
                     (ngModelChange)="onRatingInputChange($event)"
-                    [disabled]="vectorSearchEnabled()"
+                    [disabled]="vectorSearchEnabled() || keywordSearchEnabled()"
                     style="width: 100%;">
                     <option value="">any rating</option>
                     <option value="1">1+ stars</option>
@@ -68,16 +80,19 @@
                 @if (vectorSearchEnabled()) {
                 <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in ai mode)</span>
                 }
+                @if (keywordSearchEnabled()) {
+                <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in full-text mode)</span>
+                }
             </div>
-            
+
             <!-- Status Filter -->
-            <div [style.opacity]="vectorSearchEnabled() ? '0.5' : '1'">
+            <div [style.opacity]="vectorSearchEnabled() || keywordSearchEnabled() ? '0.5' : '1'">
                 <label for="status">status:</label><br>
-                <select 
+                <select
                     id="status"
-                    [ngModel]="filters().isActive" 
+                    [ngModel]="filters().isActive"
                     (ngModelChange)="onStatusInputChange($event)"
-                    [disabled]="vectorSearchEnabled()"
+                    [disabled]="vectorSearchEnabled() || keywordSearchEnabled()"
                     style="width: 100%;">
                     <option value="">all status</option>
                     <option value="active">active</option>
@@ -85,6 +100,9 @@
                 </select>
                 @if (vectorSearchEnabled()) {
                 <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in ai mode)</span>
+                }
+                @if (keywordSearchEnabled()) {
+                <span style="font-size: 0.8rem; color: rgb(var(--color-text-muted));">(disabled in full-text mode)</span>
                 }
             </div>
         </div>

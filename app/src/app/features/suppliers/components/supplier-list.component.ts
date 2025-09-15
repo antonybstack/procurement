@@ -33,6 +33,7 @@ export class SupplierListComponent implements OnInit {
   countries = signal<string[]>([]);
   // Search state
   vectorSearchEnabled = signal(false);
+  keywordSearchEnabled = signal(false);
   searchQuery = signal('');
   // Filters
   filters = signal<SupplierFilters>({
@@ -294,6 +295,26 @@ export class SupplierListComponent implements OnInit {
           console.error('Error performing vector search:', err);
         }
       });
+    } else if (this.keywordSearchEnabled() && this.searchQuery().trim()) {
+      // Use keyword search if enabled and there's a search query
+      const keywordFilters: VectorSearchFilters = {
+        searchValue: this.searchQuery(),
+        top: this.filters().pageSize || 20
+      };
+
+      this.supplierService.keywordSearch(keywordFilters).subscribe({
+        next: (result: SupplierDto[]) => {
+          this.suppliers.set(result);
+          this.totalCount.set(result.length);
+          this.currentPage.set(1);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set('Failed to perform full-text search. Please try again.');
+          this.loading.set(false);
+          console.error('Error performing keyword search:', err);
+        }
+      });
     } else {
       // Use regular search
       this.supplierService.getSuppliers(this.filters()).subscribe({
@@ -336,8 +357,8 @@ export class SupplierListComponent implements OnInit {
   onSearchQueryChange(value: string) {
     this.searchQuery.set(value);
 
-    if (this.vectorSearchEnabled()) {
-      // For vector search, update page to 1 and search
+    if (this.vectorSearchEnabled() || this.keywordSearchEnabled()) {
+      // For vector or keyword search, update page to 1 and search
       this.filters.update(f => ({...f, page: 1}));
     } else {
       // For regular search, update the filters search term
@@ -351,6 +372,11 @@ export class SupplierListComponent implements OnInit {
     const wasEnabled = this.vectorSearchEnabled();
     this.vectorSearchEnabled.set(!wasEnabled);
 
+    // Disable keyword search if enabling vector search
+    if (!wasEnabled && this.vectorSearchEnabled()) {
+      this.keywordSearchEnabled.set(false);
+    }
+
     // Clear any existing error when switching modes
     this.error.set(null);
 
@@ -363,6 +389,39 @@ export class SupplierListComponent implements OnInit {
         page: 1
       }));
     } else if (wasEnabled && !this.vectorSearchEnabled()) {
+      // Switching back to regular search - update regular search with current query
+      this.filters.update(f => ({
+        ...f,
+        search: this.searchQuery(),
+        page: 1
+      }));
+    }
+
+    // Reload with new search mode
+    this.loadSuppliers();
+  }
+
+  toggleKeywordSearch() {
+    const wasEnabled = this.keywordSearchEnabled();
+    this.keywordSearchEnabled.set(!wasEnabled);
+
+    // Disable vector search if enabling keyword search
+    if (!wasEnabled && this.keywordSearchEnabled()) {
+      this.vectorSearchEnabled.set(false);
+    }
+
+    // Clear any existing error when switching modes
+    this.error.set(null);
+
+    // If switching to keyword search, clear regular filters that don't apply
+    if (!wasEnabled && this.keywordSearchEnabled()) {
+      // Keep the search query but clear other filters for keyword search
+      this.filters.update(f => ({
+        ...f,
+        search: '', // Clear regular search as we'll use searchQuery
+        page: 1
+      }));
+    } else if (wasEnabled && !this.keywordSearchEnabled()) {
       // Switching back to regular search - update regular search with current query
       this.filters.update(f => ({
         ...f,
@@ -399,6 +458,8 @@ export class SupplierListComponent implements OnInit {
 
   clearFilters() {
     this.searchQuery.set('');
+    this.vectorSearchEnabled.set(false);
+    this.keywordSearchEnabled.set(false);
     this.filters.set({
       page: 1,
       pageSize: 20,
