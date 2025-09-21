@@ -26,7 +26,7 @@ This is a comprehensive Procurement Management System with AI-powered semantic s
 ### macOS Development (Primary)
 
 ```bash
-# Start full stack with nginx on standard ports 80/443
+# Start full stack with nginx on standard ports 80
 ./mac-deploy.sh
 
 # Individual service management

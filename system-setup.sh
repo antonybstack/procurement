@@ -37,30 +37,15 @@ else
     echo "✅ $DOMAIN already exists in /etc/hosts"
 fi
 
-# Step 2: Set up SSL certificates in system directory
+# Step 2: Local TLS (skipped; Cloudflare terminates HTTPS)
 echo ""
-echo "🔒 Step 2: Setting up system SSL certificates..."
+echo "🔒 Step 2: Skipping local SSL certificates (origin uses HTTP)"
 
 SSL_SYSTEM_DIR="/etc/ssl/sparkify"
 SSL_USER_DIR="$ORIGINAL_HOME/dev/procurement/ssl"
 
-mkdir -p "$SSL_SYSTEM_DIR"
-
-if [ -f "$SSL_USER_DIR/$DOMAIN.pem" ]; then
-    echo "Copying SSL certificates from user directory..."
-    cp "$SSL_USER_DIR/$DOMAIN.pem" "$SSL_SYSTEM_DIR/"
-    cp "$SSL_USER_DIR/$DOMAIN-key.pem" "$SSL_SYSTEM_DIR/"
-    
-    # Set proper permissions for nginx to read certificates
-    chmod 644 "$SSL_SYSTEM_DIR/$DOMAIN.pem"
-    chmod 640 "$SSL_SYSTEM_DIR/$DOMAIN-key.pem"
-    chown root:admin "$SSL_SYSTEM_DIR/$DOMAIN-key.pem"
-    
-    echo "✅ SSL certificates installed in $SSL_SYSTEM_DIR with proper permissions"
-else
-    echo "⚠️  SSL certificates not found in $SSL_USER_DIR"
-    echo "    Run mkcert as user first, then re-run this script"
-fi
+# No local certificates required when using Cloudflare for TLS termination
+mkdir -p "$SSL_SYSTEM_DIR" >/dev/null 2>&1 || true
 
 # Step 3: Set up cloudflared in system directory
 echo ""
@@ -81,8 +66,8 @@ if [ -d "$CLOUDFLARED_USER_DIR" ]; then
     if [ -f "$CLOUDFLARED_SYSTEM_DIR/config.yml" ]; then
         # Point credentials-file to /etc/cloudflared
         sed -i '' "s#credentials-file: .*#credentials-file: $CLOUDFLARED_SYSTEM_DIR/392abfe9-a2db-41dd-a688-69e887823cdc.json#" "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
-        # Prefer localhost as origin to avoid LAN IP drift
-        sed -i '' 's#service: https://[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:443#service: https://localhost:443#' "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
+        # Prefer localhost as origin to avoid LAN IP drift; HTTP-only origin
+        sed -i '' 's#service: https://[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:443#service: http://localhost:80#' "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
     fi
 
     # Set proper permissions (hardened)

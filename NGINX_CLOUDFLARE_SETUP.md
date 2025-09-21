@@ -48,9 +48,9 @@ Location: `/opt/homebrew/etc/nginx/nginx.conf`
 **Key Features**:
 - **Auto-scaling**: `worker_processes auto` (detects CPU cores)
 - **High Performance**: 8192 connections per worker, keepalive connections
-- **Security Headers**: HSTS, CSP, XSS protection, frame options
+- **Security Headers**: CSP, XSS protection, frame options (no HSTS at origin)
 - **Rate Limiting**: 100 req/s for API, 200 req/s for frontend
-- **HTTP/2**: Enabled for improved performance
+- **HTTP/1.1 origin**: HTTP/2/3 handled by Cloudflare at the edge
 - **Gzip Compression**: Optimized for web assets
 
 **Routing**:
@@ -61,7 +61,7 @@ Location: `/opt/homebrew/etc/nginx/nginx.conf`
 ### 3. Cloudflare Tunnel Setup
 - **Tunnel ID**: `392abfe9-a2db-41dd-a688-69e887823cdc`
 - **Config**: `/Users/antbly/.cloudflared/config.yml`
-- **Service**: Connects to `https://localhost:443` (local nginx)
+- **Service**: Connects to `http://localhost:80` (local nginx)
 
 Tip: Prefer `localhost` (or `127.0.0.1`) as the origin in the tunnel config to avoid breakage when your machine’s LAN IP changes (e.g., switching Wi‑Fi/Ethernet).
 
@@ -98,11 +98,7 @@ dig +short sparkify.dev
 ```
 
 ### SSL Certificates
-```bash
-# Local development certificates (mkcert)
-/etc/ssl/sparkify/sparkify.dev.pem
-/etc/ssl/sparkify/sparkify.dev-key.pem
-```
+TLS terminates at Cloudflare. Local certificates are not required for the origin.
 
 ### Service Status
 ```bash
@@ -186,8 +182,8 @@ cloudflared tunnel run sparkify  # Shows real-time logs
 # Check nginx status
 sudo nginx -t && sudo nginx -s reload
 
-# Check tunnel connectivity to local nginx
-curl -k -I https://localhost:443
+# Check tunnel connectivity to local nginx (origin over HTTP)
+curl -I http://localhost:80
 
 # Restart tunnel system service
 sudo launchctl stop com.cloudflare.sparkify
@@ -250,9 +246,8 @@ top -pid $(pgrep nginx)
 - **Rate Limiting**: Configured per endpoint type
 
 ### SSL/TLS Security
-- **TLS 1.2+**: Modern protocols only
-- **HSTS**: Enforces HTTPS connections
-- **Secure Ciphers**: Forward secrecy enabled
+- **TLS at Edge**: Cloudflare provides TLS 1.2/1.3 and modern ciphers
+- **Origin**: HTTP-only; no HSTS configured locally
 
 ### Application Security
 - **CSP Headers**: Content Security Policy implemented
@@ -265,7 +260,7 @@ top -pid $(pgrep nginx)
 ### Local Development
 - Use `mac-deploy.sh` for local setup
 - Connects to `http://localhost:4200` and `http://localhost:5001`
-- Uses mkcert for SSL certificates
+- No local TLS; Cloudflare handles HTTPS for the public domain
 - Domain resolves via `/etc/hosts`
 
 ### Production Deployment

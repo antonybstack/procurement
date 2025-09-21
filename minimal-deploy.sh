@@ -103,7 +103,7 @@ add_ufw_rule() {
 # Add rules only if they don't exist
 add_ufw_rule 22
 add_ufw_rule 80
-add_ufw_rule 443
+## Do not open 443; TLS terminates at Cloudflare
 add_ufw_rule 4200
 add_ufw_rule 5001
 add_ufw_rule 8080
@@ -130,45 +130,8 @@ if [ -f docker-compose.frontend.yml ]; then
   docker-compose -f docker-compose.frontend.yml up -d
 fi
 
-# Install and configure Let's Encrypt certificates
-echo "Setting up Let's Encrypt certificates..."
-
-# Install certbot if not already installed
-if ! command -v certbot &> /dev/null; then
-    apt install -y certbot python3-certbot-nginx
-fi
-
-# Create temporary Nginx config for certificate validation
-cat > /etc/nginx/sites-available/temp << 'EOF'
-server {
-    listen 80;
-    server_name sparkify.dev;
-    
-    location /.well-known/acme-challenge/ {
-        root /var/www/html;
-    }
-    
-    location / {
-        return 301 https://$server_name$request_uri;
-    }
-}
-EOF
-
-# Enable temporary config
-ln -sf /etc/nginx/sites-available/temp /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-systemctl restart nginx
-
-# Obtain SSL certificate
-if [ ! -d "/etc/letsencrypt/live/sparkify.dev" ]; then
-    echo "Obtaining SSL certificate for sparkify.dev..."
-    certbot certonly --webroot -w /var/www/html -d sparkify.dev --non-interactive --agree-tos --email admin@sparkify.dev
-else
-    echo "SSL certificate already exists for sparkify.dev"
-fi
-
-# Configure host Nginx for reverse proxy
-echo "Configuring host Nginx for reverse proxy..."
+# Configure host Nginx for reverse proxy (HTTP origin; TLS via Cloudflare)
+echo "Configuring host Nginx for reverse proxy (HTTP-only origin)..."
 
 # Install Nginx if not already installed
 if ! command -v nginx &> /dev/null; then
@@ -176,27 +139,12 @@ if ! command -v nginx &> /dev/null; then
     systemctl enable nginx
 fi
 
-# Create Nginx configuration for reverse proxy
+# Create Nginx configuration for reverse proxy (port 80 only)
 cat > /etc/nginx/sites-available/procurement << 'EOF'
 server {
     listen 80;
     server_name sparkify.dev;
-    
-    # Redirect HTTP to HTTPS
-    return 301 https://$server_name$request_uri;
-}
 
-server {
-    listen 443 ssl http2;
-    server_name sparkify.dev;
-    
-    # SSL Configuration (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/sparkify.dev/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/sparkify.dev/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    
     # Frontend (Angular app)
     location / {
         proxy_pass http://localhost:4200;
@@ -209,7 +157,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
-    
+
     # API
     location /api/ {
         proxy_pass http://localhost:5001/;
@@ -237,10 +185,8 @@ systemctl restart nginx
 echo "Host Nginx configured for reverse proxy"
 
 echo "\n====================================="
-echo "Minimal stack deployed with HTTPS support!"
-echo "- Frontend:      https://sparkify.dev"
-echo "- API:           https://sparkify.dev/api"
-echo "- API Swagger:   https://sparkify.dev/api/swagger"
-echo ""
-echo "Using Let's Encrypt certificates for secure HTTPS"
+echo "Minimal stack deployed (HTTP origin; TLS via Cloudflare)"
+echo "- Public Frontend: https://sparkify.dev"
+echo "- Public API:      https://sparkify.dev/api"
+echo "- Swagger:         https://sparkify.dev/api/swagger"
 echo "=====================================" 
