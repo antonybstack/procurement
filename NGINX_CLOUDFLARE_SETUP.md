@@ -61,7 +61,9 @@ Location: `/opt/homebrew/etc/nginx/nginx.conf`
 ### 3. Cloudflare Tunnel Setup
 - **Tunnel ID**: `392abfe9-a2db-41dd-a688-69e887823cdc`
 - **Config**: `/Users/antbly/.cloudflared/config.yml`
-- **Service**: Connects to `https://192.168.1.218:443` (local nginx)
+- **Service**: Connects to `https://localhost:443` (local nginx)
+
+Tip: Prefer `localhost` (or `127.0.0.1`) as the origin in the tunnel config to avoid breakage when your machine’s LAN IP changes (e.g., switching Wi‑Fi/Ethernet).
 
 ## Tools Used
 
@@ -184,8 +186,8 @@ cloudflared tunnel run sparkify  # Shows real-time logs
 # Check nginx status
 sudo nginx -t && sudo nginx -s reload
 
-# Check tunnel connectivity
-curl -k -I https://192.168.1.218:443
+# Check tunnel connectivity to local nginx
+curl -k -I https://localhost:443
 
 # Restart tunnel system service
 sudo launchctl stop com.cloudflare.sparkify
@@ -268,7 +270,7 @@ top -pid $(pgrep nginx)
 
 ### Production Deployment
 - Cloudflare Tunnel for public access
-- Uses network IP `192.168.1.218` for tunnel connectivity
+- Uses `localhost` for tunnel connectivity to local nginx (robust to LAN IP changes)
 - Cloudflare manages SSL termination
 - DNS managed by Cloudflare
 

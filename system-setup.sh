@@ -77,9 +77,17 @@ if [ -d "$CLOUDFLARED_USER_DIR" ]; then
     cp "$CLOUDFLARED_USER_DIR/cert.pem" "$CLOUDFLARED_SYSTEM_DIR/" 2>/dev/null || echo "⚠️  cert.pem not found"
     cp "$CLOUDFLARED_USER_DIR"/*.json "$CLOUDFLARED_SYSTEM_DIR/" 2>/dev/null || echo "⚠️  credentials file not found"
     
-    # Set proper permissions
+    # Rewrite config to use system paths and localhost origin
+    if [ -f "$CLOUDFLARED_SYSTEM_DIR/config.yml" ]; then
+        # Point credentials-file to /etc/cloudflared
+        sed -i '' "s#credentials-file: .*#credentials-file: $CLOUDFLARED_SYSTEM_DIR/392abfe9-a2db-41dd-a688-69e887823cdc.json#" "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
+        # Prefer localhost as origin to avoid LAN IP drift
+        sed -i '' 's#service: https://[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:443#service: https://localhost:443#' "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
+    fi
+
+    # Set proper permissions (hardened)
     chmod 644 "$CLOUDFLARED_SYSTEM_DIR/config.yml" 2>/dev/null || true
-    chmod 644 "$CLOUDFLARED_SYSTEM_DIR/cert.pem" 2>/dev/null || true
+    chmod 600 "$CLOUDFLARED_SYSTEM_DIR/cert.pem" 2>/dev/null || true
     chmod 600 "$CLOUDFLARED_SYSTEM_DIR"/*.json 2>/dev/null || true
     
     echo "✅ Cloudflared config installed in $CLOUDFLARED_SYSTEM_DIR"
@@ -201,6 +209,8 @@ cat > /Library/LaunchDaemons/com.cloudflare.sparkify.plist << EOF
     <key>ProgramArguments</key>
     <array>
         <string>$CLOUDFLARED_PATH</string>
+        <string>--config</string>
+        <string>/etc/cloudflared/config.yml</string>
         <string>tunnel</string>
         <string>--loglevel</string>
         <string>info</string>
