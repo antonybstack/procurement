@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Update Cloudflare Tunnel config to use plain HTTP origin on localhost:80
-# and include sparkify.dev hostname.
+# and include sparkify.dev and sparkify.com hostnames.
 
 UUID="392abfe9-a2db-41dd-a688-69e887823cdc"
 CONF_ETC="/etc/cloudflared/config.yml"
@@ -23,6 +23,8 @@ tunnel: ${UUID}
 credentials-file: ${CRED_ETC}
 
 ingress:
+  - hostname: sparkify.com
+    service: http://localhost:80
   - hostname: sparkify.dev
     service: http://localhost:80
   - service: http_status:404
@@ -34,6 +36,8 @@ tunnel: ${UUID}
 credentials-file: $HOME/.cloudflared/${UUID}.json
 
 ingress:
+  - hostname: sparkify.com
+    service: http://localhost:80
   - hostname: sparkify.dev
     service: http://localhost:80
   - service: http_status:404
@@ -57,11 +61,15 @@ install -m 644 "$tmp_user" "$CONF_USER"
 
 echo "🧪 Validating new config syntax..."
 if command -v cloudflared >/dev/null 2>&1; then
-  cloudflared tunnel ingress validate -f "$CONF_ETC" || {
-    echo "❌ Validation failed. Restoring backup."; 
-    [ -f "${CONF_ETC}.bak" ] && sudo cp "${CONF_ETC}.bak" "$CONF_ETC"; 
-    exit 1; 
-  }
+  if ! cloudflared --config "$CONF_ETC" tunnel ingress validate; then
+    echo "❌ Validation failed. Restoring backup."
+    latest_bak=$(ls -1t ${CONF_ETC}.bak-* 2>/dev/null | head -n1 || true)
+    if [ -n "$latest_bak" ]; then
+      sudo cp "$latest_bak" "$CONF_ETC"
+      echo "↩️  Restored $latest_bak"
+    fi
+    exit 1
+  fi
 else
   echo "⚠️  cloudflared not found in PATH. Skipping validation."
 fi
@@ -73,12 +81,19 @@ if launchctl list | grep -q com.cloudflare.sparkify; then
   sudo launchctl start com.cloudflare.sparkify || true
   echo "✅ cloudflared restarted"
 else
-  echo "⚠️  LaunchDaemon not loaded. Start with:"
-  echo "    sudo launchctl load /Library/LaunchDaemons/com.cloudflare.sparkify.plist"
+  if [ -f "/Library/LaunchDaemons/com.cloudflare.sparkify.plist" ]; then
+    echo "ℹ️  LaunchDaemon not loaded. Loading now..."
+    sudo launchctl load /Library/LaunchDaemons/com.cloudflare.sparkify.plist || true
+    sleep 1
+    sudo launchctl start com.cloudflare.sparkify || true
+  else
+    echo "⚠️  LaunchDaemon plist missing at /Library/LaunchDaemons/com.cloudflare.sparkify.plist"
+    echo "   Run system-setup.sh to create it, or start manually:"
+    echo "   cloudflared --config $CONF_ETC tunnel run sparkify"
+  fi
 fi
 
 echo "🎉 Cloudflare configuration updated."
 echo "   - /etc/cloudflared/config.yml -> http://localhost:80"
-echo "   - Hostname: sparkify.dev"
+echo "   - Hostnames: sparkify.com, sparkify.dev"
 echo "   - Credentials: $CRED_ETC"
-
