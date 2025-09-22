@@ -31,7 +31,7 @@ An experimental application designed to evaluate the potential of AI in enhancin
 - **Protocol**: All inter-container communication occurs over plain HTTP.
 - **Containers**:
   - **Frontend**: Hosts the Angular application.
-  - **Backend API**: .NET Core API for business logic and data handling.
+  - **Backend API**: .NET API for business logic and data handling.
   - **Database**: PostgreSQL for data storage.
   - **ElasticSearch**: For advanced search capabilities.
   - **Grafana and Prometheus**: For monitoring and observability.
