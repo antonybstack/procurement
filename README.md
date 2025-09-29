@@ -1,5 +1,7 @@
 # [https://sparkify.dev](https://sparkify.dev)
 
+![sparkify_demo](https://github.com/user-attachments/assets/5c2e4303-08c5-4bc4-b6ff-76783ebfe9ce)
+
 ## Overview
 
 An experimental application designed to evaluate the potential of AI in enhancing traditional relational database-centric applications, when provided with the right tool calls.
